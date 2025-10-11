@@ -572,6 +572,14 @@ public class TrangChu_GUI {
         pn_Timkiemsp.add(comboBox_2);
         
         JButton btnNewButton = new JButton("Xem Chi Tiết");
+        btnNewButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		ChiTietThuoc_GUI Chitietphieudatthuoc = new ChiTietThuoc_GUI(QuanLyHieuThuocTay);
+                
+                // 2. Hiển thị cửa sổ đó lên
+                Chitietphieudatthuoc.setVisible(true);
+        	}
+        });
         btnNewButton.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         btnNewButton.setBounds(983, 113, 179, 36);
         pn_Timkiemsp.add(btnNewButton);
