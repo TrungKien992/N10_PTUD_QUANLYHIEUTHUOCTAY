@@ -23,6 +23,13 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.DefaultComboBoxModel;
+import java.awt.FlowLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import java.awt.GridLayout;
+import javax.swing.border.EmptyBorder;
 
 public class TrangChu_GUI {
 
@@ -35,6 +42,16 @@ public class TrangChu_GUI {
     private JTextField text_Nhaptiennhan;
     private JTextField text_Nhapsoluongthuoc;
     private JTable table;
+    private JTextField txtMaKH;
+    private JTextField txtSDT;
+    private JTextField txtTenKH;
+    private JTable table_tkkh;
+    private JTextField txtMaKh;
+    private JTextField txtSDt;
+    private JTextField textField;
+    private JTextField txtMKH_TK;
+    private JTextField txtTenKH_TK;
+    private JTable table_CapNhatKH;
 
     /**
      * Launch the application.
@@ -198,15 +215,38 @@ public class TrangChu_GUI {
         menuBar.add(mn_Khachhang);
 
         JMenuItem mni_Themkh = new JMenuItem("Thêm");
+        mni_Themkh.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		// 1. Tạo một đối tượng của cửa sổ ThemKH_GUI
+                //    Truyền "QuanLyHieuThuocTay" (JFrame cha) vào làm tham số
+                ThemKH_GUI themKhDialog = new ThemKH_GUI(QuanLyHieuThuocTay);
+                
+                // 2. Hiển thị cửa sổ đó lên
+                themKhDialog.setVisible(true);
+        	}
+        });
         mn_Khachhang.add(mni_Themkh);
         mn_Khachhang.addSeparator();
 
         JMenuItem mni_Capnhatkh = new JMenuItem("Cập Nhật");
+        mni_Capnhatkh.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		
+        		CardLayout cl = (CardLayout) maincontent.getLayout();
+        	    cl.show(maincontent, "capNhatKH");
+        	}
+        });
         mn_Khachhang.add(mni_Capnhatkh);
         
         mn_Khachhang.addSeparator();
 
         JMenuItem mni_Timkiemkh = new JMenuItem("Tìm Kiếm");
+        mni_Timkiemkh.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		CardLayout cl = (CardLayout) maincontent.getLayout();
+        	    cl.show(maincontent, "timkiemkh");
+        	}
+        });
         mn_Khachhang.add(mni_Timkiemkh);
         
         maincontent = new JPanel();
@@ -608,6 +648,274 @@ public class TrangChu_GUI {
         });
         table.getColumnModel().getColumn(2).setPreferredWidth(65);
         scrollPane.setViewportView(table);
+        
+        JPanel pn_TKKhachHang = new JPanel();
+        maincontent.add(pn_TKKhachHang, "timkiemkh");
+        pn_TKKhachHang.setLayout(null);
+        
+        JPanel pnl_KH_north = new JPanel();
+        pnl_KH_north.setBounds(0, 0, 1584, 246);
+        pn_TKKhachHang.add(pnl_KH_north);
+        pnl_KH_north.setLayout(null);
+        
+        JLabel lblSDT = new JLabel("Số điện thoại : ");
+        lblSDT.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblSDT.setBounds(38, 130, 125, 24);
+        pnl_KH_north.add(lblSDT);
+        
+        JLabel lblTimKiemKH = new JLabel("TÌM KIẾM KHÁCH HÀNG");
+        lblTimKiemKH.setBounds(561, 11, 454, 43);
+        pnl_KH_north.add(lblTimKiemKH);
+        lblTimKiemKH.setFont(new Font("Times New Roman", Font.BOLD, 36));
+        
+        JLabel lblGioiTinh = new JLabel("Giới tính :");
+        lblGioiTinh.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblGioiTinh.setBounds(1122, 64, 96, 24);
+        pnl_KH_north.add(lblGioiTinh);
+        
+        JLabel lblTenKH = new JLabel("Tên khách hàng : ");
+        lblTenKH.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblTenKH.setBounds(561, 64, 156, 24);
+        pnl_KH_north.add(lblTenKH);
+        
+        JLabel lblMaKH = new JLabel("Mã khách hàng :");
+        lblMaKH.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblMaKH.setBounds(38, 64, 148, 24);
+        pnl_KH_north.add(lblMaKH);
+        
+        JLabel lblDiachi = new JLabel("Địa chỉ :");
+        lblDiachi.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblDiachi.setBounds(565, 130, 79, 24);
+        pnl_KH_north.add(lblDiachi);
+        
+        txtMaKH = new JTextField();
+        txtMaKH.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtMaKH.setBounds(196, 64, 330, 32);
+        pnl_KH_north.add(txtMaKH);
+        txtMaKH.setColumns(10);
+        
+        txtSDT = new JTextField();
+        txtSDT.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtSDT.setColumns(10);
+        txtSDT.setBounds(196, 127, 330, 32);
+        pnl_KH_north.add(txtSDT);
+        
+        txtTenKH = new JTextField();
+        txtTenKH.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtTenKH.setColumns(10);
+        txtTenKH.setBounds(725, 64, 354, 32);
+        pnl_KH_north.add(txtTenKH);
+        
+        JComboBox cboGioiTinh = new JComboBox();
+        cboGioiTinh.setModel(new DefaultComboBoxModel(new String[] {"Nam", "Nữ"}));
+        cboGioiTinh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboGioiTinh.setBounds(1228, 64, 96, 32);
+        pnl_KH_north.add(cboGioiTinh);
+        
+        JComboBox cboTinh = new JComboBox();
+        cboTinh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboTinh.setModel(new DefaultComboBoxModel(new String[] {"Tỉnh/Thành phố"}));
+        cboTinh.setBounds(660, 127, 180, 32);
+        pnl_KH_north.add(cboTinh);
+        
+        JComboBox cboHuyen = new JComboBox();
+        cboHuyen.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboHuyen.setModel(new DefaultComboBoxModel(new String[] {"Quận/Huyện"}));
+        cboHuyen.setBounds(899, 128, 180, 32);
+        pnl_KH_north.add(cboHuyen);
+        
+        JComboBox cboXa = new JComboBox();
+        cboXa.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboXa.setModel(new DefaultComboBoxModel(new String[] {"Xã/Phường"}));
+        cboXa.setBounds(1144, 128, 180, 32);
+        pnl_KH_north.add(cboXa);
+        
+        JButton btnLammoi = new JButton("Làm mới");
+        btnLammoi.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        btnLammoi.setBounds(1144, 184, 108, 32);
+        pnl_KH_north.add(btnLammoi);
+        
+        JPanel pnl_KH_south = new JPanel();
+        pnl_KH_south.setBounds(0, 244, 1584, 695);
+        pn_TKKhachHang.add(pnl_KH_south);
+        pnl_KH_south.setLayout(null);
+        
+        JScrollPane scrollPane_tkkh = new JScrollPane();
+        scrollPane_tkkh.setBounds(0, 0, 1584, 696);
+        pnl_KH_south.add(scrollPane_tkkh);
+        
+        table_tkkh = new JTable();
+        table_tkkh.setModel(new DefaultTableModel(
+        	new Object[][] {
+        		{null, null, null, null, null},
+        		{null, null, null, null, null},
+        		{null, null, null, null, null},
+        	},
+        	new String[] {
+        		"M\u00E3 kh\u00E1ch h\u00E0ng", "T\u00EAn kh\u00E1ch h\u00E0ng", "Gi\u1EDBi t\u00EDnh", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9"
+        	}
+        ));
+        table_tkkh.getColumnModel().getColumn(0).setPreferredWidth(99);
+        table_tkkh.getColumnModel().getColumn(1).setPreferredWidth(92);
+        table_tkkh.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        table_tkkh.getTableHeader().setFont(new Font("Times New Roman", Font.BOLD, 20));
+        table_tkkh.setRowHeight(30);
+
+        scrollPane_tkkh.setViewportView(table_tkkh);
+        
+        JPanel pn_CapnhatKh = new JPanel();
+        maincontent.add(pn_CapnhatKh, "capNhatKH");
+        pn_CapnhatKh.setLayout(null);
+        
+        JPanel pnlNorth = new JPanel();
+        pnlNorth.setBounds(10, 11, 1564, 297);
+        pn_CapnhatKh.add(pnlNorth);
+        pnlNorth.setLayout(null);
+        
+        JLabel lblTitle = new JLabel("CẬP NHẬT KHÁCH HÀNG");
+        lblTitle.setFont(new Font("Times New Roman", Font.BOLD, 36));
+        lblTitle.setBounds(548, 11, 452, 43);
+        pnlNorth.add(lblTitle);
+        
+        JLabel lblMaKh = new JLabel("Mã khách hàng :");
+        lblMaKh.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblMaKh.setBounds(192, 91, 141, 25);
+        pnlNorth.add(lblMaKh);
+        
+        JLabel lblTenKh = new JLabel("Tên khách hàng :");
+        lblTenKh.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblTenKh.setBounds(686, 91, 163, 25);
+        pnlNorth.add(lblTenKh);
+        
+        JLabel lblSdt = new JLabel("Số điện thoại :");
+        lblSdt.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblSdt.setBounds(192, 146, 141, 25);
+        pnlNorth.add(lblSdt);
+        
+        JLabel lblGT = new JLabel("Giới tính :");
+        lblGT.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblGT.setBounds(686, 152, 94, 25);
+        pnlNorth.add(lblGT);
+        
+        JLabel lblDC = new JLabel("Địa chỉ  :");
+        lblDC.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblDC.setBounds(192, 203, 163, 25);
+        pnlNorth.add(lblDC);
+        
+        txtMaKh = new JTextField();
+        txtMaKh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtMaKh.setBounds(354, 89, 301, 33);
+        pnlNorth.add(txtMaKh);
+        txtMaKh.setColumns(10);
+        
+        txtSDt = new JTextField();
+        txtSDt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtSDt.setColumns(10);
+        txtSDt.setBounds(354, 144, 301, 33);
+        pnlNorth.add(txtSDt);
+        
+        textField = new JTextField();
+        textField.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        textField.setColumns(10);
+        textField.setBounds(859, 89, 488, 33);
+        pnlNorth.add(textField);
+        
+        JComboBox cboGT = new JComboBox();
+        cboGT.setModel(new DefaultComboBoxModel(new String[] {"Nam", "Nữ"}));
+        cboGT.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboGT.setBounds(859, 148, 80, 32);
+        pnlNorth.add(cboGT);
+        
+        JComboBox cboDC_tinh = new JComboBox();
+        cboDC_tinh.setModel(new DefaultComboBoxModel(new String[] {"Tỉnh / Thành phố"}));
+        cboDC_tinh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboDC_tinh.setBounds(354, 199, 235, 32);
+        pnlNorth.add(cboDC_tinh);
+        
+        JComboBox cboDC_huyen = new JComboBox();
+        cboDC_huyen.setModel(new DefaultComboBoxModel(new String[] {"Quận/Huyện"}));
+        cboDC_huyen.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboDC_huyen.setBounds(623, 199, 235, 32);
+        pnlNorth.add(cboDC_huyen);
+        
+        JComboBox cboDC_xa = new JComboBox();
+        cboDC_xa.setModel(new DefaultComboBoxModel(new String[] {"Xã/Phường"}));
+        cboDC_xa.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        cboDC_xa.setBounds(885, 199, 235, 32);
+        pnlNorth.add(cboDC_xa);
+        
+        JButton btnCapNhat = new JButton("Cập nhật");
+        btnCapNhat.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        btnCapNhat.setBounds(1011, 255, 118, 31);
+        pnlNorth.add(btnCapNhat);
+        
+        JButton btnKhoiphuc = new JButton("Khôi phục");
+        btnKhoiphuc.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        btnKhoiphuc.setBounds(859, 255, 118, 31);
+        pnlNorth.add(btnKhoiphuc);
+        
+        JPanel pnlTimkiem = new JPanel();
+        pnlTimkiem.setBounds(191, 307, 1191, 84);
+        
+        Font titleFont = new Font("Tahoma", Font.BOLD, 20);
+        TitledBorder border = BorderFactory.createTitledBorder("Tìm kiếm");
+        border.setTitleFont(titleFont);
+        pnlTimkiem.setBorder(border);
+        
+        pn_CapnhatKh.add(pnlTimkiem);
+        pnlTimkiem.setLayout(null);
+        
+        JLabel lblMaKh_TK = new JLabel("Mã khách hàng :");
+        lblMaKh_TK.setBounds(10, 24, 140, 24);
+        lblMaKh_TK.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        pnlTimkiem.add(lblMaKh_TK);
+        
+        txtMKH_TK = new JTextField();
+        txtMKH_TK.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtMKH_TK.setColumns(10);
+        txtMKH_TK.setBounds(174, 22, 301, 33);
+        pnlTimkiem.add(txtMKH_TK);
+        
+        JLabel lblTenKh_TK = new JLabel("Tên khách hàng :");
+        lblTenKh_TK.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblTenKh_TK.setBounds(514, 24, 163, 25);
+        pnlTimkiem.add(lblTenKh_TK);
+        
+        txtTenKH_TK = new JTextField();
+        txtTenKH_TK.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtTenKH_TK.setColumns(10);
+        txtTenKH_TK.setBounds(687, 22, 301, 33);
+        pnlTimkiem.add(txtTenKH_TK);
+        
+        JButton btnLammoi_CNKH = new JButton("Làm mới");
+        btnLammoi_CNKH.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        btnLammoi_CNKH.setBounds(1039, 24, 118, 31);
+        pnlTimkiem.add(btnLammoi_CNKH);
+        
+        JPanel pnlSouth = new JPanel();
+        pnlSouth.setBounds(10, 394, 1564, 534);
+        pn_CapnhatKh.add(pnlSouth);
+        pnlSouth.setLayout(null);
+        
+        JScrollPane scrollPane_CapNhatKH = new JScrollPane();
+        scrollPane_CapNhatKH.setBounds(0, 0, 1564, 534);
+        pnlSouth.add(scrollPane_CapNhatKH);
+        
+        table_CapNhatKH = new JTable();
+        table_CapNhatKH.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        table_CapNhatKH.getTableHeader().setFont(new Font("Times New Roman", Font.BOLD, 20));
+        table_CapNhatKH.setRowHeight(30);
+        table_CapNhatKH.setModel(new DefaultTableModel(
+        	new Object[][] {
+        		{null, null, null, null, null},
+        		{null, null, null, null, null},
+        		{null, null, null, null, null},
+        	},
+        	new String[] {
+        		"M\u00E3 kh\u00E1ch h\u00E0ng", "T\u00EAn Kh\u00E1ch h\u00E0ng", "Gi\u1EDBi t\u00EDnh", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9"
+        	}
+        ));
+        scrollPane_CapNhatKH.setViewportView(table_CapNhatKH);
         
         
 
