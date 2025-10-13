@@ -2304,9 +2304,17 @@ public class TrangChu_GUI {
         panel_TimKiemNV.add(cboVaiTro_TKNV);
         
         JButton btnXemCT_TKNV = new JButton("Xem chi tiết");
+        btnXemCT_TKNV.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		XemChiTietNV_GUI xemCTNV = new XemChiTietNV_GUI(QuanLyHieuThuocTay);
+                
+                // 2. Hiển thị cửa sổ đó lên
+                xemCTNV.setVisible(true);
+        	}
+        });
+        
         btnXemCT_TKNV.setBounds(1079, 382, 125, 36);
         btnXemCT_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-        btnXemCT_TKNV.setBackground(Color.WHITE);
         panel_TimKiemNV.add(btnXemCT_TKNV);
         
         JButton btnLamMoi_TKNV = new JButton("Làm mới");
@@ -2520,7 +2528,7 @@ public class TrangChu_GUI {
         
         JButton btnKhoiPhuc_CNNV = new JButton("Khôi phục");
         btnKhoiPhuc_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnKhoiPhuc_CNNV.setBounds(1117, 532, 119, 37);
+        btnKhoiPhuc_CNNV.setBounds(1117, 532, 152, 37);
         panel_CapNhatNV.add(btnKhoiPhuc_CNNV);
         
         JButton btnCapNhat_CNNV = new JButton("Cập nhật");
