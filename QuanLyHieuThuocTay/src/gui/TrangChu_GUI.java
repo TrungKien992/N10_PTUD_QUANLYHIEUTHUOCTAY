@@ -118,6 +118,40 @@ public class TrangChu_GUI {
     private JTable table_CNNV;
     private JTextField txt_kh_dc;
     private JTextField txt_cnkh_dc;
+    private JTable table_ThemNCC;
+    private JTextField txtMaNCC_CNNCC;
+    private JTextField txtTenNCC_CNNCC;
+    private JTextField txtSDT_CNNCC;
+    private JTextField textField_23;
+    private JTextField textField_24;
+    private JTextField txtEmail_CNNCC;
+    /**
+     * @wbp.nonvisual location=13,-36
+     */
+    private final JPanel panel_11 = new JPanel();
+    /**
+     * @wbp.nonvisual location=33,-26
+     */
+    private final JPanel panel_12 = new JPanel();
+    private JTextField txtGhiChu_CNNCC;
+    private JTextField txtTinh_TNCC;
+    private JTextField txtHuyen_TNCC;
+    private JTextField txtMaNCC_TNCC;
+    private JTextField txtTenNCC_TNCC;
+    private JTextField txtTrangThai_TNCC;
+    private JTextField txtEmail_TNCC;
+    private JTextField txtSDT_TNCC;
+    private JTextField txtGhiChu_TNCC;
+    private JTable table_CNNCC;
+    private JTextField txtHuyen_TKNCC;
+    private JTextField txtHuyen_TKNC;
+    private JTextField txtMaNCC_TKNCC;
+    private JTextField txtTenNCC_TKNCC;
+    private JTextField txtTrangThai_TKNCC;
+    private JTextField txtEmail_TKNCC;
+    private JTextField txtSDT_TKNCC;
+    private JTextField txtGhiChu_TKNCC;
+    private JTable table_TKNCC;
 
     /**
      * Launch the application.
@@ -321,20 +355,44 @@ public class TrangChu_GUI {
         });
         mn_Nhanvien.add(mni_Timkiemnv);
         
-        // Menu Nhà Cung Cấp
+     // Menu Nhà Cung Cấp
         JMenu mn_Nhacungcap = new JMenu("Nhà Cung Cấp");
+        mn_Nhacungcap.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+//        		CardLayout cl = (CardLayout) maincontent.getLayout();
+//        	    cl.show(maincontent, "themNCC");
+        	}
+        });
         menuBar.add(mn_Nhacungcap);
 
         JMenuItem mni_Themncc = new JMenuItem("Thêm");
+        mni_Themncc.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		CardLayout cl = (CardLayout) maincontent.getLayout();
+        	    cl.show(maincontent, "themNCC");
+        	}
+        });
         mn_Nhacungcap.add(mni_Themncc);
         mn_Nhacungcap.addSeparator();
 
         JMenuItem mni_Capnhatncc = new JMenuItem("Cập Nhật");
+        mni_Capnhatncc.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		CardLayout cl = (CardLayout) maincontent.getLayout();
+        	    cl.show(maincontent, "capNhatNCC");
+        	}
+        });
         mn_Nhacungcap.add(mni_Capnhatncc);
 
         mn_Nhacungcap.addSeparator();
 
         JMenuItem mni_Timkiemncc = new JMenuItem("Tìm Kiếm");
+        mni_Timkiemncc.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		CardLayout cl = (CardLayout) maincontent.getLayout();
+        	    cl.show(maincontent, "timKiemNCC");
+        	}
+        });
         mn_Nhacungcap.add(mni_Timkiemncc);
 
         // Menu Khách Hàng
@@ -2551,5 +2609,417 @@ public class TrangChu_GUI {
         ));
         table_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
         scrollPane_CNNV.setViewportView(table_CNNV);
+        
+        JPanel panel_themNCC = new JPanel();
+        maincontent.add(panel_themNCC, "themNCC");
+        panel_themNCC.setLayout(null);
+        
+        JPanel panel_TitleThemNCC = new JPanel();
+        panel_TitleThemNCC.setBounds(536, 33, 330, 76);
+        panel_themNCC.add(panel_TitleThemNCC);
+        panel_TitleThemNCC.setLayout(null);
+        
+        JLabel lblTitleThemNCC = new JLabel("THÊM NHÀ CUNG CẤP");
+        lblTitleThemNCC.setBounds(35, 20, 348, 35);
+        lblTitleThemNCC.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        panel_TitleThemNCC.add(lblTitleThemNCC);
+        
+        JScrollPane scrollPane_ThemNCC = new JScrollPane();
+        scrollPane_ThemNCC.setBounds(536, 506, 1038, 212);
+        panel_themNCC.add(scrollPane_ThemNCC);
+        
+        table_ThemNCC = new JTable();
+        table_ThemNCC.setModel(new DefaultTableModel(
+        	new Object[][] {
+        		{null, null, null, null, null, null, null, null},
+        	},
+        	new String[] {
+        		"M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "Email", "Tr\u1EA1ng th\u00E1i", "T\u1EC9nh", "Huy\u1EC7n", "Ghi ch\u00FA"
+        	}
+        ));
+        scrollPane_ThemNCC.setViewportView(table_ThemNCC);
+        
+        JPanel panelAnhNCC_TNCC = new JPanel();
+        panelAnhNCC_TNCC.setLayout(null);
+        panelAnhNCC_TNCC.setBorder(new LineBorder(new Color(0, 0, 0)));
+        panelAnhNCC_TNCC.setBounds(45, 140, 383, 578);
+        panel_themNCC.add(panelAnhNCC_TNCC);
+        
+        JButton btnChonAnh_TNCC = new JButton("Chọn ảnh");
+        btnChonAnh_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 17));
+        btnChonAnh_TNCC.setBackground(UIManager.getColor("Button.shadow"));
+        btnChonAnh_TNCC.setBounds(171, 757, 107, 29);
+        panel_themNCC.add(btnChonAnh_TNCC);
+        
+        JPanel panel_ThongTinNCC = new JPanel();
+        panel_ThongTinNCC.setBorder(new TitledBorder(null, "Th\u00F4ng tin nh\u00E0 cung c\u1EA5p", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        panel_ThongTinNCC.setBounds(536, 140, 1038, 288);
+        panel_themNCC.add(panel_ThongTinNCC);
+        panel_ThongTinNCC.setLayout(null);
+        
+        JLabel lblMaNCC_TNCC = new JLabel("Mã nhà cung cấp:");
+        lblMaNCC_TNCC.setBounds(28, 29, 160, 25);
+        lblMaNCC_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        panel_ThongTinNCC.add(lblMaNCC_TNCC);
+        
+        JLabel lblTenNCC_TNCC = new JLabel("Tên nhà cung cấp:");
+        lblTenNCC_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTenNCC_TNCC.setBounds(28, 65, 179, 37);
+        panel_ThongTinNCC.add(lblTenNCC_TNCC);
+        
+        JLabel lblEmail_TNCC = new JLabel("Email:");
+        lblEmail_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblEmail_TNCC.setBounds(587, 65, 179, 37);
+        panel_ThongTinNCC.add(lblEmail_TNCC);
+        
+        JLabel lblSDTNCC_TNCC = new JLabel("Số điện thoại:");
+        lblSDTNCC_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblSDTNCC_TNCC.setBounds(28, 113, 134, 37);
+        panel_ThongTinNCC.add(lblSDTNCC_TNCC);
+        
+        JLabel lblTrangThai_TNCC = new JLabel("Trạng thái:");
+        lblTrangThai_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTrangThai_TNCC.setBounds(587, 23, 179, 37);
+        panel_ThongTinNCC.add(lblTrangThai_TNCC);
+        
+        JPanel panelDiaChi_TNCC = new JPanel();
+        panelDiaChi_TNCC.setLayout(null);
+        panelDiaChi_TNCC.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
+        panelDiaChi_TNCC.setBounds(24, 161, 1004, 85);
+        panel_ThongTinNCC.add(panelDiaChi_TNCC);
+        
+        txtTinh_TNCC = new JTextField();
+        txtTinh_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtTinh_TNCC.setColumns(10);
+        txtTinh_TNCC.setBounds(97, 28, 360, 33);
+        panelDiaChi_TNCC.add(txtTinh_TNCC);
+        
+        JLabel lblTinh_TNCC = new JLabel("Tỉnh:");
+        lblTinh_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTinh_TNCC.setBounds(22, 28, 58, 32);
+        panelDiaChi_TNCC.add(lblTinh_TNCC);
+        
+        JLabel lblHuyen_TNCC = new JLabel("Huyện:");
+        lblHuyen_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblHuyen_TNCC.setBounds(527, 28, 86, 32);
+        panelDiaChi_TNCC.add(lblHuyen_TNCC);
+        
+        txtHuyen_TNCC = new JTextField();
+        txtHuyen_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtHuyen_TNCC.setColumns(10);
+        txtHuyen_TNCC.setBounds(606, 28, 347, 33);
+        panelDiaChi_TNCC.add(txtHuyen_TNCC);
+        
+        txtMaNCC_TNCC = new JTextField();
+        txtMaNCC_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtMaNCC_TNCC.setColumns(10);
+        txtMaNCC_TNCC.setBounds(198, 29, 360, 33);
+        panel_ThongTinNCC.add(txtMaNCC_TNCC);
+        
+        txtTenNCC_TNCC = new JTextField();
+        txtTenNCC_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtTenNCC_TNCC.setColumns(10);
+        txtTenNCC_TNCC.setBounds(198, 69, 360, 33);
+        panel_ThongTinNCC.add(txtTenNCC_TNCC);
+        
+        txtTrangThai_TNCC = new JTextField();
+        txtTrangThai_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtTrangThai_TNCC.setColumns(10);
+        txtTrangThai_TNCC.setBounds(694, 29, 334, 33);
+        panel_ThongTinNCC.add(txtTrangThai_TNCC);
+        
+        txtEmail_TNCC = new JTextField();
+        txtEmail_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtEmail_TNCC.setColumns(10);
+        txtEmail_TNCC.setBounds(694, 67, 334, 33);
+        panel_ThongTinNCC.add(txtEmail_TNCC);
+        
+        txtSDT_TNCC = new JTextField();
+        txtSDT_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtSDT_TNCC.setColumns(10);
+        txtSDT_TNCC.setBounds(198, 113, 360, 33);
+        panel_ThongTinNCC.add(txtSDT_TNCC);
+        
+        JLabel lblGhiChu_TNCC = new JLabel("Ghi chú:");
+        lblGhiChu_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblGhiChu_TNCC.setBounds(587, 113, 179, 37);
+        panel_ThongTinNCC.add(lblGhiChu_TNCC);
+        
+        txtGhiChu_TNCC = new JTextField();
+        txtGhiChu_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtGhiChu_TNCC.setColumns(10);
+        txtGhiChu_TNCC.setBounds(694, 115, 334, 33);
+        panel_ThongTinNCC.add(txtGhiChu_TNCC);
+        
+        JPanel panel_capNhatNCC = new JPanel();
+        maincontent.add(panel_capNhatNCC, "capNhatNCC");
+        panel_capNhatNCC.setLayout(null);
+        
+        JPanel panelAnh_NCC = new JPanel();
+        panelAnh_NCC.setLayout(null);
+        panelAnh_NCC.setBorder(new LineBorder(new Color(0, 0, 0)));
+        panelAnh_NCC.setBounds(62, 92, 339, 328);
+        panel_capNhatNCC.add(panelAnh_NCC);
+        
+        JLabel lblTitle_CN_NCC = new JLabel("CẬP NHẬT NHÀ CUNG CẤP");
+        lblTitle_CN_NCC.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        lblTitle_CN_NCC.setBounds(632, 29, 367, 52);
+        panel_capNhatNCC.add(lblTitle_CN_NCC);
+        
+        JLabel lblMaNCC_CNNCC = new JLabel("Mã nhà cung cấp:");
+        lblMaNCC_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblMaNCC_CNNCC.setBounds(488, 92, 152, 37);
+        panel_capNhatNCC.add(lblMaNCC_CNNCC);
+        
+        txtMaNCC_CNNCC = new JTextField();
+        txtMaNCC_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
+        txtMaNCC_CNNCC.setEditable(false);
+        txtMaNCC_CNNCC.setColumns(10);
+        txtMaNCC_CNNCC.setBounds(650, 92, 379, 37);
+        panel_capNhatNCC.add(txtMaNCC_CNNCC);
+        
+        JComboBox cboTrangThai_CNNCC = new JComboBox();
+        cboTrangThai_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        cboTrangThai_CNNCC.setBounds(1250, 140, 225, 37);
+        panel_capNhatNCC.add(cboTrangThai_CNNCC);
+        
+        JLabel lblTrangThai_CNNCC = new JLabel("Trạng thái:");
+        lblTrangThai_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTrangThai_CNNCC.setBounds(1117, 140, 136, 37);
+        panel_capNhatNCC.add(lblTrangThai_CNNCC);
+        
+        txtTenNCC_CNNCC = new JTextField();
+        txtTenNCC_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
+        txtTenNCC_CNNCC.setColumns(10);
+        txtTenNCC_CNNCC.setBounds(650, 140, 379, 37);
+        panel_capNhatNCC.add(txtTenNCC_CNNCC);
+        
+        JLabel lblTenNCC_CNNCC = new JLabel("Tên nhà cung cấp:");
+        lblTenNCC_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTenNCC_CNNCC.setBounds(488, 140, 152, 37);
+        panel_capNhatNCC.add(lblTenNCC_CNNCC);
+        
+        JLabel lblSDT_CNNCC = new JLabel("Số điện thoại:");
+        lblSDT_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblSDT_CNNCC.setBounds(488, 188, 152, 37);
+        panel_capNhatNCC.add(lblSDT_CNNCC);
+        
+        txtSDT_CNNCC = new JTextField();
+        txtSDT_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
+        txtSDT_CNNCC.setColumns(10);
+        txtSDT_CNNCC.setBounds(650, 188, 379, 37);
+        panel_capNhatNCC.add(txtSDT_CNNCC);
+        
+        JLabel lblEmail_CNNCC = new JLabel("Email:");
+        lblEmail_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblEmail_CNNCC.setBounds(1117, 189, 136, 37);
+        panel_capNhatNCC.add(lblEmail_CNNCC);
+        
+        JPanel panelDiaChi_CNNCC = new JPanel();
+        panelDiaChi_CNNCC.setLayout(null);
+        panelDiaChi_CNNCC.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
+        panelDiaChi_CNNCC.setBounds(488, 318, 987, 102);
+        panel_capNhatNCC.add(panelDiaChi_CNNCC);
+        
+        textField_23 = new JTextField();
+        textField_23.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        textField_23.setColumns(10);
+        textField_23.setBounds(97, 28, 360, 33);
+        panelDiaChi_CNNCC.add(textField_23);
+        
+        JLabel lblTinh_CNNV_1 = new JLabel("Tỉnh:");
+        lblTinh_CNNV_1.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTinh_CNNV_1.setBounds(22, 28, 58, 32);
+        panelDiaChi_CNNCC.add(lblTinh_CNNV_1);
+        
+        JLabel lblHuyen_CNNV_1 = new JLabel("Huyện:");
+        lblHuyen_CNNV_1.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblHuyen_CNNV_1.setBounds(527, 28, 86, 32);
+        panelDiaChi_CNNCC.add(lblHuyen_CNNV_1);
+        
+        textField_24 = new JTextField();
+        textField_24.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        textField_24.setColumns(10);
+        textField_24.setBounds(606, 28, 360, 33);
+        panelDiaChi_CNNCC.add(textField_24);
+        
+        JButton btnLamMoi_CNNCC = new JButton("Làm mới");
+        btnLamMoi_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        btnLamMoi_CNNCC.setBounds(880, 510, 119, 37);
+        panel_capNhatNCC.add(btnLamMoi_CNNCC);
+        
+        JButton btnChonAnh_CNNCC = new JButton("Chọn ảnh");
+        btnChonAnh_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        btnChonAnh_CNNCC.setBounds(161, 447, 119, 37);
+        panel_capNhatNCC.add(btnChonAnh_CNNCC);
+        
+        JButton btnKhoiPhuc_CNNCC = new JButton("Khôi phục");
+        btnKhoiPhuc_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        btnKhoiPhuc_CNNCC.setBounds(1107, 510, 119, 37);
+        panel_capNhatNCC.add(btnKhoiPhuc_CNNCC);
+        
+        JButton btnCapNhat_CNNCC = new JButton("Cập nhật");
+        btnCapNhat_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        btnCapNhat_CNNCC.setBounds(1323, 510, 119, 37);
+        panel_capNhatNCC.add(btnCapNhat_CNNCC);
+        
+        txtEmail_CNNCC = new JTextField();
+        txtEmail_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
+        txtEmail_CNNCC.setEditable(false);
+        txtEmail_CNNCC.setColumns(10);
+        txtEmail_CNNCC.setBounds(1250, 188, 225, 37);
+        panel_capNhatNCC.add(txtEmail_CNNCC);
+        
+        JLabel lblGhiChu_CNNCC = new JLabel("Ghi chú:");
+        lblGhiChu_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblGhiChu_CNNCC.setBounds(1117, 92, 136, 37);
+        panel_capNhatNCC.add(lblGhiChu_CNNCC);
+        
+        txtGhiChu_CNNCC = new JTextField();
+        txtGhiChu_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
+        txtGhiChu_CNNCC.setEditable(false);
+        txtGhiChu_CNNCC.setColumns(10);
+        txtGhiChu_CNNCC.setBounds(1250, 91, 225, 37);
+        panel_capNhatNCC.add(txtGhiChu_CNNCC);
+        
+        JScrollPane scrollPane_CNNCC = new JScrollPane();
+        scrollPane_CNNCC.setBounds(62, 614, 1413, 212);
+        panel_capNhatNCC.add(scrollPane_CNNCC);
+        
+        table_CNNCC = new JTable();
+        table_CNNCC.setModel(new DefaultTableModel(
+        	new Object[][] {
+        		{"", null, null, null, null, null, null, null},
+        	},
+        	new String[] {
+        		"M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "Email", "Tr\u1EA1ng th\u00E1i", "Huy\u1EC7n", "T\u1EC9nh", "Ghi ch\u00FA"
+        	}
+        ));
+        scrollPane_CNNCC.setViewportView(table_CNNCC);
+        
+        JPanel panel_TimKiemNCC = new JPanel();
+        maincontent.add(panel_TimKiemNCC, "timKiemNCC");
+        panel_TimKiemNCC.setLayout(null);
+        
+        JPanel panel_ThongTinTKNCC = new JPanel();
+        panel_ThongTinTKNCC.setLayout(null);
+        panel_ThongTinTKNCC.setBorder(new TitledBorder(null, "Th\u00F4ng tin nh\u00E0 cung c\u1EA5p", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        panel_ThongTinTKNCC.setBounds(100, 92, 1088, 288);
+        panel_TimKiemNCC.add(panel_ThongTinTKNCC);
+        
+        JLabel lblMaNCC_TKNCC = new JLabel("Mã nhà cung cấp:");
+        lblMaNCC_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblMaNCC_TKNCC.setBounds(28, 29, 160, 25);
+        panel_ThongTinTKNCC.add(lblMaNCC_TKNCC);
+        
+        JLabel lblTenNCC_TKNCC = new JLabel("Tên nhà cung cấp:");
+        lblTenNCC_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTenNCC_TKNCC.setBounds(28, 65, 179, 37);
+        panel_ThongTinTKNCC.add(lblTenNCC_TKNCC);
+        
+        JLabel lblEmail_TKNCC = new JLabel("Email:");
+        lblEmail_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblEmail_TKNCC.setBounds(587, 65, 179, 37);
+        panel_ThongTinTKNCC.add(lblEmail_TKNCC);
+        
+        JLabel lblSDTNCC_TKNCC = new JLabel("Số điện thoại:");
+        lblSDTNCC_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblSDTNCC_TKNCC.setBounds(28, 113, 134, 37);
+        panel_ThongTinTKNCC.add(lblSDTNCC_TKNCC);
+        
+        JLabel lblTrangThai_TKNCC = new JLabel("Trạng thái:");
+        lblTrangThai_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTrangThai_TKNCC.setBounds(587, 23, 179, 37);
+        panel_ThongTinTKNCC.add(lblTrangThai_TKNCC);
+        
+        JPanel panelDiaChi_TKNCC = new JPanel();
+        panelDiaChi_TKNCC.setLayout(null);
+        panelDiaChi_TKNCC.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
+        panelDiaChi_TKNCC.setBounds(24, 161, 1004, 85);
+        panel_ThongTinTKNCC.add(panelDiaChi_TKNCC);
+        
+        txtHuyen_TKNCC = new JTextField();
+        txtHuyen_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtHuyen_TKNCC.setColumns(10);
+        txtHuyen_TKNCC.setBounds(97, 28, 360, 33);
+        panelDiaChi_TKNCC.add(txtHuyen_TKNCC);
+        
+        JLabel lblTinh_TKNCC = new JLabel("Tỉnh:");
+        lblTinh_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblTinh_TKNCC.setBounds(22, 28, 58, 32);
+        panelDiaChi_TKNCC.add(lblTinh_TKNCC);
+        
+        JLabel lblHuyen_TKNCC = new JLabel("Huyện:");
+        lblHuyen_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblHuyen_TKNCC.setBounds(527, 28, 86, 32);
+        panelDiaChi_TKNCC.add(lblHuyen_TKNCC);
+        
+        txtHuyen_TKNC = new JTextField();
+        txtHuyen_TKNC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtHuyen_TKNC.setColumns(10);
+        txtHuyen_TKNC.setBounds(606, 28, 347, 33);
+        panelDiaChi_TKNCC.add(txtHuyen_TKNC);
+        
+        txtMaNCC_TKNCC = new JTextField();
+        txtMaNCC_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtMaNCC_TKNCC.setColumns(10);
+        txtMaNCC_TKNCC.setBounds(198, 29, 360, 33);
+        panel_ThongTinTKNCC.add(txtMaNCC_TKNCC);
+        
+        txtTenNCC_TKNCC = new JTextField();
+        txtTenNCC_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtTenNCC_TKNCC.setColumns(10);
+        txtTenNCC_TKNCC.setBounds(198, 69, 360, 33);
+        panel_ThongTinTKNCC.add(txtTenNCC_TKNCC);
+        
+        txtTrangThai_TKNCC = new JTextField();
+        txtTrangThai_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtTrangThai_TKNCC.setColumns(10);
+        txtTrangThai_TKNCC.setBounds(694, 29, 334, 33);
+        panel_ThongTinTKNCC.add(txtTrangThai_TKNCC);
+        
+        txtEmail_TKNCC = new JTextField();
+        txtEmail_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtEmail_TKNCC.setColumns(10);
+        txtEmail_TKNCC.setBounds(694, 67, 334, 33);
+        panel_ThongTinTKNCC.add(txtEmail_TKNCC);
+        
+        txtSDT_TKNCC = new JTextField();
+        txtSDT_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtSDT_TKNCC.setColumns(10);
+        txtSDT_TKNCC.setBounds(198, 113, 360, 33);
+        panel_ThongTinTKNCC.add(txtSDT_TKNCC);
+        
+        JLabel lblGhiChu_TKNCC = new JLabel("Ghi chú:");
+        lblGhiChu_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
+        lblGhiChu_TKNCC.setBounds(587, 113, 179, 37);
+        panel_ThongTinTKNCC.add(lblGhiChu_TKNCC);
+        
+        txtGhiChu_TKNCC = new JTextField();
+        txtGhiChu_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtGhiChu_TKNCC.setColumns(10);
+        txtGhiChu_TKNCC.setBounds(694, 115, 334, 33);
+        panel_ThongTinTKNCC.add(txtGhiChu_TKNCC);
+        
+        JLabel lblTitle_TKNCC = new JLabel("TÌM KIẾM NHÀ CUNG CẤP");
+        lblTitle_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        lblTitle_TKNCC.setBounds(473, 38, 387, 43);
+        panel_TimKiemNCC.add(lblTitle_TKNCC);
+        
+        JScrollPane scrollPane_TKNCC = new JScrollPane();
+        scrollPane_TKNCC.setBounds(100, 411, 1088, 177);
+        panel_TimKiemNCC.add(scrollPane_TKNCC);
+        
+        table_TKNCC = new JTable();
+        table_TKNCC.setModel(new DefaultTableModel(
+        	new Object[][] {
+        		{null, null, null, null, null, null, null, null},
+        	},
+        	new String[] {
+        		"M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "Email", "Tr\u1EA1ng th\u00E1i", "Huy\u1EC7n", "T\u1EC9nh", "Ghi ch\u00FA"
+        	}
+        ));
+        scrollPane_TKNCC.setViewportView(table_TKNCC);
+        
     }
 }
