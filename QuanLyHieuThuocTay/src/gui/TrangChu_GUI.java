@@ -14,6 +14,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.Font;
+import java.awt.Image;
+
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.border.TitledBorder;
@@ -2576,7 +2578,33 @@ public class TrangChu_GUI {
         
         JButton btnChonAnh_CNNV = new JButton("Chọn ảnh");
         btnChonAnh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnChonAnh_CNNV.setBounds(171, 469, 119, 37);
+        btnChonAnh_CNNV.setBounds(171, 469, 152, 37);
+
+        // *****************************************************************
+        // 1. Tải ảnh từ Classpath (cách chuẩn và an toàn)
+        // Dùng getClass().getResource() vì 'img' đã là Source Folder, đường dẫn là "/tên_file"
+        java.net.URL imgURL = getClass().getResource("/file-icon.png"); 
+
+        if (imgURL != null) {
+            ImageIcon originalIcon = new ImageIcon(imgURL); // Icon gốc từ file
+
+            // 2. Lấy đối tượng Image từ Icon gốc và thay đổi kích thước
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+
+            // 3. TẠO MỘT ImageIcon MỚI từ Image đã được đổi kích thước
+            ImageIcon scaledIcon = new ImageIcon(img);
+            
+            // 4. Thiết lập ImageIcon đã đổi kích thước cho JButton
+            btnChonAnh_CNNV.setIcon(scaledIcon); 
+
+            btnChonAnh_CNNV.setHorizontalAlignment(SwingConstants.LEFT);
+            btnChonAnh_CNNV.setIconTextGap(10); // khoảng cách giữa icon và chữ
+            
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh tại /file-icon.png");
+        }
+        // *****************************************************************
+
         panel_CapNhatNV.add(btnChonAnh_CNNV);
         
         JButton btnLamMoi_CNNV = new JButton("Làm mới");
