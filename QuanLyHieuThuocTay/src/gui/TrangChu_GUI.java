@@ -5,6 +5,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
@@ -18,6 +19,7 @@ import java.awt.Image;
 
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
@@ -28,17 +30,37 @@ import javax.swing.table.DefaultTableModel;
 
 import com.toedter.calendar.JDateChooser;
 
+import connectDB.ConnectDB;
+import dao.chucVu_DAO;
+import dao.nhanVien_DAO;
+import dao.taiKhoan_DAO;
+import entity.ChucVu;
+import entity.NhanVien;
+import entity.TaiKhoan;
+
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.awt.event.ActionEvent;
 import javax.swing.DefaultComboBoxModel;
 
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
 import javax.swing.JTabbedPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 public class TrangChu_GUI {
 
@@ -127,6 +149,10 @@ public class TrangChu_GUI {
     private JTextField textField_23;
     private JTextField textField_24;
     private JTextField txtEmail_CNNCC;
+    private String duongDanAnh_TNV = null;
+    private nhanVien_DAO nhanVienDAO = new nhanVien_DAO();
+
+
     /**
      * @wbp.nonvisual location=13,-36
      */
@@ -159,7 +185,7 @@ public class TrangChu_GUI {
      * Launch the application.
      */
     public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
+    	EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
                     TrangChu_GUI window = new TrangChu_GUI();
@@ -2178,6 +2204,12 @@ public class TrangChu_GUI {
         panelAnhNV_TNV.setBorder(new LineBorder(new Color(0, 0, 0)));
         panelAnhNV_TNV.setBounds(71, 134, 383, 578);
         panel_ThemNV.add(panelAnhNV_TNV);
+        JLabel lblAnhNV_TNV = new JLabel("Chưa có ảnh", SwingConstants.CENTER);
+        lblAnhNV_TNV.setBounds(10, 10, 363, 558);
+        lblAnhNV_TNV.setHorizontalAlignment(SwingConstants.CENTER);
+        lblAnhNV_TNV.setVerticalAlignment(SwingConstants.CENTER);
+        panelAnhNV_TNV.add(lblAnhNV_TNV);
+
         
         JPanel panelThongTinNV_TNV = new JPanel();
         panelThongTinNV_TNV.setLayout(null);
@@ -2190,15 +2222,21 @@ public class TrangChu_GUI {
         lblMaNV_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
         lblMaNV_TNV.setBounds(34, 63, 140, 32);
         panelThongTinNV_TNV.add(lblMaNV_TNV);
-        
+
         txtMaNV_TNV = new JTextField();
-        txtMaNV_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtMaNV_TNV.setEnabled(false);
+        txtMaNV_TNV.setFont(new Font("Times New Roman",Font.ITALIC | Font.BOLD, 21));
         txtMaNV_TNV.setEditable(false);
+        txtMaNV_TNV.setEnabled(false);
         txtMaNV_TNV.setColumns(10);
         txtMaNV_TNV.setBounds(184, 64, 259, 32);
+        txtMaNV_TNV.setBorder(null);
+        txtMaNV_TNV.setBackground(new Color(240, 240, 240));
+        txtMaNV_TNV.setDisabledTextColor(Color.RED);
+        nhanVien_DAO nv_dao = new nhanVien_DAO();
+        String maMoi = nv_dao.generateNewMaNV();
+        txtMaNV_TNV.setText(maMoi);
         panelThongTinNV_TNV.add(txtMaNV_TNV);
-        
+
         JLabel lblGioiTinh_TNV = new JLabel("Giới Tính:");
         lblGioiTinh_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
         lblGioiTinh_TNV.setBounds(511, 66, 97, 26);
@@ -2242,20 +2280,36 @@ public class TrangChu_GUI {
         lblChucVu_TNV.setBounds(34, 307, 140, 32);
         panelThongTinNV_TNV.add(lblChucVu_TNV);
         
-        JComboBox<String> cboChucVu_TNV = new JComboBox<String>();
+        JComboBox<ChucVu> cboChucVu_TNV = new JComboBox<ChucVu>();
         cboChucVu_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
         cboChucVu_TNV.setBounds(184, 310, 192, 32);
         panelThongTinNV_TNV.add(cboChucVu_TNV);
-        
+
         JLabel lblTaiKhoan_TNV = new JLabel("Tài khoản:");
         lblTaiKhoan_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
         lblTaiKhoan_TNV.setBounds(505, 307, 103, 32);
         panelThongTinNV_TNV.add(lblTaiKhoan_TNV);
-        
-        JComboBox<String> cboTaiKhoan_TNV = new JComboBox<String>();
+
+        JComboBox<TaiKhoan> cboTaiKhoan_TNV = new JComboBox<TaiKhoan>();
         cboTaiKhoan_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
         cboTaiKhoan_TNV.setBounds(649, 311, 155, 30);
         panelThongTinNV_TNV.add(cboTaiKhoan_TNV);
+
+
+        
+        chucVu_DAO cv_dao = new chucVu_DAO(); // Giả sử tên lớp DAO của bạn
+        List<ChucVu> dsChucVu = cv_dao.getAllChucVu();
+        for (ChucVu cv : dsChucVu) {
+        	cboChucVu_TNV.addItem(cv); // JComboBox sẽ tự động gọi cv.toString() để hiển thị TÊN
+        }
+
+        taiKhoan_DAO tk_dao = new taiKhoan_DAO(); // Giả sử tên lớp DAO của bạn
+        List<TaiKhoan> dsTaiKhoan = tk_dao.getAllTaiKhoan();
+        for (TaiKhoan tk : dsTaiKhoan) {
+            cboTaiKhoan_TNV.addItem(tk); // JComboBox sẽ tự động gọi tk.toString() để hiển thị TÊN
+         }
+       
+
         
         JDateChooser dateNgaySinh_TNV = new JDateChooser();
         dateNgaySinh_TNV.setBounds(649, 232, 155, 35);
@@ -2290,10 +2344,19 @@ public class TrangChu_GUI {
         panelDiaChi_TNV.add(lblHuyen_TNV);
         
         JButton btnChonAnh_TNV = new JButton("Chọn ảnh");
-        btnChonAnh_TNV.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        	}
+        btnChonAnh_TNV.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn ảnh nhân viên");
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Hình ảnh", "jpg", "png", "jpeg"));
+            int result = fileChooser.showOpenDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                duongDanAnh_TNV = file.getAbsolutePath();
+                lblAnhNV_TNV.setIcon(new ImageIcon(new ImageIcon(duongDanAnh_TNV).getImage()
+                    .getScaledInstance(lblAnhNV_TNV.getWidth(), lblAnhNV_TNV.getHeight(), Image.SCALE_SMOOTH)));
+            }
         });
+
         btnChonAnh_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
         btnChonAnh_TNV.setBackground(UIManager.getColor("Button.shadow"));
         btnChonAnh_TNV.setBounds(197, 751, 107, 29);
@@ -2304,13 +2367,78 @@ public class TrangChu_GUI {
         btnLamMoi_TNV.setBackground(UIManager.getColor("Button.shadow"));
         btnLamMoi_TNV.setBounds(946, 751, 123, 28);
         panel_ThemNV.add(btnLamMoi_TNV);
+        btnLamMoi_TNV.addActionListener(e -> {
+            txtTenNV_TNV.setText("");
+            txtSDT_TNV.setText("");
+            txtTinh_TNV.setText("");
+            txtHuyen_TNV.setText("");
+            cboGIoiTinh_TNV.setSelectedIndex(0);
+            cboChucVu_TNV.setSelectedIndex(0);
+            cboTaiKhoan_TNV.setSelectedIndex(0);
+            dateNgaySinh_TNV.setDate(null);
+
+            nhanVien_DAO dao = new nhanVien_DAO();
+            txtMaNV_TNV.setText(dao.generateNewMaNV());
+        });
+
+
+
+
         
         JButton btnThem_TNV = new JButton("Thêm");
         btnThem_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
         btnThem_TNV.setBackground(UIManager.getColor("Button.shadow"));
         btnThem_TNV.setBounds(1142, 751, 86, 28);
         panel_ThemNV.add(btnThem_TNV);
+        btnThem_TNV.addActionListener(e -> {
+            try {
+                String ten = txtTenNV_TNV.getText().trim();
+                String sdt = txtSDT_TNV.getText().trim();
+                String gioiTinh = cboGIoiTinh_TNV.getSelectedItem().toString();
+                java.util.Date ngaySinh = dateNgaySinh_TNV.getDate();
+                String maChucVu = cboChucVu_TNV.getSelectedItem() != null ? cboChucVu_TNV.getSelectedItem().toString() : "";
+                String maTaiKhoan = cboTaiKhoan_TNV.getSelectedItem() != null ? cboTaiKhoan_TNV.getSelectedItem().toString() : "";
+                String tinh = txtTinh_TNV.getText().trim();
+                String huyen = txtHuyen_TNV.getText().trim();
+                String anh = duongDanAnh_TNV;
+
+                if (ten.isEmpty() || sdt.isEmpty() || ngaySinh == null || maChucVu.isEmpty() || maTaiKhoan.isEmpty() || anh == null) {
+                    JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin và chọn ảnh!");
+                    return;
+                }
+
+                // Chuyển java.util.Date → LocalDate
+                LocalDate ngaySinhLocal = ngaySinh.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+                // Tạo đối tượng
+                NhanVien nv = new NhanVien();
+                nv.setTenNV(ten);
+                nv.setSoDienThoai(sdt);
+                nv.setGioiTinh(gioiTinh);
+                nv.setNgaySinh(ngaySinhLocal);
+                ChucVu cv = new ChucVu();
+                cv.setMaChucVu(maChucVu);
+                nv.setChucVu(cv);
+                TaiKhoan tk = new TaiKhoan();
+                tk.setMaTK(maTaiKhoan);
+                nv.setTaiKhoan(tk);
+                nv.setDiaChi(tinh + ", " + huyen);
+                nv.setAnh(anh);
+
+                boolean kq = nhanVienDAO.insertNhanVien(nv);
+                if (kq) {
+                    JOptionPane.showMessageDialog(null, "Thêm nhân viên thành công!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Không thể thêm nhân viên (kiểm tra lại dữ liệu)!");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Lỗi: " + ex.getMessage());
+            }
+        });
+
         
+  
         JPanel panel_TimKiemNV = new JPanel();
         maincontent.add(panel_TimKiemNV, "timkiemnv");
         panel_TimKiemNV.setLayout(null);
@@ -2580,41 +2708,32 @@ public class TrangChu_GUI {
         btnChonAnh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
         btnChonAnh_CNNV.setBounds(171, 469, 152, 37);
 
-        // *****************************************************************
-        // 1. Tải ảnh từ Classpath (cách chuẩn và an toàn)
-        // Dùng getClass().getResource() vì 'img' đã là Source Folder, đường dẫn là "/tên_file"
         java.net.URL imgURL = getClass().getResource("/file-icon.png"); 
 
         if (imgURL != null) {
-            ImageIcon originalIcon = new ImageIcon(imgURL); // Icon gốc từ file
-
-            // 2. Lấy đối tượng Image từ Icon gốc và thay đổi kích thước
+            ImageIcon originalIcon = new ImageIcon(imgURL);
             Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
-
-            // 3. TẠO MỘT ImageIcon MỚI từ Image đã được đổi kích thước
             ImageIcon scaledIcon = new ImageIcon(img);
-            
-            // 4. Thiết lập ImageIcon đã đổi kích thước cho JButton
             btnChonAnh_CNNV.setIcon(scaledIcon); 
 
             btnChonAnh_CNNV.setHorizontalAlignment(SwingConstants.LEFT);
-            btnChonAnh_CNNV.setIconTextGap(10); // khoảng cách giữa icon và chữ
+            btnChonAnh_CNNV.setIconTextGap(10);
             
         } else {
             System.err.println("Lỗi: Không tìm thấy ảnh tại /file-icon.png");
         }
-        // *****************************************************************
+
 
         panel_CapNhatNV.add(btnChonAnh_CNNV);
         
         JButton btnLamMoi_CNNV = new JButton("Làm mới");
         btnLamMoi_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnLamMoi_CNNV.setBounds(890, 532, 119, 37);
+        btnLamMoi_CNNV.setBounds(734, 532, 119, 37);
         panel_CapNhatNV.add(btnLamMoi_CNNV);
         
         JButton btnKhoiPhuc_CNNV = new JButton("Khôi phục");
         btnKhoiPhuc_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnKhoiPhuc_CNNV.setBounds(1117, 532, 152, 37);
+        btnKhoiPhuc_CNNV.setBounds(909, 532, 152, 37);
         panel_CapNhatNV.add(btnKhoiPhuc_CNNV);
         
         JButton btnCapNhat_CNNV = new JButton("Cập nhật");
@@ -2637,6 +2756,11 @@ public class TrangChu_GUI {
         ));
         table_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
         scrollPane_CNNV.setViewportView(table_CNNV);
+        
+        JButton btnXoa_CNNV = new JButton("Xóa\r\n");
+        btnXoa_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        btnXoa_CNNV.setBounds(1111, 532, 152, 37);
+        panel_CapNhatNV.add(btnXoa_CNNV);
         
         JPanel panel_themNCC = new JPanel();
         maincontent.add(panel_themNCC, "themNCC");
@@ -3050,4 +3174,6 @@ public class TrangChu_GUI {
         scrollPane_TKNCC.setViewportView(table_TKNCC);
         
     }
+    
+
 }
