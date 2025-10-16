@@ -8,7 +8,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import javax.swing.ImageIcon;
@@ -16,20 +15,16 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Image;
-
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
-
 import java.awt.Color;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-
 import com.toedter.calendar.JDateChooser;
-
 import connectDB.ConnectDB;
 import dao.chucVu_DAO;
 import dao.nhanVien_DAO;
@@ -37,11 +32,9 @@ import dao.taiKhoan_DAO;
 import entity.ChucVu;
 import entity.NhanVien;
 import entity.TaiKhoan;
-
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Connection;
@@ -50,7 +43,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.awt.event.ActionEvent;
 import javax.swing.DefaultComboBoxModel;
-
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
 import javax.swing.JTabbedPane;
@@ -60,6 +52,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 
 public class TrangChu_GUI {
@@ -219,6 +214,72 @@ public class TrangChu_GUI {
 
         JMenuBar menuBar = new JMenuBar();
         QuanLyHieuThuocTay.setJMenuBar(menuBar);
+        
+        maincontent = new JPanel(new CardLayout());
+        QuanLyHieuThuocTay.getContentPane().add(maincontent, BorderLayout.CENTER);
+
+        // tạo sidebar menu
+        JPanel sidebar = new JPanel();
+        sidebar.setBackground(new Color(0, 102, 102)); // Dark teal
+        sidebar.setLayout(new GridLayout(8, 1, 0, 10)); // 8 rows, 1 column, 10px gap
+        sidebar.setPreferredSize(new Dimension(200, 0)); // Sidebar width
+
+        // Logo
+        JLabel lblLogo = new JLabel("Scam", SwingConstants.CENTER);
+        lblLogo.setOpaque(true);
+        lblLogo.setBackground(new Color(0, 153, 153));
+        lblLogo.setForeground(Color.WHITE);
+        lblLogo.setFont(new Font("Arial", Font.BOLD, 30));
+        sidebar.add(lblLogo);
+
+        // menu Ht
+        JButton btnMenu_HT = createSidebarButton("Hệ thống", "icons/patient.png");
+        JPopupMenu systemMenu = createSystemSubmenu();
+        stylePopupMenu(systemMenu); // Apply styling
+        addPopupMenu(btnMenu_HT, systemMenu);
+        sidebar.add(btnMenu_HT);
+
+        // menu NV
+        JButton btnMenu_NV = createSidebarButton("Nhân viên", "icons/doctor.png");
+        JPopupMenu employeeMenu = createEmployeeSubmenu();
+        stylePopupMenu(employeeMenu);
+        addPopupMenu(btnMenu_NV, employeeMenu);
+        sidebar.add(btnMenu_NV);
+
+        // menu KH
+        JButton btnMenu_KH = createSidebarButton("Khách hàng", "icons/lab.png");
+        JPopupMenu customerMenu = createCustomerSubmenu();
+        stylePopupMenu(customerMenu);
+        addPopupMenu(btnMenu_KH, customerMenu);
+        sidebar.add(btnMenu_KH);
+
+        // menu thuoc
+        JButton btnMenu_Thuoc = createSidebarButton("Thuốc", "icons/reception.png");
+        JPopupMenu medicineMenu = createMedicineSubmenu();
+        stylePopupMenu(medicineMenu);
+        addPopupMenu(btnMenu_Thuoc, medicineMenu);
+        sidebar.add(btnMenu_Thuoc);
+
+        // menu hd 
+        JButton btnMenu_HD = createSidebarButton("Hoá đơn", "icons/prescription.png");
+        JPopupMenu invoiceMenu = createInvoiceSubmenu();
+        stylePopupMenu(invoiceMenu);
+        addPopupMenu(btnMenu_HD, invoiceMenu);
+        sidebar.add(btnMenu_HD);
+
+        // menu ncc
+        JButton btnMenu_NCC = createSidebarButton("Nhà cung cấp", "icons/labtech.png");
+        JPopupMenu supplierMenu = createSupplierSubmenu();
+        stylePopupMenu(supplierMenu);
+        addPopupMenu(btnMenu_NCC, supplierMenu);
+        sidebar.add(btnMenu_NCC);
+
+        // dang xuat
+        JButton btnMenu_DX = createSidebarButton("Đăng xuất", "icons/logout.png");
+        sidebar.add(btnMenu_DX);
+
+        // Add sidebar to frame
+        QuanLyHieuThuocTay.getContentPane().add(sidebar, BorderLayout.WEST);
         
         //Menu Hệ Thống
         JMenu mn_Hethong = new JMenu("Hệ Thống");
@@ -3173,6 +3234,311 @@ public class TrangChu_GUI {
         ));
         scrollPane_TKNCC.setViewportView(table_TKNCC);
         
+    }
+    
+ // Phương thức hỗ trợ tạo nút trong thanh sidebar
+    private JButton createSidebarButton(String text, String iconPath) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Ariel", Font.BOLD, 20));
+        button.setForeground(Color.WHITE);
+        button.setBackground(new Color(0, 102, 102));
+        button.setFocusPainted(false);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setBorderPainted(false);
+        button.setIcon(new ImageIcon(iconPath));
+        addHoverEffect(button, new Color(0, 153, 255), 1.2f);
+        return button;
+    }
+
+    // Phương thức hỗ trợ thêm hiệu ứng hover cho nút
+    private void addHoverEffect(JButton button, Color hoverColor, float hoverScale) {
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(hoverColor);
+                button.setFont(button.getFont().deriveFont(button.getFont().getSize() * hoverScale));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(new Color(0, 102, 102));
+                button.setFont(button.getFont().deriveFont(button.getFont().getSize() / hoverScale));
+            }
+        });
+    }
+
+    // Phương thức hỗ trợ gắn menu thả xuống (popup menu) cho nút
+    private void addPopupMenu(JButton button, JPopupMenu popupMenu) {
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!popupMenu.isVisible()) {
+                    popupMenu.show(button, button.getWidth(), 0); // Hiển thị menu bên phải nút
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (!popupMenu.isVisible()) {
+                    popupMenu.show(button, button.getWidth(), 0);
+                } else {
+                    popupMenu.setVisible(false); // Nhấn lần nữa để ẩn menu
+                }
+            }
+        });
+
+        // Ẩn menu khi click ra ngoài khu vực nút hoặc menu
+        Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+            if (event instanceof MouseEvent me && me.getID() == MouseEvent.MOUSE_PRESSED) {
+                Component clicked = me.getComponent();
+                if (popupMenu.isVisible()) {
+                    boolean outsideButton = !SwingUtilities.isDescendingFrom(clicked, button);
+                    boolean outsidePopup = !SwingUtilities.isDescendingFrom(clicked, popupMenu);
+                    if (outsideButton && outsidePopup) {
+                        popupMenu.setVisible(false);
+                    }
+                }
+            }
+        }, AWTEvent.MOUSE_EVENT_MASK);
+    }
+    
+    private JMenuItem currentSelectedItem = null;
+
+ // Phương thức nâng cao để định dạng (style) menu popup
+    private void stylePopupMenu(JPopupMenu popupMenu) {
+        popupMenu.setBackground(new Color(0, 102, 102));
+        popupMenu.setBorder(BorderFactory.createLineBorder(new Color(0, 153, 153), 2));
+        popupMenu.setOpaque(true);
+
+        for (Component component : popupMenu.getComponents()) {
+            if (component instanceof JMenuItem || component instanceof JMenu) {
+                JMenuItem menuItem = (JMenuItem) component;
+                menuItem.setFont(new Font("Arial", Font.BOLD, 16));
+                menuItem.setForeground(Color.WHITE);
+                menuItem.setBackground(new Color(0, 102, 102));
+                menuItem.setPreferredSize(new Dimension(180, 35));
+                menuItem.setOpaque(true);
+                menuItem.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+                // hiệu ứng hover
+                menuItem.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        if (menuItem != currentSelectedItem) { // chỉ đổi màu khi chưa được chọn
+                            menuItem.setBackground(new Color(0, 153, 255));
+                        }
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        if (menuItem != currentSelectedItem) { // trở lại màu cũ nếu không phải trang đang chọn
+                            menuItem.setBackground(new Color(0, 102, 102));
+                        }
+                    }
+
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        // bỏ chọn item cũ
+                        if (currentSelectedItem != null) {
+                            currentSelectedItem.setBackground(new Color(0, 102, 102));
+                        }
+
+                        // đánh dấu item mới
+                        currentSelectedItem = menuItem;
+                        currentSelectedItem.setBackground(new Color(0, 153, 255)); // màu cố định của trang đang mở
+                    }
+                });
+
+                // nếu là JMenu có submenu thì gọi lại
+                if (component instanceof JMenu) {
+                    JPopupMenu subPopup = ((JMenu) component).getPopupMenu();
+                    stylePopupMenu(subPopup);
+                }
+            } else if (component instanceof JSeparator) {
+                component.setBackground(new Color(0, 153, 153));
+                component.setForeground(new Color(0, 153, 153));
+            }
+        }
+    }
+
+    // Submenu for Hệ Thống
+    private JPopupMenu createSystemSubmenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem mniTaikhoan = new JMenuItem("Tài Khoản");
+//        mniTaikhoan.addActionListener(e -> JOptionPane.showMessageDialog(this, "Tài Khoản"));
+        popupMenu.add(mniTaikhoan);
+        popupMenu.addSeparator();
+        JMenuItem mniTrogiup = new JMenuItem("Trợ Giúp");
+//        mniTrogiup.addActionListener(e -> JOptionPane.showMessageDialog(this, "Trợ Giúp"));
+        popupMenu.add(mniTrogiup);
+        popupMenu.addSeparator();
+        JMenuItem mniDangxuat = new JMenuItem("Đăng Xuất");
+//        mniDangxuat.addActionListener(e -> JOptionPane.showMessageDialog(this, "Đăng Xuất"));
+        popupMenu.add(mniDangxuat);
+        return popupMenu;
+    }
+
+    // Submenu for Thuốc
+    private JPopupMenu createMedicineSubmenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenu mniThemthuoc = new JMenu("Thêm");
+        JMenuItem mniThemthuocthuong = new JMenuItem("Thêm");
+        mniThemthuocthuong.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Themthuocthuong");
+        });
+        mniThemthuoc.add(mniThemthuocthuong);
+        JMenuItem mniThemthuoctheofile = new JMenuItem("Thêm File");
+        mniThemthuoctheofile.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Themthuocfile");
+        });
+        mniThemthuoc.add(mniThemthuoctheofile);
+        popupMenu.add(mniThemthuoc);
+        popupMenu.addSeparator();
+        JMenuItem mniTimkiemthuoc = new JMenuItem("Tìm Kiếm");
+        mniTimkiemthuoc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timkiemSP");
+        });
+        popupMenu.add(mniTimkiemthuoc);
+        popupMenu.addSeparator();
+        JMenuItem mniCapnhatthuoc = new JMenuItem("Cập Nhật");
+        mniCapnhatthuoc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Capnhatthuoc");
+        });
+        popupMenu.add(mniCapnhatthuoc);
+        popupMenu.addSeparator();
+        JMenu mniThongkethuoc = new JMenu("Thống Kê");
+        JMenuItem mniThuocSapHetHan = new JMenuItem("Thuốc Sắp Hết Hạn");
+        mniThuocSapHetHan.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Thuocsaphethan");
+        });
+        mniThongkethuoc.add(mniThuocSapHetHan);
+        JMenuItem mniThuocBanChay = new JMenuItem("Thuốc Bán Chạy");
+        mniThuocBanChay.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Thuocbanchay");
+        });
+        mniThongkethuoc.add(mniThuocBanChay);
+        JMenuItem mniThuocSapHetHang = new JMenuItem("Thuốc Sắp Hết Hàng");
+        mniThuocSapHetHang.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Thuocsaphethang");
+        });
+        mniThongkethuoc.add(mniThuocSapHetHang);
+        popupMenu.add(mniThongkethuoc);
+        return popupMenu;
+    }
+
+    // Submenu for Hóa Đơn
+    private JPopupMenu createInvoiceSubmenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem mniThemhoadon = new JMenuItem("Thêm");
+        mniThemhoadon.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "themHoaDon");
+        });
+        popupMenu.add(mniThemhoadon);
+        popupMenu.addSeparator();
+        JMenuItem mniTimkiemhoadon = new JMenuItem("Tìm Kiếm");
+        mniTimkiemhoadon.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timKiemHoaDon");
+        });
+        popupMenu.add(mniTimkiemhoadon);
+        popupMenu.addSeparator();
+        JMenuItem mniThongkehoadon = new JMenuItem("Thống Kê");
+        mniThongkehoadon.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "ThongkeHD");
+        });
+        popupMenu.add(mniThongkehoadon);
+        return popupMenu;
+    }
+
+    // Submenu for Nhân Viên
+    private JPopupMenu createEmployeeSubmenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem mniThemnv = new JMenuItem("Thêm");
+        mniThemnv.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "themNV");
+        });
+        popupMenu.add(mniThemnv);
+        popupMenu.addSeparator();
+        JMenuItem mniCapnhatnv = new JMenuItem("Cập Nhật");
+        mniCapnhatnv.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "capnhatnv");
+        });
+        popupMenu.add(mniCapnhatnv);
+        popupMenu.addSeparator();
+        JMenuItem mniTimkiemnv = new JMenuItem("Tìm Kiếm");
+        mniTimkiemnv.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timkiemnv");
+        });
+        popupMenu.add(mniTimkiemnv);
+        return popupMenu;
+    }
+
+    // Submenu for Nhà Cung Cấp
+    private JPopupMenu createSupplierSubmenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem mniThemncc = new JMenuItem("Thêm");
+        mniThemncc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "themNCC");
+        });
+        popupMenu.add(mniThemncc);
+        popupMenu.addSeparator();
+        JMenuItem mniCapnhatncc = new JMenuItem("Cập Nhật");
+        mniCapnhatncc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "capNhatNCC");
+        });
+        popupMenu.add(mniCapnhatncc);
+        popupMenu.addSeparator();
+        JMenuItem mniTimkiemncc = new JMenuItem("Tìm Kiếm");
+        mniTimkiemncc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timKiemNCC");
+        });
+        popupMenu.add(mniTimkiemncc);
+        return popupMenu;
+    }
+
+    // Submenu for Khách Hàng
+    private JPopupMenu createCustomerSubmenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem mniThemkh = new JMenuItem("Thêm");
+        mniThemkh.addActionListener(e -> {
+        	// 1. Tạo một đối tượng của cửa sổ ThemKH_GUI
+            //    Truyền "QuanLyHieuThuocTay" (JFrame cha) vào làm tham số
+            ThemKH_GUI themKhDialog = new ThemKH_GUI(QuanLyHieuThuocTay);
+            
+            // 2. Hiển thị cửa sổ đó lên
+            themKhDialog.setVisible(true);
+        });
+        popupMenu.add(mniThemkh);
+        popupMenu.addSeparator();
+        JMenuItem mniCapnhatkh = new JMenuItem("Cập Nhật");
+        mniCapnhatkh.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "capNhatKH");
+        });
+        popupMenu.add(mniCapnhatkh);
+        popupMenu.addSeparator();
+        JMenuItem mniTimkiemkh = new JMenuItem("Tìm Kiếm");
+        mniTimkiemkh.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timkiemkh");
+        });
+        popupMenu.add(mniTimkiemkh);
+        return popupMenu;
     }
     
 
