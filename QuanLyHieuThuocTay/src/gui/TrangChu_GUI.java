@@ -3231,6 +3231,55 @@ public class TrangChu_GUI {
         ));
         scrollPane_TKNCC.setViewportView(table_TKNCC);
         
+        JPanel panel_QLPhieuDatHangNCC = new JPanel();
+        maincontent.add(panel_QLPhieuDatHangNCC, "name_2519755264700");
+        panel_QLPhieuDatHangNCC.setLayout(new BorderLayout(0, 0));
+        
+        JPanel panel = new JPanel();
+        panel_QLPhieuDatHangNCC.add(panel, BorderLayout.NORTH);
+        
+        JLabel lblTimKiemNCC = new JLabel("Tìm kiếm:");
+        lblTimKiemNCC.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel.add(lblTimKiemNCC);
+        
+        txtTimKiem = new JTextField();
+        txtTimKiem.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        panel.add(txtTimKiem);
+        txtTimKiem.setColumns(10);
+        
+        JButton btnTim = new JButton("Tìm");
+        btnTim.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel.add(btnTim);
+        
+        JScrollPane scrollPane = new JScrollPane();
+        panel_QLPhieuDatHangNCC.add(scrollPane, BorderLayout.CENTER);
+        
+        table = new JTable();
+        table.setModel(new DefaultTableModel(
+        	new Object[][] {
+        		{null, null, null, null, null, null},
+        	},
+        	new String[] {
+        		"M\u00E3 phi\u1EBFu ", "M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "Ng\u00E0y \u0111\u1EB7t", "T\u1ED5ng ti\u1EC1n ", "Tr\u1EA1ng th\u00E1i"
+        	}
+        ));
+        scrollPane.setViewportView(table);
+        
+        JPanel panel_1 = new JPanel();
+        panel_QLPhieuDatHangNCC.add(panel_1, BorderLayout.SOUTH);
+        
+        JButton btnNewButton = new JButton("Tạo mới");
+        btnNewButton.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel_1.add(btnNewButton);
+        
+        JButton btnNewButton_1 = new JButton("Xem/Sửa");
+        btnNewButton_1.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel_1.add(btnNewButton_1);
+        
+        JButton btnNewButton_2 = new JButton("Xóa");
+        btnNewButton_2.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel_1.add(btnNewButton_2);
+        
     }
     
  // Phương thức hỗ trợ tạo nút trong thanh sidebar
@@ -3300,6 +3349,8 @@ public class TrangChu_GUI {
     }
     
     private JMenuItem currentSelectedItem = null;
+    private JTextField txtTimKiem;
+    private JTable table;
 
  // Phương thức nâng cao để định dạng (style) menu popup
     private void stylePopupMenu(JPopupMenu popupMenu) {
@@ -3501,6 +3552,4 @@ public class TrangChu_GUI {
         popupMenu.add(mniTimkiemkh);
         return popupMenu;
     }
-    
-
 }
