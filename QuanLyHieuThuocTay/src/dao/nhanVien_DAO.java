@@ -11,9 +11,37 @@ import java.util.List;
 
 public class nhanVien_DAO {
 
+    // === BỔ SUNG QUAN TRỌNG: Lấy nhân viên theo mã ===
+    /**
+     * Lấy thông tin chi tiết của một nhân viên dựa vào mã nhân viên.
+     * Rất cần thiết cho chức năng "Xem chi tiết" và tải dữ liệu cho các đối tượng khác.
+     * @param maNV Mã nhân viên cần tìm.
+     * @return một đối tượng NhanVien hoặc null nếu không tìm thấy.
+     */
+    public NhanVien getNhanVienTheoMa(String maNV) {
+        String sql = "SELECT nv.*, cv.tenChucVu, tk.tenTK " +
+                     "FROM NhanVien nv " +
+                     "JOIN ChucVu cv ON nv.chucVu = cv.maChucVu " +
+                     "JOIN TaiKhoan tk ON nv.maTK = tk.maTK " +
+                     "WHERE nv.maNV = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, maNV);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapNhanVien(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     // === Thêm nhân viên ===
     public boolean insertNhanVien(NhanVien nv) {
-        String sql = "INSERT INTO NhanVien(maNV, tenNV, ngaySinh, gioiTinh, chucVu, soDienThoai, diaChi, anh, maTK) "
+        String sql = "INSERT INTO NhanVien(maNV, tenNV, ngaySinh, gioiTinh, chucVu, sdt, diaChi, anh, maTK) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -37,7 +65,7 @@ public class nhanVien_DAO {
 
     // === Cập nhật nhân viên ===
     public boolean updateNhanVien(NhanVien nv) {
-        String sql = "UPDATE NhanVien SET tenNV=?, ngaySinh=?, gioiTinh=?, chucVu=?, soDienThoai=?, diaChi=?, anh=?, maTK=? WHERE maNV=?";
+        String sql = "UPDATE NhanVien SET tenNV=?, ngaySinh=?, gioiTinh=?, chucVu=?, sdt=?, diaChi=?, anh=?, maTK=? WHERE maNV=?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
@@ -74,7 +102,11 @@ public class nhanVien_DAO {
     // === Lấy danh sách tất cả nhân viên ===
     public List<NhanVien> getAllNhanVien() {
         List<NhanVien> list = new ArrayList<>();
-        String sql = "SELECT * FROM NhanVien";
+        // CẢI TIẾN: Dùng JOIN để lấy thêm Tên Chức Vụ và Tên Tài Khoản
+        String sql = "SELECT nv.*, cv.tenChucVu, tk.tenTK " +
+                     "FROM NhanVien nv " +
+                     "JOIN ChucVu cv ON nv.chucVu = cv.maChucVu " +
+                     "JOIN TaiKhoan tk ON nv.maTK = tk.maTK";
         try (Connection con = ConnectDB.getConnection();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
@@ -89,22 +121,27 @@ public class nhanVien_DAO {
     }
 
     // === Tìm kiếm nhân viên (tên, sđt, giới tính, chức vụ, địa chỉ) ===
-    public List<NhanVien> searchNhanVien(String tenNV, String soDienThoai, String gioiTinh, String chucVu, String diaChi) {
+    public List<NhanVien> searchNhanVien(String tenNV, String sdt, String gioiTinh, String maChucVu, String diaChi) {
         List<NhanVien> list = new ArrayList<>();
-        String sql = "SELECT * FROM NhanVien WHERE tenNV LIKE ? AND soDienThoai LIKE ? "
-                   + "AND gioiTinh LIKE ? AND chucVu LIKE ? AND diaChi LIKE ?";
+        // CẢI TIẾN: Dùng JOIN và tìm kiếm theo LIKE
+        String sql = "SELECT nv.*, cv.tenChucVu, tk.tenTK " +
+                     "FROM NhanVien nv " +
+                     "JOIN ChucVu cv ON nv.chucVu = cv.maChucVu " +
+                     "JOIN TaiKhoan tk ON nv.maTK = tk.maTK " +
+                     "WHERE nv.tenNV LIKE ? AND nv.sdt LIKE ? AND nv.gioiTinh LIKE ? AND nv.chucVu LIKE ? AND nv.diaChi LIKE ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, "%" + tenNV + "%");
-            ps.setString(2, "%" + soDienThoai + "%");
+            ps.setString(2, "%" + sdt + "%");
             ps.setString(3, "%" + gioiTinh + "%");
-            ps.setString(4, "%" + chucVu + "%");
+            ps.setString(4, "%" + maChucVu + "%");
             ps.setString(5, "%" + diaChi + "%");
 
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(mapNhanVien(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                 while (rs.next()) {
+                    list.add(mapNhanVien(rs));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -119,22 +156,25 @@ public class nhanVien_DAO {
         nv.setTenNV(rs.getString("tenNV"));
         nv.setNgaySinh(rs.getDate("ngaySinh").toLocalDate());
         nv.setGioiTinh(rs.getString("gioiTinh"));
-        nv.setSoDienThoai(rs.getString("soDienThoai"));
+        nv.setSoDienThoai(rs.getString("sdt"));
         nv.setDiaChi(rs.getString("diaChi"));
         nv.setAnh(rs.getString("anh"));
 
-        // Liên kết với các thực thể khác
+        // CẢI TIẾN: Lấy đầy đủ thông tin cho ChucVu và TaiKhoan
         ChucVu cv = new ChucVu();
         cv.setMaChucVu(rs.getString("chucVu"));
+        cv.setTenChucVu(rs.getString("tenChucVu")); // Lấy tên chức vụ từ JOIN
         nv.setChucVu(cv);
 
         TaiKhoan tk = new TaiKhoan();
         tk.setMaTK(rs.getString("maTK"));
+        tk.setTenTK(rs.getString("tenTK")); // Lấy tên tài khoản từ JOIN
         nv.setTaiKhoan(tk);
 
         return nv;
     }
- // === Sinh mã nhân viên tự động, không trùng ===
+    
+    // === Sinh mã nhân viên tự động, không trùng ===
     public String generateNewMaNV() {
         String prefix = "NV";
         String sql = "SELECT TOP 1 maNV FROM NhanVien ORDER BY maNV DESC";
@@ -152,6 +192,4 @@ public class nhanVien_DAO {
         }
         return prefix + "001"; // nếu bảng đang rỗng
     }
-
-
 }
