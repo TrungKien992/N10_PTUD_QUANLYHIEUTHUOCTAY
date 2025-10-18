@@ -217,7 +217,7 @@ public class TrangChu_GUI {
         
         ImageIcon icon = new ImageIcon("C:\\Users\\Admin\\eclipse-workspace\\QuanLyHieuThuoc\\image\\z7068801445103_7be0ebb233e8a4eceb10c3aceb500455.jpg");
         QuanLyHieuThuocTay.setIconImage(icon.getImage());
-        QuanLyHieuThuocTay.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        QuanLyHieuThuocTay.setSize(1935,1040);
         QuanLyHieuThuocTay.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         QuanLyHieuThuocTay.setLocationRelativeTo(null); 
 
@@ -289,7 +289,6 @@ public class TrangChu_GUI {
         
         maincontent = new JPanel();
         QuanLyHieuThuocTay.getContentPane().add(maincontent, BorderLayout.CENTER);
-        maincontent.setBorder(BorderFactory.createEmptyBorder(0, 60, 0, 0)); 
         maincontent.setLayout(new CardLayout(0, 0));
         
         JPanel pn_Trangchu = new JPanel();
