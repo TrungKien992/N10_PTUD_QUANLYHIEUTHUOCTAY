@@ -27,9 +27,11 @@ import javax.swing.table.DefaultTableModel;
 import com.toedter.calendar.JDateChooser;
 import connectDB.ConnectDB;
 import dao.chucVu_DAO;
+import dao.khachHang_DAO;
 import dao.nhanVien_DAO;
 import dao.taiKhoan_DAO;
 import entity.ChucVu;
+import entity.KhachHang;
 import entity.NhanVien;
 import entity.TaiKhoan;
 import javax.swing.JScrollPane;
@@ -52,6 +54,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import controller.KhachHang_Controller;
+import controller.ThemKH_Controller;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -68,16 +72,16 @@ public class TrangChu_GUI {
     private JTextField text_Nhaptiennhan;
     private JTextField text_Nhapsoluongthuoc;
     private JTable table_tkt;
-    private JTextField txt_kh_MaKH;
-    private JTextField txt_kh_SDT;
-    private JTextField txt_kh_TenKH;
-    private JTable table_tkkh;
-    private JTextField txt_cnkh_MaKh;
-    private JTextField txt_cnkh_SDt;
-    private JTextField txt_cnkh_tenkh;
-    private JTextField txtMKH_TK;
-    private JTextField txtTenKH_TK;
-    private JTable table_CapNhatKH;
+    public JTextField txt_kh_MaKH;
+    public JTextField txt_kh_SDT;
+    public JTextField txt_kh_TenKH;
+    public JTable table_tkkh;
+    public JTextField txt_cnkh_MaKh;
+    public JTextField txt_cnkh_SDt;
+    public JTextField txt_cnkh_tenkh;
+    public JTextField txtMKH_TK;
+    public JTextField txtTenKH_TK;
+    public JTable table_CapNhatKH;
     private JTextField text_cntmt;
     private JTextField text_cnttt;
     private JTextField text_cntsl;
@@ -135,8 +139,8 @@ public class TrangChu_GUI {
     private JTextField txtTenNV_TK_CNNV;
     private JTextField text_tkhd_Mahd;
     private JTable table_CNNV;
-    private JTextField txt_kh_dc;
-    private JTextField txt_cnkh_dc;
+    public JTextField txt_kh_dc;
+    public JTextField txt_cnkh_dc;
     private JTable table_ThemNCC;
     private JTextField txtMaNCC_CNNCC;
     private JTextField txtTenNCC_CNNCC;
@@ -176,6 +180,10 @@ public class TrangChu_GUI {
     private JTextField txtSDT_TKNCC;
     private JTextField txtGhiChu_TKNCC;
     private JTable table_TKNCC;
+	public JButton btnLammoi_CNKH;
+	public JButton btn_kh_Lammoi;
+	public JButton btn_cnkh_CapNhat;
+	public JButton btn_cnkh_Khoiphuc;
 
     /**
      * Launch the application.
@@ -209,7 +217,7 @@ public class TrangChu_GUI {
         
         ImageIcon icon = new ImageIcon("C:\\Users\\Admin\\eclipse-workspace\\QuanLyHieuThuoc\\image\\z7068801445103_7be0ebb233e8a4eceb10c3aceb500455.jpg");
         QuanLyHieuThuocTay.setIconImage(icon.getImage());
-        QuanLyHieuThuocTay.setSize(1600, 1000);
+        QuanLyHieuThuocTay.setExtendedState(JFrame.MAXIMIZED_BOTH);
         QuanLyHieuThuocTay.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         QuanLyHieuThuocTay.setLocationRelativeTo(null); 
 
@@ -279,250 +287,9 @@ public class TrangChu_GUI {
         // Add sidebar to frame
         QuanLyHieuThuocTay.getContentPane().add(sidebar, BorderLayout.WEST);
         
-        //Menu Hệ Thống
-        JMenu mn_Hethong = new JMenu("Hệ Thống");
-        menuBar.add(mn_Hethong);
-
-        JMenuItem mni_Taikhoan = new JMenuItem("Tài Khoản");
-        mn_Hethong.add(mni_Taikhoan);
-        mn_Hethong.addSeparator(); 
-
-        JMenuItem mni_Trogiup = new JMenuItem("Trợ Giúp");
-        mn_Hethong.add(mni_Trogiup);
-        
-        mn_Hethong.addSeparator(); 
-
-        JMenuItem mni_Dangxuat = new JMenuItem("Đăng Xuất");
-        mn_Hethong.add(mni_Dangxuat);
-
-        //Menu Thuốc
-        JMenu mn_Thuoc = new JMenu("Thuốc");
-        menuBar.add(mn_Thuoc);
-
-        JMenu mni_Themthuoc = new JMenu("Thêm");
-        mn_Thuoc.add(mni_Themthuoc);
-
-        JMenuItem mni_Themthuocthuong = new JMenuItem("Thêm");
-        mni_Themthuocthuong.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "Themthuocthuong");
-        	}
-        });
-        mni_Themthuoc.add(mni_Themthuocthuong);
-
-        JMenuItem mni_Themthuoctheofile = new JMenuItem("Thêm File");
-        mni_Themthuoctheofile.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "Themthuocfile");
-    		}
-        });
-        mni_Themthuoc.add(mni_Themthuoctheofile);
-        mn_Thuoc.addSeparator();
-
-        JMenuItem mni_Timkiemthuoc = new JMenuItem("Tìm Kiếm");
-        mni_Timkiemthuoc.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "timkiemSP");
-        	}
-        });
-        
-        mn_Thuoc.add(mni_Timkiemthuoc);
-        mn_Thuoc.addSeparator();
-
-        JMenuItem mni_Capnhatthuoc = new JMenuItem("Cập Nhật");
-        mni_Capnhatthuoc.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "Capnhatthuoc");
-        	}
-        });
-        mn_Thuoc.add(mni_Capnhatthuoc);
-        mn_Thuoc.addSeparator();
-
-        JMenu mni_Thongkethuoc = new JMenu("Thống Kê");
-        mn_Thuoc.add(mni_Thongkethuoc);
-
-        JMenuItem mntmNewItem_18 = new JMenuItem("Thuốc Sắp Hết Hạn");
-        mntmNewItem_18.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "Thuocsaphethan");
-        	}
-        });
-        mni_Thongkethuoc.add(mntmNewItem_18);
-
-        JMenuItem mntmNewItem_19 = new JMenuItem("Thuốc Bán Chạy");
-        mntmNewItem_19.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "Thuocbanchay");
-        	}
-        });
-        mni_Thongkethuoc.add(mntmNewItem_19);
-        
-        JMenuItem mntmNewMenuItem = new JMenuItem("Thuốc Sắp Hết Hàng");
-        mntmNewMenuItem.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "Thuocsaphethang");
-        	}
-        });
-        mni_Thongkethuoc.add(mntmNewMenuItem);
-        
-        //Menu Hóa đơn
-        JMenu mn_Hoadon = new JMenu("Hóa Đơn");
-        menuBar.add(mn_Hoadon);
-
-        JMenuItem mni_Themhoadon = new JMenuItem("Thêm");
-        mni_Themhoadon.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        	    CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "themHoaDon");
-        	}
-        });
-        mn_Hoadon.add(mni_Themhoadon);
-        
-        mn_Hoadon.addSeparator();
-
-        JMenuItem mni_Timkiemhoadon = new JMenuItem("Tìm Kiếm");
-        mni_Timkiemhoadon.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "timKiemHoaDon");
-        	}
-        });
-        mn_Hoadon.add(mni_Timkiemhoadon);
-        
-        mn_Hoadon.addSeparator();
-
-        JMenuItem mni_Thongkehoadon = new JMenuItem("Thống Kê");
-        mni_Thongkehoadon.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "ThongkeHD");
-        	}
-        });
-        mn_Hoadon.add(mni_Thongkehoadon);
-        
-        // Menu Nhân Viên
-        JMenu mn_Nhanvien = new JMenu("Nhân Viên");
-        menuBar.add(mn_Nhanvien);
-        JMenuItem mni_Themnv = new JMenuItem("Thêm");
-
-        mni_Themnv.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            	CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "themNV");
-            }
-        });
-
-        mn_Nhanvien.add(mni_Themnv);
-        mn_Nhanvien.addSeparator();
-
-        JMenuItem mni_Capnhatnv = new JMenuItem("Cập Nhật");
-        mni_Capnhatnv.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "capnhatnv");
-        	}
-        });
-        mn_Nhanvien.add(mni_Capnhatnv);
-        
-        mn_Nhanvien.addSeparator();
-
-        JMenuItem mni_Timkiemnv = new JMenuItem("Tìm Kiếm");
-        mni_Timkiemnv.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "timkiemnv");
-        	}
-        });
-        mn_Nhanvien.add(mni_Timkiemnv);
-        
-     // Menu Nhà Cung Cấp
-        JMenu mn_Nhacungcap = new JMenu("Nhà Cung Cấp");
-        mn_Nhacungcap.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-//        		CardLayout cl = (CardLayout) maincontent.getLayout();
-//        	    cl.show(maincontent, "themNCC");
-        	}
-        });
-        menuBar.add(mn_Nhacungcap);
-
-        JMenuItem mni_Themncc = new JMenuItem("Thêm");
-        mni_Themncc.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "themNCC");
-        	}
-        });
-        mn_Nhacungcap.add(mni_Themncc);
-        mn_Nhacungcap.addSeparator();
-
-        JMenuItem mni_Capnhatncc = new JMenuItem("Cập Nhật");
-        mni_Capnhatncc.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "capNhatNCC");
-        	}
-        });
-        mn_Nhacungcap.add(mni_Capnhatncc);
-
-        mn_Nhacungcap.addSeparator();
-
-        JMenuItem mni_Timkiemncc = new JMenuItem("Tìm Kiếm");
-        mni_Timkiemncc.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "timKiemNCC");
-        	}
-        });
-        mn_Nhacungcap.add(mni_Timkiemncc);
-
-        // Menu Khách Hàng
-        JMenu mn_Khachhang = new JMenu("Khách Hàng");
-        menuBar.add(mn_Khachhang);
-
-        JMenuItem mni_Themkh = new JMenuItem("Thêm");
-        mni_Themkh.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		// 1. Tạo một đối tượng của cửa sổ ThemKH_GUI
-                //    Truyền "QuanLyHieuThuocTay" (JFrame cha) vào làm tham số
-                ThemKH_GUI themKhDialog = new ThemKH_GUI(QuanLyHieuThuocTay);
-                
-                // 2. Hiển thị cửa sổ đó lên
-                themKhDialog.setVisible(true);
-        	}
-        });
-        mn_Khachhang.add(mni_Themkh);
-        mn_Khachhang.addSeparator();
-
-        JMenuItem mni_Capnhatkh = new JMenuItem("Cập Nhật");
-        mni_Capnhatkh.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "capNhatKH");
-        	}
-        });
-        mn_Khachhang.add(mni_Capnhatkh);
-        
-        mn_Khachhang.addSeparator();
-
-        JMenuItem mni_Timkiemkh = new JMenuItem("Tìm Kiếm");
-        mni_Timkiemkh.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		CardLayout cl = (CardLayout) maincontent.getLayout();
-        	    cl.show(maincontent, "timkiemkh");
-        	}
-        });
-        mn_Khachhang.add(mni_Timkiemkh);
-        
         maincontent = new JPanel();
         QuanLyHieuThuocTay.getContentPane().add(maincontent, BorderLayout.CENTER);
+        maincontent.setBorder(BorderFactory.createEmptyBorder(0, 60, 0, 0)); 
         maincontent.setLayout(new CardLayout(0, 0));
         
         JPanel pn_Trangchu = new JPanel();
@@ -1065,7 +832,7 @@ public class TrangChu_GUI {
         txt_kh_TenKH.setBounds(919, 65, 471, 32);
         pnl_KH_north.add(txt_kh_TenKH);
         
-        JButton btn_kh_Lammoi = new JButton("Làm mới");
+        btn_kh_Lammoi = new JButton("Làm mới");
         btn_kh_Lammoi.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         btn_kh_Lammoi.setBounds(1424, 123, 108, 32);
         pnl_KH_north.add(btn_kh_Lammoi);
@@ -1141,6 +908,8 @@ public class TrangChu_GUI {
         txt_cnkh_MaKh = new JTextField();
         txt_cnkh_MaKh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         txt_cnkh_MaKh.setBounds(354, 89, 301, 33);
+        txt_cnkh_MaKh.setFocusable(false);
+        txt_cnkh_MaKh.setBackground(new Color(240, 240, 240));
         pnlNorth.add(txt_cnkh_MaKh);
         txt_cnkh_MaKh.setColumns(10);
         
@@ -1156,12 +925,12 @@ public class TrangChu_GUI {
         txt_cnkh_tenkh.setBounds(859, 89, 488, 33);
         pnlNorth.add(txt_cnkh_tenkh);
         
-        JButton btn_cnkh_CapNhat = new JButton("Cập nhật");
+        btn_cnkh_CapNhat = new JButton("Cập nhật");
         btn_cnkh_CapNhat.setFont(new Font("Times New Roman", Font.BOLD, 20));
         btn_cnkh_CapNhat.setBounds(1011, 194, 118, 31);
         pnlNorth.add(btn_cnkh_CapNhat);
         
-        JButton btn_cnkh_Khoiphuc = new JButton("Khôi phục");
+        btn_cnkh_Khoiphuc = new JButton("Khôi phục");
         btn_cnkh_Khoiphuc.setFont(new Font("Times New Roman", Font.BOLD, 20));
         btn_cnkh_Khoiphuc.setBounds(859, 194, 118, 31);
         pnlNorth.add(btn_cnkh_Khoiphuc);
@@ -1175,7 +944,7 @@ public class TrangChu_GUI {
         JPanel pnlTimkiem = new JPanel();
         pnlTimkiem.setBounds(191, 263, 1191, 84);
         
-        Font titleFont = new Font("Tahoma", Font.BOLD, 20);
+        Font titleFont = new Font("Times New Roman", Font.ITALIC, 20);
         TitledBorder border = BorderFactory.createTitledBorder("Tìm kiếm");
         border.setTitleFont(titleFont);
         pnlTimkiem.setBorder(border);
@@ -1205,7 +974,7 @@ public class TrangChu_GUI {
         txtTenKH_TK.setBounds(687, 22, 301, 33);
         pnlTimkiem.add(txtTenKH_TK);
         
-        JButton btnLammoi_CNKH = new JButton("Làm mới");
+        btnLammoi_CNKH = new JButton("Làm mới");
         btnLammoi_CNKH.setFont(new Font("Times New Roman", Font.BOLD, 20));
         btnLammoi_CNKH.setBounds(1039, 24, 118, 31);
         pnlTimkiem.add(btnLammoi_CNKH);
@@ -1229,6 +998,7 @@ public class TrangChu_GUI {
         	}
         ));
         scrollPane_CapNhatKH.setViewportView(table_CapNhatKH);
+        new KhachHang_Controller(this);
         
         JPanel pn_Capnhatthuoc = new JPanel();
         maincontent.add(pn_Capnhatthuoc, "Capnhatthuoc");
@@ -3510,7 +3280,7 @@ public class TrangChu_GUI {
         
     }
     
- // Phương thức hỗ trợ tạo nút trong thanh sidebar
+    // Phương thức hỗ trợ tạo nút trong thanh sidebar
     private JButton createSidebarButton(String text, String iconPath) {
         JButton button = new JButton(text);
         button.setFont(new Font("Ariel", Font.BOLD, 20));
@@ -3636,6 +3406,8 @@ public class TrangChu_GUI {
             }
         }
     }
+    
+
 
     // Submenu for Hệ Thống
     private JPopupMenu createSystemSubmenu() {
@@ -3657,41 +3429,62 @@ public class TrangChu_GUI {
     // Submenu for Thuốc
     private JPopupMenu createMedicineSubmenu() {
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenu mniThemthuoc = new JMenu("Thêm");
+
         JMenuItem mniThemthuocthuong = new JMenuItem("Thêm");
         mniThemthuocthuong.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Themthuocthuong");
         });
-        mniThemthuoc.add(mniThemthuocthuong);
+        popupMenu.add(mniThemthuocthuong);
+
         JMenuItem mniThemthuoctheofile = new JMenuItem("Thêm File");
         mniThemthuoctheofile.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Themthuocfile");
         });
-        mniThemthuoc.add(mniThemthuoctheofile);
-        popupMenu.add(mniThemthuoc);
+        popupMenu.add(mniThemthuoctheofile);
+
         popupMenu.addSeparator();
+
         JMenuItem mniTimkiemthuoc = new JMenuItem("Tìm Kiếm");
         mniTimkiemthuoc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timkiemSP");
         });
         popupMenu.add(mniTimkiemthuoc);
+
         popupMenu.addSeparator();
+
         JMenuItem mniCapnhatthuoc = new JMenuItem("Cập Nhật");
         mniCapnhatthuoc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Capnhatthuoc");
         });
         popupMenu.add(mniCapnhatthuoc);
+
         popupMenu.addSeparator();
-        JMenu mniThongkethuoc = new JMenu("Thống Kê");
+
         JMenuItem mniThuocSapHetHan = new JMenuItem("Thuốc Sắp Hết Hạn");
         mniThuocSapHetHan.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Thuocsaphethan");
         });
-        mniThongkethuoc.add(mniThuocSapHetHan);
+        popupMenu.add(mniThuocSapHetHan);
+
         JMenuItem mniThuocBanChay = new JMenuItem("Thuốc Bán Chạy");
         mniThuocBanChay.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Thuocbanchay");
         });
-        mniThongkethuoc.add(mniThuocBanChay);
+        popupMenu.add(mniThuocBanChay);
+
         JMenuItem mniThuocSapHetHang = new JMenuItem("Thuốc Sắp Hết Hàng");
         mniThuocSapHetHang.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "Thuocsaphethang");
         });
-        mniThongkethuoc.add(mniThuocSapHetHang);
-        popupMenu.add(mniThongkethuoc);
+        popupMenu.add(mniThuocSapHetHang);
+
         return popupMenu;
     }
 
@@ -3700,16 +3493,22 @@ public class TrangChu_GUI {
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem mniThemhoadon = new JMenuItem("Thêm");
         mniThemhoadon.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "themHoaDon");
         });
         popupMenu.add(mniThemhoadon);
         popupMenu.addSeparator();
         JMenuItem mniTimkiemhoadon = new JMenuItem("Tìm Kiếm");
         mniTimkiemhoadon.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timKiemHoaDon");
         });
         popupMenu.add(mniTimkiemhoadon);
         popupMenu.addSeparator();
         JMenuItem mniThongkehoadon = new JMenuItem("Thống Kê");
         mniThongkehoadon.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "ThongkeHD");
         });
         popupMenu.add(mniThongkehoadon);
         return popupMenu;
@@ -3720,16 +3519,22 @@ public class TrangChu_GUI {
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem mniThemnv = new JMenuItem("Thêm");
         mniThemnv.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "themNV");
         });
         popupMenu.add(mniThemnv);
         popupMenu.addSeparator();
         JMenuItem mniCapnhatnv = new JMenuItem("Cập Nhật");
         mniCapnhatnv.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "capnhatnv");
         });
         popupMenu.add(mniCapnhatnv);
         popupMenu.addSeparator();
         JMenuItem mniTimkiemnv = new JMenuItem("Tìm Kiếm");
         mniTimkiemnv.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timkiemnv");
         });
         popupMenu.add(mniTimkiemnv);
         return popupMenu;
@@ -3740,16 +3545,22 @@ public class TrangChu_GUI {
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem mniThemncc = new JMenuItem("Thêm");
         mniThemncc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "themNCC");
         });
         popupMenu.add(mniThemncc);
         popupMenu.addSeparator();
         JMenuItem mniCapnhatncc = new JMenuItem("Cập Nhật");
         mniCapnhatncc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "capNhatNCC");
         });
         popupMenu.add(mniCapnhatncc);
         popupMenu.addSeparator();
         JMenuItem mniTimkiemncc = new JMenuItem("Tìm Kiếm");
         mniTimkiemncc.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timKiemNCC");
         });
         popupMenu.add(mniTimkiemncc);
         return popupMenu;
@@ -3763,7 +3574,7 @@ public class TrangChu_GUI {
         	// 1. Tạo một đối tượng của cửa sổ ThemKH_GUI
             //    Truyền "QuanLyHieuThuocTay" (JFrame cha) vào làm tham số
             ThemKH_GUI themKhDialog = new ThemKH_GUI(QuanLyHieuThuocTay);
-            
+            new ThemKH_Controller(themKhDialog, this);
             // 2. Hiển thị cửa sổ đó lên
             themKhDialog.setVisible(true);
         });
@@ -3771,14 +3582,38 @@ public class TrangChu_GUI {
         popupMenu.addSeparator();
         JMenuItem mniCapnhatkh = new JMenuItem("Cập Nhật");
         mniCapnhatkh.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "capNhatKH");
         });
         popupMenu.add(mniCapnhatkh);
         popupMenu.addSeparator();
         JMenuItem mniTimkiemkh = new JMenuItem("Tìm Kiếm");
         mniTimkiemkh.addActionListener(e -> {
+            CardLayout cl = (CardLayout) maincontent.getLayout();
+            cl.show(maincontent, "timkiemkh");
         });
         popupMenu.add(mniTimkiemkh);
         return popupMenu;
+    }
+    
+    public void loadDataTableKH() {
+        // gọi DAO để lấy danh sách khách hàng mới nhất
+        khachHang_DAO khDAO = new khachHang_DAO();
+        List<KhachHang> list = khDAO.getAllKhachHang();
+
+        // xóa toàn bộ dữ liệu cũ trên JTable
+        DefaultTableModel model = (DefaultTableModel) table_CapNhatKH.getModel();
+        model.setRowCount(0);
+
+        // thêm lại dữ liệu mới
+        for (KhachHang kh : list) {
+            model.addRow(new Object[]{
+                kh.getMaKH(),
+                kh.getTenKH(),
+                kh.getDiaChi(),
+                kh.getSoDienThoai()
+            });
+        }
     }
     private void loadDataToTable(JTable table) {
         // Lấy model của bảng được truyền vào
