@@ -3604,10 +3604,21 @@ public class TrangChu_GUI {
         // xóa toàn bộ dữ liệu cũ trên JTable
         DefaultTableModel model = (DefaultTableModel) table_CapNhatKH.getModel();
         model.setRowCount(0);
+        DefaultTableModel model_TK = (DefaultTableModel) table_tkkh.getModel();
+        model.setRowCount(0);
 
         // thêm lại dữ liệu mới
         for (KhachHang kh : list) {
             model.addRow(new Object[]{
+                kh.getMaKH(),
+                kh.getTenKH(),
+                kh.getDiaChi(),
+                kh.getSoDienThoai()
+            });
+        }
+     // thêm lại dữ liệu mới
+        for (KhachHang kh : list) {
+        	model_TK.addRow(new Object[]{
                 kh.getMaKH(),
                 kh.getTenKH(),
                 kh.getDiaChi(),
