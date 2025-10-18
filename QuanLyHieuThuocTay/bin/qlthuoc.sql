@@ -148,11 +148,10 @@ GO
 
 -- NHAN VIEN
 INSERT INTO NhanVien (maNV, tenNV, ngaySinh, gioiTinh, chucVu, sdt, diaChi, anh, maTK) VALUES
-('NV001', N'Nguyễn Văn An', '1990-05-15', N'Nam', 'CV01', '0912345678', N'Quận 1, TP. Hồ Chí Minh', NULL, 'TK01'),
-('NV002', N'Trần Thị Bích', '1995-08-10', N'Nữ', 'CV02', '0987654321', N'Quận 5, TP. Hồ Chí Minh', NULL, 'TK02'),
-('NV003', N'Lê Văn Cường', '1993-03-20', N'Nam', 'CV03', '0901234567', N'Quận Gò Vấp, TP. Hồ Chí Minh', NULL, 'TK03');
+('NV001', N'Nguyễn Văn An', '1990-05-15', N'Nam', 'CV01', '0912345678', N'Quận 1, TP. Hồ Chí Minh', N'/male-1.jpg', 'TK01'),
+('NV002', N'Trần Thị Bích', '1995-08-10', N'Nữ', 'CV02', '0987654321', N'Quận 5, TP. Hồ Chí Minh', N'/male-1.jpg', 'TK02'),
+('NV003', N'Lê Văn Cường', '1993-03-20', N'Nam', 'CV03', '0901234567', N'Quận Gò Vấp, TP. Hồ Chí Minh', N'/male-1.jpg', 'TK03');
 GO
-
 -- KHACH HANG (ĐÃ BỎ CỘT GIỚI TÍNH)
 INSERT INTO KhachHang (maKH, tenKH, diaChi, sdt) VALUES
 ('KH0000001', N'Phạm Minh Dũng', N'Quận 3, TP. Hồ Chí Minh', '0911222333'),
