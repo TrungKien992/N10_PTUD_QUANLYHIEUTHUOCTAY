@@ -144,4 +144,24 @@ public class thuoc_DAO {
         
         return t;
     }
+    /**
+     * Lấy mã nhà cung cấp theo tên nhà cung cấp
+     * Dùng khi combobox chỉ chứa tên NCC
+     */
+    public String getMaNCCTheoTen(String tenNCC) {
+        String ma = null;
+        String sql = "SELECT maNhaCungCap FROM NhaCungCap WHERE tenNhaCungCap = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, tenNCC);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ma = rs.getString("maNhaCungCap");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ma;
+    }
 }

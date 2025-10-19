@@ -62,6 +62,8 @@ import java.util.Collections;
 import java.util.List;
 import controller.KhachHang_Controller;
 import controller.ThemKH_Controller;
+import controller.Thuoc_Controller;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -70,7 +72,7 @@ import java.awt.event.*;
 
 
 
-public class TrangChu_GUI {
+public class TrangChu_GUI extends JFrame{
 
     private JFrame QuanLyHieuThuocTay;
     private JPanel maincontent;
@@ -80,7 +82,7 @@ public class TrangChu_GUI {
     private JTable table_hdtam;
     private JTextField text_Nhaptiennhan;
     private JTextField text_Nhapsoluongthuoc;
-    private JTable table_tkt;
+    public JTable table_tkt;
     public JTextField txt_kh_MaKH;
     public JTextField txt_kh_SDT;
     public JTextField txt_kh_TenKH;
@@ -91,14 +93,15 @@ public class TrangChu_GUI {
     public JTextField txtMKH_TK;
     public JTextField txtTenKH_TK;
     public JTable table_CapNhatKH;
-    private JTextField text_cntmt;
-    private JTextField text_cnttt;
-    private JTextField text_cntsl;
-    private JTextField text_cntgn;
-    private JTextField text_cntgb;
-    private JTextField text_cnt_tkmt;
-    private JTextField text_cnt_tktt;
-    private JTable table_Capnhatthuoc;
+    public JTextField text_cntmt;
+    public JTextField text_cnttt;
+    public JTextField text_cntsl;
+    public JTextField text_cntgn;
+    public JTextField text_cntgb;
+    public JTextField text_cnthsd;
+    public JTextField text_cnt_tkmt;
+    public JTextField text_cnt_tktt;
+    public JTable table_Capnhatthuoc;
     private JTextField text_ttmt;
     private JTextField text_tttt;
     private JTextField text_ttsl;
@@ -179,6 +182,24 @@ public class TrangChu_GUI {
 	private JPanel currentVisibleSubmenu = null; // Panel con đang hiển thị
 	private JButton selectedMainMenuButton = null; // Nút chính đang được chọn
 	private CardLayout cl;
+	public JComboBox<String> cb_tkt_kethuoc;
+	public JComboBox<String> cb_tkt_tenthuoc;
+	public JComboBox<String> cb_tkt_ncc;
+	public JButton btn_tkt_xemchitiet;
+	public JButton btn_tkt_Lammoi;
+	public JButton btn_cnt_tk_lammoi;
+	public JComboBox<String> cb_cnt_tktkt;
+	public JComboBox<String> cb_cntdvt;
+	public JComboBox<String> cb_cntncc;
+	public JComboBox<String> cb_cnt_tkt;
+	public JTextArea textArea_cnttp;
+	public JButton btn_cntKhoiphuc;
+	private JPanel pn_chuaanh;
+	public JLabel lb_Chuaanh;
+	public JButton btn_cntCapnhat;
+	public JButton btn_cnt_ChonAnh;
+	private JTextField txtTimKiem;
+	private JTable table;
     
 
 	// ========== BẢNG MÀU VÀ FONT CHỮ HIỆN ĐẠI ==========
@@ -941,26 +962,25 @@ public class TrangChu_GUI {
         lbl_tkt_ncc.setBounds(670, 30, 135, 30); // ĐÃ SỬA
         pn_tkt_filters.add(lbl_tkt_ncc); // ĐÃ SỬA
 
-        JComboBox<String> cb_tkt_kethuoc = new JComboBox<String>();
+        cb_tkt_kethuoc = new JComboBox<String>();
         cb_tkt_kethuoc.setFont(FONT_TEXT_FIELD); // ĐÃ SỬA
         cb_tkt_kethuoc.setBounds(130, 30, 529, 30); // ĐÃ SỬA
         pn_tkt_filters.add(cb_tkt_kethuoc); // ĐÃ SỬA
 
-        JComboBox<String> cb_tkt_tenthuoc = new JComboBox<String>();
+        cb_tkt_tenthuoc = new JComboBox<String>();
         cb_tkt_tenthuoc.setFont(FONT_TEXT_FIELD); // ĐÃ SỬA
         cb_tkt_tenthuoc.setBounds(130, 71, 529, 30); // ĐÃ SỬA
         pn_tkt_filters.add(cb_tkt_tenthuoc); // ĐÃ SỬA
 
-        JComboBox<String> cb_tkt_ncc = new JComboBox<String>();
+        cb_tkt_ncc = new JComboBox<String>();
         cb_tkt_ncc.setFont(FONT_TEXT_FIELD); // ĐÃ SỬA
         cb_tkt_ncc.setBounds(815, 30, 540, 30); // ĐÃ SỬA
         pn_tkt_filters.add(cb_tkt_ncc); // ĐÃ SỬA
 
-        JButton btn_tkt_xemchitiet = new JButton("Xem Chi Tiết");
+        btn_tkt_xemchitiet = new JButton("Xem Chi Tiết");
         btn_tkt_xemchitiet.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		ChiTietThuoc_GUI Chitietphieudatthuoc = new ChiTietThuoc_GUI(QuanLyHieuThuocTay); // Hoặc (this)
-                Chitietphieudatthuoc.setVisible(true);
+        		ChiTietThuoc_GUI Chitietphieudatthuoc = new ChiTietThuoc_GUI(QuanLyHieuThuocTay);
         	}
         });
         btn_tkt_xemchitiet.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
@@ -968,7 +988,7 @@ public class TrangChu_GUI {
         btn_tkt_xemchitiet.setBounds(1176, 70, 179, 36); // ĐÃ SỬA
         pn_tkt_filters.add(btn_tkt_xemchitiet); // ĐÃ SỬA
 
-        JButton btn_tkt_Lammoi = new JButton("Làm Mới");
+        btn_tkt_Lammoi = new JButton("Làm Mới");
         btn_tkt_Lammoi.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
         styleButton(btn_tkt_Lammoi, COLOR_TEXT_MUTED); // ĐÃ SỬA
         btn_tkt_Lammoi.setBounds(1388, 70, 135, 36); // ĐÃ SỬA
@@ -1281,8 +1301,6 @@ public class TrangChu_GUI {
         ));
         scrollPane_CapNhatKH.setViewportView(table_CapNhatKH);
 
-        new KhachHang_Controller(this); // Giữ nguyên dòng này
-
         // ===== KẾT THÚC KHỐI CODE CẬP NHẬT KHÁCH HÀNG ĐÃ SỬA =====
         
      // ===== BẮT ĐẦU KHỐI CODE CẬP NHẬT THUỐC ĐÃ SỬA =====
@@ -1318,12 +1336,12 @@ public class TrangChu_GUI {
         pn_Capnhatthuoc_nhaptt.add(pn_chuaanh);
         pn_chuaanh.setLayout(new BorderLayout(0, 0)); // Dùng BorderLayout
 
-        JLabel lb_Chuaanh = new JLabel("Chưa có ảnh", SwingConstants.CENTER); // Text mặc định
+        lb_Chuaanh = new JLabel("Chưa có ảnh", SwingConstants.CENTER); // Text mặc định
         lb_Chuaanh.setFont(FONT_DETAIL_ITALIC); // Font italic
         lb_Chuaanh.setForeground(COLOR_TEXT_MUTED); // Màu nhạt
         pn_chuaanh.add(lb_Chuaanh, BorderLayout.CENTER);
 
-        JButton btn_cnt_ChonAnh = new JButton("Chọn Ảnh");
+        btn_cnt_ChonAnh = new JButton("Chọn Ảnh");
         btn_cnt_ChonAnh.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cnt_ChonAnh, COLOR_TEXT_MUTED);
         btn_cnt_ChonAnh.setBounds(125, 350, 132, 40); // Điều chỉnh vị trí
@@ -1406,7 +1424,7 @@ public class TrangChu_GUI {
         lbl_cntdvt.setBounds(labelX, startY + 5 * (height + vGap), 120, height);
         pn_Capnhatthuoc_nhaptt.add(lbl_cntdvt);
 
-        JComboBox<String> cb_cntdvt = new JComboBox<String>();
+        cb_cntdvt = new JComboBox<String>();
         cb_cntdvt.setFont(FONT_TEXT_FIELD);
         cb_cntdvt.setBounds(inputX, startY + 5 * (height + vGap), 400, height);
         pn_Capnhatthuoc_nhaptt.add(cb_cntdvt);
@@ -1417,7 +1435,7 @@ public class TrangChu_GUI {
         lbl_cntncc.setBounds(labelX2, startY, 130, height);
         pn_Capnhatthuoc_nhaptt.add(lbl_cntncc);
 
-        JComboBox<String> cb_cntncc = new JComboBox<String>();
+        cb_cntncc = new JComboBox<String>();
         cb_cntncc.setFont(FONT_TEXT_FIELD);
         cb_cntncc.setBounds(inputX2, startY, 400, height);
         pn_Capnhatthuoc_nhaptt.add(cb_cntncc);
@@ -1434,7 +1452,6 @@ public class TrangChu_GUI {
         date_cnthsd.setDateFormatString("dd/MM/yyyy");
         date_cnthsd.setBounds(inputX2, startY + height + vGap, 400, height);
         pn_Capnhatthuoc_nhaptt.add(date_cnthsd);
-        // Đại Ca cần thay biến text_cnthsd thành date_cnthsd trong code logic
 
         JLabel lbl_cnttkt = new JLabel("Tên Kệ Thuốc :");
         lbl_cnttkt.setFont(FONT_LABEL_BOLD);
@@ -1442,10 +1459,10 @@ public class TrangChu_GUI {
         lbl_cnttkt.setBounds(labelX2, startY + 2 * (height + vGap), 130, height);
         pn_Capnhatthuoc_nhaptt.add(lbl_cnttkt);
 
-        JComboBox<String> cb_cnttkt = new JComboBox<String>();
-        cb_cnttkt.setFont(FONT_TEXT_FIELD);
-        cb_cnttkt.setBounds(inputX2, startY + 2 * (height + vGap), 400, height);
-        pn_Capnhatthuoc_nhaptt.add(cb_cnttkt);
+        cb_cnt_tkt = new JComboBox<String>();
+        cb_cnt_tkt.setFont(FONT_TEXT_FIELD);
+        cb_cnt_tkt.setBounds(inputX2, startY + 2 * (height + vGap), 400, height);
+        pn_Capnhatthuoc_nhaptt.add(cb_cnt_tkt);
 
         JLabel lbl_cnttp = new JLabel("Thành Phần :");
         lbl_cnttp.setFont(FONT_LABEL_BOLD);
@@ -1458,19 +1475,19 @@ public class TrangChu_GUI {
         scrollPane_cnttp.setBounds(inputX2, startY + 3 * (height + vGap), 400, 110);
         pn_Capnhatthuoc_nhaptt.add(scrollPane_cnttp);
 
-        JTextArea textArea_cnttp = new JTextArea();
+        textArea_cnttp = new JTextArea();
         textArea_cnttp.setWrapStyleWord(true);
         textArea_cnttp.setLineWrap(true);
         textArea_cnttp.setFont(FONT_TEXT_FIELD);
         scrollPane_cnttp.setViewportView(textArea_cnttp); // Add TextArea vào ScrollPane
 
-        JButton btn_cntKhoiphuc = new JButton("Khôi Phục");
+        btn_cntKhoiphuc = new JButton("Khôi Phục");
         btn_cntKhoiphuc.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cntKhoiphuc, COLOR_TEXT_MUTED);
         btn_cntKhoiphuc.setBounds(1260, 350, 132, 40); // Điều chỉnh vị trí
         pn_Capnhatthuoc_nhaptt.add(btn_cntKhoiphuc);
 
-        JButton btn_cntCapnhat = new JButton("Cập Nhật");
+        btn_cntCapnhat  = new JButton("Cập Nhật");
         btn_cntCapnhat.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cntCapnhat, COLOR_SUCCESS_GREEN);
         btn_cntCapnhat.setBounds(1412, 350, 132, 40); // Điều chỉnh vị trí
@@ -1518,12 +1535,12 @@ public class TrangChu_GUI {
         lbl_cnt_tktkt.setBounds(820, 30, 125, 30); // Điều chỉnh
         pn_Capnhatthuoc_tk.add(lbl_cnt_tktkt);
 
-        JComboBox<String> cb_cnt_tktkt = new JComboBox<String>();
+        cb_cnt_tktkt = new JComboBox<String>();
         cb_cnt_tktkt.setFont(FONT_TEXT_FIELD);
         cb_cnt_tktkt.setBounds(950, 30, 394, 30); // Điều chỉnh
         pn_Capnhatthuoc_tk.add(cb_cnt_tktkt);
 
-        JButton btn_cnt_tk_lammoi = new JButton("Làm Mới");
+        btn_cnt_tk_lammoi = new JButton("Làm Mới");
         btn_cnt_tk_lammoi.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cnt_tk_lammoi, COLOR_TEXT_MUTED);
         btn_cnt_tk_lammoi.setBounds(1406, 25, 138, 40); // Điều chỉnh
@@ -4249,6 +4266,59 @@ public class TrangChu_GUI {
 
         // ===== KẾT THÚC KHỐI CODE TÌM KIẾM NHÀ CUNG CẤP =====
         
+        JPanel panel_QLPhieuDatHangNCC = new JPanel();
+        maincontent.add(panel_QLPhieuDatHangNCC, "quanLyPhieuThuNCC");
+        panel_QLPhieuDatHangNCC.setLayout(new BorderLayout(0, 0));
+        
+        JPanel panel = new JPanel();
+        panel_QLPhieuDatHangNCC.add(panel, BorderLayout.NORTH);
+        
+        JLabel lblTimKiemNCC = new JLabel("Tìm kiếm:");
+        lblTimKiemNCC.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel.add(lblTimKiemNCC);
+        
+        txtTimKiem = new JTextField();
+        txtTimKiem.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        panel.add(txtTimKiem);
+        txtTimKiem.setColumns(10);
+        
+        JButton btnTim = new JButton("Tìm");
+        btnTim.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel.add(btnTim);
+        
+        JScrollPane scrollPane = new JScrollPane();
+        panel_QLPhieuDatHangNCC.add(scrollPane, BorderLayout.CENTER);
+        
+        table = new JTable();
+        table.setModel(new DefaultTableModel(
+        	new Object[][] {
+        		{null, null, null, null, null, null},
+        	},
+        	new String[] {
+        		"M\u00E3 phi\u1EBFu ", "M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "Ng\u00E0y \u0111\u1EB7t", "T\u1ED5ng ti\u1EC1n ", "Tr\u1EA1ng th\u00E1i"
+        	}
+        ));
+        scrollPane.setViewportView(table);
+        
+        JPanel panel_1 = new JPanel();
+        panel_QLPhieuDatHangNCC.add(panel_1, BorderLayout.SOUTH);
+        
+        JButton btnNewButton = new JButton("Tạo mới");
+        btnNewButton.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel_1.add(btnNewButton);
+        
+        JButton btnNewButton_1 = new JButton("Xem/Sửa");
+        btnNewButton_1.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel_1.add(btnNewButton_1);
+        
+        JButton btnNewButton_2 = new JButton("Xóa");
+        btnNewButton_2.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        panel_1.add(btnNewButton_2);
+        
+        
+        
+        new KhachHang_Controller(this);
+        Thuoc_Controller controller = new Thuoc_Controller(this);
         QuanLyHieuThuocTay.setVisible(true);
     }
     
@@ -4810,9 +4880,7 @@ public class TrangChu_GUI {
                 selectedMainMenuButton = null;
                 currentVisibleSubmenu = null;
             }
-
-
-            // Cập nhật lại layout của sidebar
+            
             sidebarContainer.revalidate();
             sidebarContainer.repaint();
         });
