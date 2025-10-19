@@ -30,7 +30,7 @@ import javax.swing.table.TableCellRenderer;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JMonthChooser;
 import com.toedter.calendar.JYearChooser;
-
+import java.beans.Beans;
 import connectDB.ConnectDB;
 import dao.chucVu_DAO;
 import dao.khachHang_DAO;
@@ -96,7 +96,6 @@ public class TrangChu_GUI {
     private JTextField text_cntsl;
     private JTextField text_cntgn;
     private JTextField text_cntgb;
-    private JTextField text_cnthsd;
     private JTextField text_cnt_tkmt;
     private JTextField text_cnt_tktt;
     private JTable table_Capnhatthuoc;
@@ -105,7 +104,6 @@ public class TrangChu_GUI {
     private JTextField text_ttsl;
     private JTextField text_ttgn;
     private JTextField text_ttgb;
-    private JTextField text_tthsd;
     private JTable table_1;
     private JTable table_2;
     private JTable table_tshh;
@@ -154,27 +152,18 @@ public class TrangChu_GUI {
     private JTextField txtMaNCC_CNNCC;
     private JTextField txtTenNCC_CNNCC;
     private JTextField txtSDT_CNNCC;
-    private JTextField textField_23;
-    private JTextField textField_24;
     private JTextField txtEmail_CNNCC;
     private String duongDanAnh_TNV = null;
     private String duongDanAnh_CNNV= null;
-    private nhanVien_DAO nhanVienDAO = new nhanVien_DAO();
-    private JTextField txtGhiChu_CNNCC;
     private JTextField txtTinh_TNCC;
     private JTextField txtHuyen_TNCC;
     private JTextField txtMaNCC_TNCC;
     private JTextField txtTenNCC_TNCC;
-    private JTextField txtTrangThai_TNCC;
     private JTextField txtEmail_TNCC;
     private JTextField txtSDT_TNCC;
-    private JTextField txtGhiChu_TNCC;
     private JTable table_CNNCC;
-    private JTextField txtHuyen_TKNCC;
-    private JTextField txtHuyen_TKNC;
     private JTextField txtMaNCC_TKNCC;
     private JTextField txtTenNCC_TKNCC;
-    private JTextField txtTrangThai_TKNCC;
     private JTextField txtEmail_TKNCC;
     private JTextField txtSDT_TKNCC;
     private JTextField txtGhiChu_TKNCC;
@@ -186,6 +175,11 @@ public class TrangChu_GUI {
 	private JYearChooser year_tktt;
 	private JMonthChooser month_tktt;
 	private JYearChooser year_tktn;
+	private JMenuItem currentSelectedItem = null;
+	private JPanel currentVisibleSubmenu = null; // Panel con đang hiển thị
+	private JButton selectedMainMenuButton = null; // Nút chính đang được chọn
+	private CardLayout cl;
+    
 
 	// ========== BẢNG MÀU VÀ FONT CHỮ HIỆN ĐẠI ==========
 	private static final Color COLOR_BACKGROUND_PRIMARY = new Color(240, 242, 245);
@@ -207,11 +201,15 @@ public class TrangChu_GUI {
 	private static final Font FONT_TABLE_CELL = new Font("Segoe UI", Font.PLAIN, 14);
 	private static final Font FONT_SUMMARY_TOTAL = new Font("Segoe UI", Font.BOLD, 20);
 	private static final Font FONT_DETAIL_ITALIC = new Font("Segoe UI", Font.ITALIC, 15);
-    /**
-     * Launch the application.
-     */
+    
+	// ========== MÀU CHO SIDEBAR ==========
+    private static final Color COLOR_SIDEBAR_BG_START = new Color(0, 80, 80); // Đậm hơn
+    private static final Color COLOR_SIDEBAR_BG_END = new Color(0, 120, 120); // Nhạt hơn
+    private static final Color COLOR_SIDEBAR_BUTTON_HOVER = new Color(0, 153, 153); // Màu hover
+    private static final Color COLOR_SIDEBAR_BUTTON_SELECTED = new Color(0, 170, 170); // Màu khi nút được chọn
+    private static final Color COLOR_SIDEBAR_TEXT = Color.WHITE;
+	
 	public static void main(String[] args) {
-	    // BƯỚC 1: Đặt Look and Feel (Nimbus) ngay lập tức
 	    try {
 	        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 	            if ("Nimbus".equals(info.getName())) {
@@ -222,18 +220,10 @@ public class TrangChu_GUI {
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
-
-	    // BƯỚC 2: Tạo GUI
 	    EventQueue.invokeLater(new Runnable() {
 	        public void run() {
 	            try {
-	                // Chỉ cần tạo đối tượng này
-	                // Hàm initialize() của nó sẽ tự chạy và tự hiển thị cửa sổ
-	                new TrangChu_GUI(); 
-	                
-	                // BỎ 2 DÒNG CŨ NÀY ĐI
-	                // TrangChu_GUI frame = new TrangChu_GUI();
-	                // frame.setVisible(true); 
+	                new TrangChu_GUI();    
 	            } catch (Exception e) {
 	                e.printStackTrace();
 	            }
@@ -261,13 +251,24 @@ public class TrangChu_GUI {
         QuanLyHieuThuocTay.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         QuanLyHieuThuocTay.setLocationRelativeTo(null);
 
-        // tạo sidebar menu
-        JPanel sidebar = new JPanel();
-        sidebar.setBackground(new Color(0, 102, 102)); // Dark teal
-        sidebar.setLayout(new GridLayout(8, 1, 0, 10)); // 8 rows, 1 column, 10px gap
-        sidebar.setPreferredSize(new Dimension(200, 0)); // Sidebar width
+        JPanel sidebar = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                int width = getWidth();
+                int height = getHeight();
+                GradientPaint gp = new GradientPaint(
+                    0, 0, COLOR_SIDEBAR_BG_START, 
+                    0, height, COLOR_SIDEBAR_BG_END); 
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, width, height);
+            }
+        };
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS)); 
+        sidebar.setPreferredSize(new Dimension(220, 0));
+        sidebar.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5)); 
 
-        // Logo
         JLabel lblLogo = new JLabel("Scam", SwingConstants.CENTER);
         lblLogo.setOpaque(true);
         lblLogo.setBackground(new Color(0, 153, 153));
@@ -275,53 +276,72 @@ public class TrangChu_GUI {
         lblLogo.setFont(new Font("Arial", Font.BOLD, 30));
         sidebar.add(lblLogo);
 
-        // menu Ht
-        JButton btnMenu_HT = createSidebarButton("Hệ thống", "icons/patient.png");
-        JPopupMenu systemMenu = createSystemSubmenu();
-        stylePopupMenu(systemMenu); // Apply styling
-        addPopupMenu(btnMenu_HT, systemMenu);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // --- Menu Hệ Thống ---
+        JButton btnMenu_HT = createSidebarButton("Hệ thống", "/icons/system_16.png");
+        JPanel systemSubmenuPanel = createSystemSubmenuPanel(); // Gọi hàm mới
+        addAccordionListener(btnMenu_HT, systemSubmenuPanel, sidebar); // Thêm listener mới
         sidebar.add(btnMenu_HT);
+        sidebar.add(systemSubmenuPanel); // Add panel con (đang ẩn)
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // menu NV
-        JButton btnMenu_NV = createSidebarButton("Nhân viên", "icons/doctor.png");
-        JPopupMenu employeeMenu = createEmployeeSubmenu();
-        stylePopupMenu(employeeMenu);
-        addPopupMenu(btnMenu_NV, employeeMenu);
+        // --- Menu Nhân Viên ---
+        JButton btnMenu_NV = createSidebarButton("Nhân viên", "/icons/employee_16.png");
+        JPanel employeeSubmenuPanel = createEmployeeSubmenuPanel(); // Gọi hàm mới
+        addAccordionListener(btnMenu_NV, employeeSubmenuPanel, sidebar); // Thêm listener mới
         sidebar.add(btnMenu_NV);
+        sidebar.add(employeeSubmenuPanel); // Add panel con (đang ẩn)
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // menu KH
-        JButton btnMenu_KH = createSidebarButton("Khách hàng", "icons/lab.png");
-        JPopupMenu customerMenu = createCustomerSubmenu();
-        stylePopupMenu(customerMenu);
-        addPopupMenu(btnMenu_KH, customerMenu);
+        // --- Menu Khách Hàng ---
+        JButton btnMenu_KH = createSidebarButton("Khách hàng", "/icons/customer_16.png");
+        JPanel customerSubmenuPanel = createCustomerSubmenuPanel(); // Gọi hàm mới
+        addAccordionListener(btnMenu_KH, customerSubmenuPanel, sidebar); // Thêm listener mới
         sidebar.add(btnMenu_KH);
+        sidebar.add(customerSubmenuPanel); // Add panel con (đang ẩn)
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // menu thuoc
-        JButton btnMenu_Thuoc = createSidebarButton("Thuốc", "icons/reception.png");
-        JPopupMenu medicineMenu = createMedicineSubmenu();
-        stylePopupMenu(medicineMenu);
-        addPopupMenu(btnMenu_Thuoc, medicineMenu);
+        // --- Menu Thuốc ---
+        JButton btnMenu_Thuoc = createSidebarButton("Thuốc", "/icons/pill_16.png");
+        JPanel medicineSubmenuPanel = createMedicineSubmenuPanel(); // Gọi hàm mới
+        addAccordionListener(btnMenu_Thuoc, medicineSubmenuPanel, sidebar); // Thêm listener mới
         sidebar.add(btnMenu_Thuoc);
+        sidebar.add(medicineSubmenuPanel); // Add panel con (đang ẩn)
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // menu hd 
-        JButton btnMenu_HD = createSidebarButton("Hoá đơn", "icons/prescription.png");
-        JPopupMenu invoiceMenu = createInvoiceSubmenu();
-        stylePopupMenu(invoiceMenu);
-        addPopupMenu(btnMenu_HD, invoiceMenu);
+        // --- Menu Hóa Đơn ---
+        JButton btnMenu_HD = createSidebarButton("Hoá đơn", "/icons/invoice_16.png");
+        JPanel invoiceSubmenuPanel = createInvoiceSubmenuPanel(); // Gọi hàm mới
+        addAccordionListener(btnMenu_HD, invoiceSubmenuPanel, sidebar); // Thêm listener mới
         sidebar.add(btnMenu_HD);
+        sidebar.add(invoiceSubmenuPanel); // Add panel con (đang ẩn)
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // menu ncc
-        JButton btnMenu_NCC = createSidebarButton("Nhà cung cấp", "icons/labtech.png");
-        JPopupMenu supplierMenu = createSupplierSubmenu();
-        stylePopupMenu(supplierMenu);
-        addPopupMenu(btnMenu_NCC, supplierMenu);
+        // --- Menu Nhà Cung Cấp ---
+        JButton btnMenu_NCC = createSidebarButton("Nhà cung cấp", "/icons/supplier_16.png");
+        JPanel supplierSubmenuPanel = createSupplierSubmenuPanel(); // Gọi hàm mới
+        addAccordionListener(btnMenu_NCC, supplierSubmenuPanel, sidebar); // Thêm listener mới
         sidebar.add(btnMenu_NCC);
+        sidebar.add(supplierSubmenuPanel); // Add panel con (đang ẩn)
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        // dang xuat
-        JButton btnMenu_DX = createSidebarButton("Đăng xuất", "icons/logout.png");
+        // --- Menu Khuyến mãi ---
+        JButton btnMenu_KM = createSidebarButton("Khuyến mãi", "/icons/discount_16.png");
+        // (Tạm thời chưa có submenu)
+        // addAccordionListener(btnMenu_KM, kmSubmenuPanel, sidebar);
+        sidebar.add(btnMenu_KM);
+        // sidebar.add(kmSubmenuPanel);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
+
+
+        sidebar.add(Box.createVerticalGlue()); 
+
+        // --- Nút Đăng xuất ---
+        JButton btnMenu_DX = createSidebarButton("Đăng xuất", "/icons/logout_16.png");
         sidebar.add(btnMenu_DX);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Add sidebar to frame
         QuanLyHieuThuocTay.getContentPane().add(sidebar, BorderLayout.WEST);
         
         maincontent = new JPanel();
@@ -419,7 +439,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -590,7 +610,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -840,7 +860,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE); // Màu khi chọn dòng
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -877,510 +897,666 @@ public class TrangChu_GUI {
         
         
         
+     // ===== BẮT ĐẦU KHỐI CODE TÌM KIẾM THUỐC ĐÃ SỬA =====
         JPanel pn_Timkiemthuoc = new JPanel();
         maincontent.add(pn_Timkiemthuoc, "timkiemSP");
         pn_Timkiemthuoc.setLayout(null);
-        
+        pn_Timkiemthuoc.setBackground(COLOR_BACKGROUND_PRIMARY); // ĐÃ SỬA: Nền chính
+
+        // ĐÃ SỬA: Tạo panel riêng cho bộ lọc
+        JPanel pn_tkt_filters = new JPanel();
+        pn_tkt_filters.setBackground(COLOR_CARD_BACKGROUND);
+        pn_tkt_filters.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Bộ Lọc Tìm Kiếm", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
+        pn_tkt_filters.setBounds(10, 68, 1564, 110); // ĐÃ SỬA: Vị trí và kích thước
+        pn_Timkiemthuoc.add(pn_tkt_filters);
+        pn_tkt_filters.setLayout(null);
+
+
         JLabel lbl_tkthuoc = new JLabel("TÌM KIẾM THUỐC");
-        lbl_tkthuoc.setFont(new Font("Times New Roman", Font.BOLD, 25));
-        lbl_tkthuoc.setBounds(638, 11, 260, 46);
-        pn_Timkiemthuoc.add(lbl_tkthuoc);
-        
+        lbl_tkthuoc.setFont(FONT_TITLE_MAIN); // ĐÃ SỬA
+        lbl_tkthuoc.setForeground(COLOR_PRIMARY_BLUE); // ĐÃ SỬA
+        lbl_tkthuoc.setHorizontalAlignment(SwingConstants.CENTER); // ĐÃ SỬA
+        lbl_tkthuoc.setBounds(0, 11, 1584, 46); // ĐÃ SỬA: Căn giữa
+        pn_Timkiemthuoc.add(lbl_tkthuoc); // Vẫn add vào panel chính
+
         JLabel lbl_tkt_kethuoc = new JLabel("Kệ Thuốc :");
-        lbl_tkt_kethuoc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_tkt_kethuoc.setBounds(10, 62, 100, 30);
-        pn_Timkiemthuoc.add(lbl_tkt_kethuoc);
-        
+        lbl_tkt_kethuoc.setFont(FONT_LABEL_BOLD); // ĐÃ SỬA
+        lbl_tkt_kethuoc.setForeground(COLOR_TEXT_DARK); // ĐÃ SỬA
+        lbl_tkt_kethuoc.setBounds(20, 30, 100, 30); // ĐÃ SỬA: Vị trí trong pn_tkt_filters
+        pn_tkt_filters.add(lbl_tkt_kethuoc); // ĐÃ SỬA: Add vào panel lọc
+
         JLabel lbl_tkt_Tenthuoc = new JLabel("Tên Thuốc :");
-        lbl_tkt_Tenthuoc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_tkt_Tenthuoc.setBounds(10, 113, 100, 30);
-        pn_Timkiemthuoc.add(lbl_tkt_Tenthuoc);
-        
+        lbl_tkt_Tenthuoc.setFont(FONT_LABEL_BOLD); // ĐÃ SỬA
+        lbl_tkt_Tenthuoc.setForeground(COLOR_TEXT_DARK); // ĐÃ SỬA
+        lbl_tkt_Tenthuoc.setBounds(20, 71, 100, 30); // ĐÃ SỬA
+        pn_tkt_filters.add(lbl_tkt_Tenthuoc); // ĐÃ SỬA
+
         JLabel lbl_tkt_ncc = new JLabel("Nhà Cung Cấp :");
-        lbl_tkt_ncc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_tkt_ncc.setBounds(838, 62, 135, 30);
-        pn_Timkiemthuoc.add(lbl_tkt_ncc);
-        
+        lbl_tkt_ncc.setFont(FONT_LABEL_BOLD); // ĐÃ SỬA
+        lbl_tkt_ncc.setForeground(COLOR_TEXT_DARK); // ĐÃ SỬA
+        lbl_tkt_ncc.setBounds(670, 30, 135, 30); // ĐÃ SỬA
+        pn_tkt_filters.add(lbl_tkt_ncc); // ĐÃ SỬA
+
         JComboBox<String> cb_tkt_kethuoc = new JComboBox<String>();
-        cb_tkt_kethuoc.setBounds(120, 62, 529, 30);
-        pn_Timkiemthuoc.add(cb_tkt_kethuoc);
-        
+        cb_tkt_kethuoc.setFont(FONT_TEXT_FIELD); // ĐÃ SỬA
+        cb_tkt_kethuoc.setBounds(130, 30, 529, 30); // ĐÃ SỬA
+        pn_tkt_filters.add(cb_tkt_kethuoc); // ĐÃ SỬA
+
         JComboBox<String> cb_tkt_tenthuoc = new JComboBox<String>();
-        cb_tkt_tenthuoc.setBounds(120, 115, 529, 30);
-        pn_Timkiemthuoc.add(cb_tkt_tenthuoc);
-        
+        cb_tkt_tenthuoc.setFont(FONT_TEXT_FIELD); // ĐÃ SỬA
+        cb_tkt_tenthuoc.setBounds(130, 71, 529, 30); // ĐÃ SỬA
+        pn_tkt_filters.add(cb_tkt_tenthuoc); // ĐÃ SỬA
+
         JComboBox<String> cb_tkt_ncc = new JComboBox<String>();
-        cb_tkt_ncc.setBounds(983, 62, 540, 30);
-        pn_Timkiemthuoc.add(cb_tkt_ncc);
-        
+        cb_tkt_ncc.setFont(FONT_TEXT_FIELD); // ĐÃ SỬA
+        cb_tkt_ncc.setBounds(815, 30, 540, 30); // ĐÃ SỬA
+        pn_tkt_filters.add(cb_tkt_ncc); // ĐÃ SỬA
+
         JButton btn_tkt_xemchitiet = new JButton("Xem Chi Tiết");
         btn_tkt_xemchitiet.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		ChiTietThuoc_GUI Chitietphieudatthuoc = new ChiTietThuoc_GUI(QuanLyHieuThuocTay);
-                
-                // 2. Hiển thị cửa sổ đó lên
+        		ChiTietThuoc_GUI Chitietphieudatthuoc = new ChiTietThuoc_GUI(QuanLyHieuThuocTay); // Hoặc (this)
                 Chitietphieudatthuoc.setVisible(true);
         	}
         });
-        btn_tkt_xemchitiet.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_tkt_xemchitiet.setBounds(983, 113, 179, 36);
-        pn_Timkiemthuoc.add(btn_tkt_xemchitiet);
-        
+        btn_tkt_xemchitiet.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
+        styleButton(btn_tkt_xemchitiet, COLOR_PRIMARY_BLUE); // ĐÃ SỬA
+        btn_tkt_xemchitiet.setBounds(1176, 70, 179, 36); // ĐÃ SỬA
+        pn_tkt_filters.add(btn_tkt_xemchitiet); // ĐÃ SỬA
+
         JButton btn_tkt_Lammoi = new JButton("Làm Mới");
-        btn_tkt_Lammoi.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_tkt_Lammoi.setBounds(1388, 110, 135, 36);
-        pn_Timkiemthuoc.add(btn_tkt_Lammoi);
-        
-        JPanel pn_tkt_table = new JPanel();
-        pn_tkt_table.setBounds(0, 167, 1584, 772);
-        pn_Timkiemthuoc.add(pn_tkt_table);
-        pn_tkt_table.setLayout(null);
-        
+        btn_tkt_Lammoi.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
+        styleButton(btn_tkt_Lammoi, COLOR_TEXT_MUTED); // ĐÃ SỬA
+        btn_tkt_Lammoi.setBounds(1388, 70, 135, 36); // ĐÃ SỬA
+        pn_tkt_filters.add(btn_tkt_Lammoi); // ĐÃ SỬA
+
+        // ĐÃ SỬA: Bỏ pn_tkt_table vì JScrollPane đã đủ
         JScrollPane scP_tkt_table = new JScrollPane();
-        scP_tkt_table.setBounds(10, 0, 1564, 772);
-        pn_tkt_table.add(scP_tkt_table);
-        
-        table_tkt = new JTable();
+        scP_tkt_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // ĐÃ SỬA
+        scP_tkt_table.setBounds(10, 189, 1564, 739); // ĐÃ SỬA: Vị trí và kích thước
+        pn_Timkiemthuoc.add(scP_tkt_table); // ĐÃ SỬA: Add thẳng vào panel chính
+
+        // Áp dụng đúng cách tạo bảng table_tkt
+        table_tkt = new JTable() {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                    
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_tkt); // Áp dụng style chung
         table_tkt.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null, null, null, null},
-        	},
+        	new Object[][] {}, // Bỏ dòng null
         	new String[] {
-        		"M\u00E3 Thu\u1ED1c", "T\u00EAn Thu\u1ED1c", "S\u1ED1 L\u01B0\u1EE3ng", "Gi\u00E1 Nh\u1EADp", "Gi\u00E1 B\u00E1n", "\u0110\u01A1n V\u1ECB T\u00EDnh", "Nh\u00E0 Cung C\u1EA5p", "H\u1EA1n S\u1EED D\u1EE5ng", "T\u00EAn K\u1EC7 Thu\u1ED1c"
+        		"Mã Thuốc", "Tên Thuốc", "Số Lượng", "Giá Nhập", "Giá Bán", "Đơn Vị Tính", "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc"
         	}
         ));
         table_tkt.getColumnModel().getColumn(2).setPreferredWidth(65);
         scP_tkt_table.setViewportView(table_tkt);
+
+        // ===== KẾT THÚC KHỐI CODE TÌM KIẾM THUỐC ĐÃ SỬA =====
         
+     // ===== BẮT ĐẦU KHỐI CODE TÌM KIẾM KHÁCH HÀNG ĐÃ SỬA (GIỮ NGUYÊN TÊN BIẾN) =====
         JPanel pn_TKKhachHang = new JPanel();
         maincontent.add(pn_TKKhachHang, "timkiemkh");
         pn_TKKhachHang.setLayout(null);
-        
+        pn_TKKhachHang.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lblHeader_TKKH = new JLabel("TÌM KIẾM KHÁCH HÀNG");
+        lblHeader_TKKH.setFont(FONT_TITLE_MAIN); // Font tiêu đề chính
+        lblHeader_TKKH.setForeground(COLOR_PRIMARY_BLUE); // Màu tiêu đề
+        lblHeader_TKKH.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa
+        lblHeader_TKKH.setBounds(0, 11, 1584, 46); // Vị trí tiêu đề
+        pn_TKKhachHang.add(lblHeader_TKKH);
+
+        // Panel chứa bộ lọc tìm kiếm
         JPanel pnl_KH_north = new JPanel();
-        pnl_KH_north.setBounds(0, 0, 1584, 177);
+        pnl_KH_north.setBackground(COLOR_CARD_BACKGROUND); // Nền trắng
+        pnl_KH_north.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Bộ Lọc Tìm Kiếm", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        )); // Viền và tiêu đề cho bộ lọc
+        pnl_KH_north.setBounds(10, 68, 1564, 177); // Vị trí panel lọc
         pn_TKKhachHang.add(pnl_KH_north);
         pnl_KH_north.setLayout(null);
-        
-        JLabel lbl_kh_SDT = new JLabel("Số điện thoại : ");
-        lbl_kh_SDT.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lbl_kh_SDT.setBounds(38, 130, 125, 24);
-        pnl_KH_north.add(lbl_kh_SDT);
-        
-        JLabel lbl_kh_TimKiemKH = new JLabel("TÌM KIẾM KHÁCH HÀNG");
-        lbl_kh_TimKiemKH.setBounds(561, 11, 454, 43);
-        pnl_KH_north.add(lbl_kh_TimKiemKH);
-        lbl_kh_TimKiemKH.setFont(new Font("Times New Roman", Font.BOLD, 36));
-        
-        JLabel lbl_kh_TenKH = new JLabel("Tên khách hàng : ");
-        lbl_kh_TenKH.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lbl_kh_TenKH.setBounds(755, 65, 156, 24);
-        pnl_KH_north.add(lbl_kh_TenKH);
-        
+
         JLabel lbl_kh_MaKH = new JLabel("Mã khách hàng :");
-        lbl_kh_MaKH.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lbl_kh_MaKH.setBounds(38, 64, 148, 24);
+        lbl_kh_MaKH.setFont(FONT_LABEL_BOLD); // Font label
+        lbl_kh_MaKH.setForeground(COLOR_TEXT_DARK); // Màu chữ label
+        lbl_kh_MaKH.setBounds(38, 40, 148, 30); // Vị trí label mã KH
         pnl_KH_north.add(lbl_kh_MaKH);
-        
-        JLabel lbl_kh_Diachi = new JLabel("Địa chỉ :");
-        lbl_kh_Diachi.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lbl_kh_Diachi.setBounds(759, 131, 79, 24);
-        pnl_KH_north.add(lbl_kh_Diachi);
-        
+
         txt_kh_MaKH = new JTextField();
-        txt_kh_MaKH.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        txt_kh_MaKH.setBounds(196, 64, 471, 32);
+        txt_kh_MaKH.setFont(FONT_TEXT_FIELD); // Font text field
+        txt_kh_MaKH.setBounds(196, 40, 471, 32); // Vị trí text field mã KH
         pnl_KH_north.add(txt_kh_MaKH);
         txt_kh_MaKH.setColumns(10);
-        
+
+        JLabel lbl_kh_SDT = new JLabel("Số điện thoại :");
+        lbl_kh_SDT.setFont(FONT_LABEL_BOLD); // Font label
+        lbl_kh_SDT.setForeground(COLOR_TEXT_DARK); // Màu chữ label
+        lbl_kh_SDT.setBounds(38, 88, 148, 30); // Vị trí label SĐT
+        pnl_KH_north.add(lbl_kh_SDT);
+
         txt_kh_SDT = new JTextField();
-        txt_kh_SDT.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txt_kh_SDT.setFont(FONT_TEXT_FIELD); // Font text field
         txt_kh_SDT.setColumns(10);
-        txt_kh_SDT.setBounds(196, 127, 471, 32);
+        txt_kh_SDT.setBounds(196, 88, 471, 32); // Vị trí text field SĐT
         pnl_KH_north.add(txt_kh_SDT);
-        
+
+        JLabel lbl_kh_TenKH = new JLabel("Tên khách hàng :");
+        lbl_kh_TenKH.setFont(FONT_LABEL_BOLD); // Font label
+        lbl_kh_TenKH.setForeground(COLOR_TEXT_DARK); // Màu chữ label
+        lbl_kh_TenKH.setBounds(755, 40, 156, 30); // Vị trí label tên KH
+        pnl_KH_north.add(lbl_kh_TenKH);
+
         txt_kh_TenKH = new JTextField();
-        txt_kh_TenKH.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txt_kh_TenKH.setFont(FONT_TEXT_FIELD); // Font text field
         txt_kh_TenKH.setColumns(10);
-        txt_kh_TenKH.setBounds(919, 65, 471, 32);
+        txt_kh_TenKH.setBounds(919, 40, 471, 32); // Vị trí text field tên KH
         pnl_KH_north.add(txt_kh_TenKH);
-        
-        btn_kh_Lammoi = new JButton("Làm mới");
-        btn_kh_Lammoi.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_kh_Lammoi.setBounds(1424, 123, 108, 32);
-        pnl_KH_north.add(btn_kh_Lammoi);
-        
+
+        JLabel lbl_kh_Diachi = new JLabel("Địa chỉ :");
+        lbl_kh_Diachi.setFont(FONT_LABEL_BOLD); // Font label
+        lbl_kh_Diachi.setForeground(COLOR_TEXT_DARK); // Màu chữ label
+        lbl_kh_Diachi.setBounds(759, 88, 152, 30); // Vị trí label địa chỉ
+        pnl_KH_north.add(lbl_kh_Diachi);
+
         txt_kh_dc = new JTextField();
-        txt_kh_dc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txt_kh_dc.setFont(FONT_TEXT_FIELD); // Font text field
         txt_kh_dc.setColumns(10);
-        txt_kh_dc.setBounds(919, 123, 471, 32);
+        txt_kh_dc.setBounds(919, 88, 471, 32); // Vị trí text field địa chỉ
         pnl_KH_north.add(txt_kh_dc);
-        
-        JPanel pnl_KH_south = new JPanel();
-        pnl_KH_south.setBounds(0, 179, 1584, 760);
-        pn_TKKhachHang.add(pnl_KH_south);
-        pnl_KH_south.setLayout(null);
-        
+
+        // Tạo nút Làm mới (GIỮ NGUYÊN TÊN BIẾN btn_kh_Lammoi)
+        btn_kh_Lammoi = new JButton("Làm mới");
+        btn_kh_Lammoi.setFont(FONT_BUTTON_STANDARD); // Font nút
+        styleButton(btn_kh_Lammoi, COLOR_TEXT_MUTED); // Style nút phụ
+        btn_kh_Lammoi.setBounds(1424, 134, 118, 32); // Vị trí nút làm mới
+        pnl_KH_north.add(btn_kh_Lammoi);
+
+        // ScrollPane chứa bảng kết quả
         JScrollPane scrollPane_tkkh = new JScrollPane();
-        scrollPane_tkkh.setBounds(0, 0, 1584, 616);
-        pnl_KH_south.add(scrollPane_tkkh);
-        
-        table_tkkh = new JTable();
+        scrollPane_tkkh.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền ScrollPane
+        scrollPane_tkkh.setBounds(10, 256, 1564, 672); // Vị trí ScrollPane
+        pn_TKKhachHang.add(scrollPane_tkkh); // Add vào panel chính
+
+        // Tạo và style bảng table_tkkh
+        table_tkkh = new JTable() {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    // Hiệu ứng sọc vằn
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                } else {
+                    // Màu khi chọn dòng
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                    
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_tkkh); // Áp dụng style chung (font, header, row height...)
         table_tkkh.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null},
-        		{null, null, null, null},
-        		{null, null, null, null},
-        	},
+        	new Object[][] {}, // Bỏ dữ liệu mẫu null
         	new String[] {
-        		"M\u00E3 kh\u00E1ch h\u00E0ng", "T\u00EAn kh\u00E1ch h\u00E0ng", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9"
+        		"Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Địa chỉ"
         	}
         ));
+        // Giữ lại setPreferredWidth nếu cần thiết
         table_tkkh.getColumnModel().getColumn(0).setPreferredWidth(99);
         table_tkkh.getColumnModel().getColumn(1).setPreferredWidth(92);
-        table_tkkh.setFont(new Font("Times New Roman", Font.PLAIN, 25));
-        table_tkkh.getTableHeader().setFont(new Font("Times New Roman", Font.BOLD, 20));
-        table_tkkh.setRowHeight(30);
 
-        scrollPane_tkkh.setViewportView(table_tkkh);
+        scrollPane_tkkh.setViewportView(table_tkkh); // Đặt bảng vào ScrollPane
+
+        // ===== KẾT THÚC KHỐI CODE TÌM KIẾM KHÁCH HÀNG ĐÃ SỬA =====
         
+     // ===== BẮT ĐẦU KHỐI CODE CẬP NHẬT KHÁCH HÀNG ĐÃ SỬA =====
         JPanel pn_CapnhatKh = new JPanel();
         maincontent.add(pn_CapnhatKh, "capNhatKH");
         pn_CapnhatKh.setLayout(null);
-        
+        pn_CapnhatKh.setBackground(COLOR_BACKGROUND_PRIMARY);
+
+        JLabel lblHeader_CNKH = new JLabel("CẬP NHẬT THÔNG TIN KHÁCH HÀNG");
+        lblHeader_CNKH.setFont(FONT_TITLE_MAIN);
+        lblHeader_CNKH.setForeground(COLOR_PRIMARY_BLUE);
+        lblHeader_CNKH.setHorizontalAlignment(SwingConstants.CENTER);
+        lblHeader_CNKH.setBounds(0, 11, 1584, 46);
+        pn_CapnhatKh.add(lblHeader_CNKH);
+
         JPanel pnlNorth = new JPanel();
-        pnlNorth.setBounds(10, 11, 1564, 241);
+        pnlNorth.setBackground(COLOR_CARD_BACKGROUND);
+        pnlNorth.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Thông Tin Cập Nhật", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
+        pnlNorth.setBounds(10, 68, 1564, 241);
         pn_CapnhatKh.add(pnlNorth);
         pnlNorth.setLayout(null);
-        
-        JLabel lblTitle = new JLabel("CẬP NHẬT KHÁCH HÀNG");
-        lblTitle.setFont(new Font("Times New Roman", Font.BOLD, 36));
-        lblTitle.setBounds(548, 11, 452, 43);
-        pnlNorth.add(lblTitle);
-        
+
         JLabel lblMaKh = new JLabel("Mã khách hàng :");
-        lblMaKh.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lblMaKh.setBounds(192, 91, 141, 25);
+        lblMaKh.setFont(FONT_LABEL_BOLD);
+        lblMaKh.setForeground(COLOR_TEXT_DARK);
+        lblMaKh.setBounds(192, 40, 141, 30);
         pnlNorth.add(lblMaKh);
-        
-        JLabel lblTenKh = new JLabel("Tên khách hàng :");
-        lblTenKh.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lblTenKh.setBounds(686, 91, 163, 25);
-        pnlNorth.add(lblTenKh);
-        
-        JLabel lblSdt = new JLabel("Số điện thoại :");
-        lblSdt.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lblSdt.setBounds(192, 146, 141, 25);
-        pnlNorth.add(lblSdt);
-        
-        JLabel lblDC = new JLabel("Địa chỉ  :");
-        lblDC.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lblDC.setBounds(686, 146, 163, 25);
-        pnlNorth.add(lblDC);
-        
+
         txt_cnkh_MaKh = new JTextField();
-        txt_cnkh_MaKh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        txt_cnkh_MaKh.setBounds(354, 89, 301, 33);
-        txt_cnkh_MaKh.setFocusable(false);
-        txt_cnkh_MaKh.setBackground(new Color(240, 240, 240));
+        txt_cnkh_MaKh.setFont(FONT_TEXT_FIELD);
+        txt_cnkh_MaKh.setBounds(354, 40, 301, 33);
+        txt_cnkh_MaKh.setEditable(false); // Giữ nguyên trạng thái không sửa được
+        txt_cnkh_MaKh.setBackground(new Color(230, 230, 230)); // Giữ màu nền xám
         pnlNorth.add(txt_cnkh_MaKh);
         txt_cnkh_MaKh.setColumns(10);
-        
+
+        JLabel lblSdt = new JLabel("Số điện thoại :");
+        lblSdt.setFont(FONT_LABEL_BOLD);
+        lblSdt.setForeground(COLOR_TEXT_DARK);
+        lblSdt.setBounds(192, 90, 141, 30);
+        pnlNorth.add(lblSdt);
+
         txt_cnkh_SDt = new JTextField();
-        txt_cnkh_SDt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txt_cnkh_SDt.setFont(FONT_TEXT_FIELD);
         txt_cnkh_SDt.setColumns(10);
-        txt_cnkh_SDt.setBounds(354, 144, 301, 33);
+        txt_cnkh_SDt.setBounds(354, 90, 301, 33);
         pnlNorth.add(txt_cnkh_SDt);
-        
+
+        JLabel lblTenKh = new JLabel("Tên khách hàng :");
+        lblTenKh.setFont(FONT_LABEL_BOLD);
+        lblTenKh.setForeground(COLOR_TEXT_DARK);
+        lblTenKh.setBounds(700, 40, 163, 30);
+        pnlNorth.add(lblTenKh);
+
         txt_cnkh_tenkh = new JTextField();
-        txt_cnkh_tenkh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txt_cnkh_tenkh.setFont(FONT_TEXT_FIELD);
         txt_cnkh_tenkh.setColumns(10);
-        txt_cnkh_tenkh.setBounds(859, 89, 488, 33);
+        txt_cnkh_tenkh.setBounds(870, 40, 550, 33);
         pnlNorth.add(txt_cnkh_tenkh);
-        
-        btn_cnkh_CapNhat = new JButton("Cập nhật");
-        btn_cnkh_CapNhat.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        btn_cnkh_CapNhat.setBounds(1011, 194, 118, 31);
-        pnlNorth.add(btn_cnkh_CapNhat);
-        
-        btn_cnkh_Khoiphuc = new JButton("Khôi phục");
-        btn_cnkh_Khoiphuc.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        btn_cnkh_Khoiphuc.setBounds(859, 194, 118, 31);
-        pnlNorth.add(btn_cnkh_Khoiphuc);
-        
+
+        JLabel lblDC = new JLabel("Địa chỉ  :");
+        lblDC.setFont(FONT_LABEL_BOLD);
+        lblDC.setForeground(COLOR_TEXT_DARK);
+        lblDC.setBounds(700, 90, 163, 30);
+        pnlNorth.add(lblDC);
+
         txt_cnkh_dc = new JTextField();
-        txt_cnkh_dc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txt_cnkh_dc.setFont(FONT_TEXT_FIELD);
         txt_cnkh_dc.setColumns(10);
-        txt_cnkh_dc.setBounds(859, 138, 488, 33);
+        txt_cnkh_dc.setBounds(870, 90, 550, 33);
         pnlNorth.add(txt_cnkh_dc);
-        
+
+        btn_cnkh_Khoiphuc = new JButton("Khôi phục");
+        btn_cnkh_Khoiphuc.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_cnkh_Khoiphuc, COLOR_TEXT_MUTED);
+        btn_cnkh_Khoiphuc.setBounds(1150, 180, 130, 40);
+        pnlNorth.add(btn_cnkh_Khoiphuc);
+
+        btn_cnkh_CapNhat = new JButton("Cập nhật");
+        btn_cnkh_CapNhat.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_cnkh_CapNhat, COLOR_SUCCESS_GREEN);
+        btn_cnkh_CapNhat.setBounds(1300, 180, 130, 40);
+        pnlNorth.add(btn_cnkh_CapNhat);
+
         JPanel pnlTimkiem = new JPanel();
-        pnlTimkiem.setBounds(191, 263, 1191, 84);
-        
-        Font titleFont = new Font("Times New Roman", Font.ITALIC, 20);
-        TitledBorder border = BorderFactory.createTitledBorder("Tìm kiếm");
-        border.setTitleFont(titleFont);
+        pnlTimkiem.setBackground(COLOR_CARD_BACKGROUND);
+        Font titleFont = FONT_LABEL_BOLD; // Dùng font chuẩn
+        TitledBorder border = BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Tìm Kiếm Khách Hàng Cần Cập Nhật", TitledBorder.LEADING, TitledBorder.TOP,
+             titleFont, COLOR_PRIMARY_BLUE
+        );
         pnlTimkiem.setBorder(border);
-        
+        pnlTimkiem.setBounds(10, 320, 1564, 84);
         pn_CapnhatKh.add(pnlTimkiem);
         pnlTimkiem.setLayout(null);
-        
+
         JLabel lblMaKh_TK = new JLabel("Mã khách hàng :");
-        lblMaKh_TK.setBounds(10, 24, 140, 24);
-        lblMaKh_TK.setFont(new Font("Times New Roman", Font.BOLD, 20));
+        lblMaKh_TK.setBounds(40, 30, 140, 30);
+        lblMaKh_TK.setFont(FONT_LABEL_BOLD);
+        lblMaKh_TK.setForeground(COLOR_TEXT_DARK);
         pnlTimkiem.add(lblMaKh_TK);
-        
+
         txtMKH_TK = new JTextField();
-        txtMKH_TK.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtMKH_TK.setFont(FONT_TEXT_FIELD);
         txtMKH_TK.setColumns(10);
-        txtMKH_TK.setBounds(174, 22, 301, 33);
+        txtMKH_TK.setBounds(190, 30, 301, 33);
         pnlTimkiem.add(txtMKH_TK);
-        
+
         JLabel lblTenKh_TK = new JLabel("Tên khách hàng :");
-        lblTenKh_TK.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        lblTenKh_TK.setBounds(514, 24, 163, 25);
+        lblTenKh_TK.setFont(FONT_LABEL_BOLD);
+        lblTenKh_TK.setForeground(COLOR_TEXT_DARK);
+        lblTenKh_TK.setBounds(540, 30, 163, 30);
         pnlTimkiem.add(lblTenKh_TK);
-        
+
         txtTenKH_TK = new JTextField();
-        txtTenKH_TK.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        txtTenKH_TK.setFont(FONT_TEXT_FIELD);
         txtTenKH_TK.setColumns(10);
-        txtTenKH_TK.setBounds(687, 22, 301, 33);
+        txtTenKH_TK.setBounds(710, 30, 471, 33);
         pnlTimkiem.add(txtTenKH_TK);
-        
-        btnLammoi_CNKH = new JButton("Làm mới");
-        btnLammoi_CNKH.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        btnLammoi_CNKH.setBounds(1039, 24, 118, 31);
+
+        btnLammoi_CNKH = new JButton("Làm mới TK");
+        btnLammoi_CNKH.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnLammoi_CNKH, COLOR_TEXT_MUTED);
+        btnLammoi_CNKH.setBounds(1424, 28, 130, 35);
         pnlTimkiem.add(btnLammoi_CNKH);
-        
+
         JScrollPane scrollPane_CapNhatKH = new JScrollPane();
-        scrollPane_CapNhatKH.setBounds(10, 358, 1564, 570);
+        scrollPane_CapNhatKH.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scrollPane_CapNhatKH.setBounds(10, 415, 1564, 513);
         pn_CapnhatKh.add(scrollPane_CapNhatKH);
-        
-        table_CapNhatKH = new JTable();
-        table_CapNhatKH.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        table_CapNhatKH.getTableHeader().setFont(new Font("Times New Roman", Font.BOLD, 20));
-        table_CapNhatKH.setRowHeight(30);
+
+        table_CapNhatKH = new JTable() {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                // JTable table = (JTable) c.getParent(); // Bỏ dòng này
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground()); // Dùng this
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                    // Không set foreground trắng nữa
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_CapNhatKH);
         table_CapNhatKH.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null},
-        		{null, null, null, null},
-        		{null, null, null, null},
-        	},
+        	new Object[][] {},
         	new String[] {
-        		"M\u00E3 kh\u00E1ch h\u00E0ng", "T\u00EAn Kh\u00E1ch h\u00E0ng", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9"
+        		"Mã khách hàng", "Tên Khách hàng", "Số điện thoại", "Địa chỉ"
         	}
         ));
         scrollPane_CapNhatKH.setViewportView(table_CapNhatKH);
-        new KhachHang_Controller(this);
+
+        new KhachHang_Controller(this); // Giữ nguyên dòng này
+
+        // ===== KẾT THÚC KHỐI CODE CẬP NHẬT KHÁCH HÀNG ĐÃ SỬA =====
         
+     // ===== BẮT ĐẦU KHỐI CODE CẬP NHẬT THUỐC ĐÃ SỬA =====
         JPanel pn_Capnhatthuoc = new JPanel();
         maincontent.add(pn_Capnhatthuoc, "Capnhatthuoc");
         pn_Capnhatthuoc.setLayout(null);
-        
+        pn_Capnhatthuoc.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lbl_Capnhatthuoc = new JLabel("CẬP NHẬT THÔNG TIN THUỐC"); // Tiêu đề
+        lbl_Capnhatthuoc.setFont(FONT_TITLE_MAIN);
+        lbl_Capnhatthuoc.setForeground(COLOR_PRIMARY_BLUE);
+        lbl_Capnhatthuoc.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl_Capnhatthuoc.setBounds(0, 11, 1584, 59);
+        pn_Capnhatthuoc.add(lbl_Capnhatthuoc); // Add vào panel chính
+
+        // Panel chứa form nhập thông tin cập nhật thuốc
         JPanel pn_Capnhatthuoc_nhaptt = new JPanel();
-        pn_Capnhatthuoc_nhaptt.setBounds(0, 0, 1584, 429);
+        pn_Capnhatthuoc_nhaptt.setBackground(COLOR_CARD_BACKGROUND); // Nền trắng
+        pn_Capnhatthuoc_nhaptt.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Thông Tin Thuốc", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        )); // Viền và tiêu đề
+        pn_Capnhatthuoc_nhaptt.setBounds(10, 80, 1564, 410); // Điều chỉnh vị trí, kích thước
         pn_Capnhatthuoc.add(pn_Capnhatthuoc_nhaptt);
         pn_Capnhatthuoc_nhaptt.setLayout(null);
-        
+
+        // Panel chứa ảnh
         JPanel pn_chuaanh = new JPanel();
-        pn_chuaanh.setBorder(new LineBorder(new Color(0, 0, 0)));
-        pn_chuaanh.setBounds(34, 51, 330, 300);
+        pn_chuaanh.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền nhạt
+        pn_chuaanh.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền xám nhạt
+        pn_chuaanh.setBounds(34, 40, 330, 300); // Điều chỉnh vị trí
         pn_Capnhatthuoc_nhaptt.add(pn_chuaanh);
-        pn_chuaanh.setLayout(null);
-        
-        JLabel lb_Chuaanh = new JLabel("New label");
-        lb_Chuaanh.setBounds(0, 0, 330, 300);
-        pn_chuaanh.add(lb_Chuaanh);
-        
+        pn_chuaanh.setLayout(new BorderLayout(0, 0)); // Dùng BorderLayout
+
+        JLabel lb_Chuaanh = new JLabel("Chưa có ảnh", SwingConstants.CENTER); // Text mặc định
+        lb_Chuaanh.setFont(FONT_DETAIL_ITALIC); // Font italic
+        lb_Chuaanh.setForeground(COLOR_TEXT_MUTED); // Màu nhạt
+        pn_chuaanh.add(lb_Chuaanh, BorderLayout.CENTER);
+
         JButton btn_cnt_ChonAnh = new JButton("Chọn Ảnh");
-        btn_cnt_ChonAnh.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_cnt_ChonAnh.setBounds(125, 363, 132, 40);
+        btn_cnt_ChonAnh.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_cnt_ChonAnh, COLOR_TEXT_MUTED);
+        btn_cnt_ChonAnh.setBounds(125, 350, 132, 40); // Điều chỉnh vị trí
         pn_Capnhatthuoc_nhaptt.add(btn_cnt_ChonAnh);
-        
-        JLabel lbl_Capnhatthuoc = new JLabel("Cập Nhật Thuốc");
-        lbl_Capnhatthuoc.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        lbl_Capnhatthuoc.setBounds(669, 11, 285, 59);
-        pn_Capnhatthuoc_nhaptt.add(lbl_Capnhatthuoc);
-        
+
+        // Các label và input fields
+        int labelX = 400; // Vị trí X cột 1
+        int inputX = 530; // Vị trí X cột 1
+        int labelX2 = 1000; // Vị trí X cột 2
+        int inputX2 = 1140; // Vị trí X cột 2
+        int startY = 40; // Vị trí Y dòng đầu
+        int height = 33; // Chiều cao component
+        int vGap = 12; // Khoảng cách dọc
+
         JLabel lbl_cntmt = new JLabel("Mã Thuốc :");
-        lbl_cntmt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cntmt.setBounds(442, 75, 108, 30);
+        lbl_cntmt.setFont(FONT_LABEL_BOLD);
+        lbl_cntmt.setForeground(COLOR_TEXT_DARK);
+        lbl_cntmt.setBounds(labelX, startY, 120, height);
         pn_Capnhatthuoc_nhaptt.add(lbl_cntmt);
-        
-        JLabel lbl_cnttt = new JLabel("Tên Thuốc :");
-        lbl_cnttt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cnttt.setBounds(442, 116, 108, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cnttt);
-        
-        JLabel lbl_cntsl = new JLabel("Số Lượng :");
-        lbl_cntsl.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cntsl.setBounds(442, 157, 108, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cntsl);
-        
-        JLabel lbl_cntgn = new JLabel("Giá Nhập :");
-        lbl_cntgn.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cntgn.setBounds(442, 198, 108, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cntgn);
-        
-        JLabel lbl_cntgb = new JLabel("Giá Bán :");
-        lbl_cntgb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cntgb.setBounds(442, 239, 108, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cntgb);
-        
-        JLabel lbl_cntdvt = new JLabel("Đơn Vị Tính :");
-        lbl_cntdvt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cntdvt.setBounds(442, 280, 115, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cntdvt);
-        
+
         text_cntmt = new JTextField();
-        text_cntmt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        text_cntmt.setBounds(560, 75, 394, 30);
+        text_cntmt.setFont(FONT_TEXT_FIELD);
+        text_cntmt.setBounds(inputX, startY, 400, height);
+        text_cntmt.setEditable(false); // Mã thường không sửa
+        text_cntmt.setBackground(new Color(230, 230, 230)); // Nền xám
         pn_Capnhatthuoc_nhaptt.add(text_cntmt);
         text_cntmt.setColumns(10);
-        
+
+        JLabel lbl_cnttt = new JLabel("Tên Thuốc :");
+        lbl_cnttt.setFont(FONT_LABEL_BOLD);
+        lbl_cnttt.setForeground(COLOR_TEXT_DARK);
+        lbl_cnttt.setBounds(labelX, startY + height + vGap, 120, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cnttt);
+
         text_cnttt = new JTextField();
-        text_cnttt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_cnttt.setFont(FONT_TEXT_FIELD);
         text_cnttt.setColumns(10);
-        text_cnttt.setBounds(560, 116, 394, 30);
+        text_cnttt.setBounds(inputX, startY + height + vGap, 400, height);
         pn_Capnhatthuoc_nhaptt.add(text_cnttt);
-        
+
+        JLabel lbl_cntsl = new JLabel("Số Lượng :");
+        lbl_cntsl.setFont(FONT_LABEL_BOLD);
+        lbl_cntsl.setForeground(COLOR_TEXT_DARK);
+        lbl_cntsl.setBounds(labelX, startY + 2 * (height + vGap), 120, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cntsl);
+
         text_cntsl = new JTextField();
-        text_cntsl.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_cntsl.setFont(FONT_TEXT_FIELD);
         text_cntsl.setColumns(10);
-        text_cntsl.setBounds(560, 157, 394, 30);
+        text_cntsl.setBounds(inputX, startY + 2 * (height + vGap), 400, height);
         pn_Capnhatthuoc_nhaptt.add(text_cntsl);
-        
+
+        JLabel lbl_cntgn = new JLabel("Giá Nhập :");
+        lbl_cntgn.setFont(FONT_LABEL_BOLD);
+        lbl_cntgn.setForeground(COLOR_TEXT_DARK);
+        lbl_cntgn.setBounds(labelX, startY + 3 * (height + vGap), 120, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cntgn);
+
         text_cntgn = new JTextField();
-        text_cntgn.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_cntgn.setFont(FONT_TEXT_FIELD);
         text_cntgn.setColumns(10);
-        text_cntgn.setBounds(560, 198, 394, 30);
+        text_cntgn.setBounds(inputX, startY + 3 * (height + vGap), 400, height);
         pn_Capnhatthuoc_nhaptt.add(text_cntgn);
-        
+
+        JLabel lbl_cntgb = new JLabel("Giá Bán :");
+        lbl_cntgb.setFont(FONT_LABEL_BOLD);
+        lbl_cntgb.setForeground(COLOR_TEXT_DARK);
+        lbl_cntgb.setBounds(labelX, startY + 4 * (height + vGap), 120, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cntgb);
+
         text_cntgb = new JTextField();
-        text_cntgb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_cntgb.setFont(FONT_TEXT_FIELD);
         text_cntgb.setColumns(10);
-        text_cntgb.setBounds(560, 239, 394, 30);
+        text_cntgb.setBounds(inputX, startY + 4 * (height + vGap), 400, height);
         pn_Capnhatthuoc_nhaptt.add(text_cntgb);
-        
-        JLabel lbl_cntncc = new JLabel("Nhà Cung Cấp :");
-        lbl_cntncc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cntncc.setBounds(1036, 75, 125, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cntncc);
-        
-        JLabel lbl_cnthsd = new JLabel("Hạn Sử Dụng :");
-        lbl_cnthsd.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cnthsd.setBounds(1036, 116, 125, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cnthsd);
-        
-        JLabel lbl_cnttkt = new JLabel("Tên Kệ Thuốc :");
-        lbl_cnttkt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cnttkt.setBounds(1036, 157, 125, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cnttkt);
-        
-        JLabel lbl_cnttp = new JLabel("Thành Phần :");
-        lbl_cnttp.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cnttp.setBounds(1036, 198, 108, 30);
-        pn_Capnhatthuoc_nhaptt.add(lbl_cnttp);
-        
+
+        JLabel lbl_cntdvt = new JLabel("Đơn Vị Tính :");
+        lbl_cntdvt.setFont(FONT_LABEL_BOLD);
+        lbl_cntdvt.setForeground(COLOR_TEXT_DARK);
+        lbl_cntdvt.setBounds(labelX, startY + 5 * (height + vGap), 120, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cntdvt);
+
         JComboBox<String> cb_cntdvt = new JComboBox<String>();
-        cb_cntdvt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        cb_cntdvt.setBounds(560, 280, 394, 30);
+        cb_cntdvt.setFont(FONT_TEXT_FIELD);
+        cb_cntdvt.setBounds(inputX, startY + 5 * (height + vGap), 400, height);
         pn_Capnhatthuoc_nhaptt.add(cb_cntdvt);
-        
+
+        JLabel lbl_cntncc = new JLabel("Nhà Cung Cấp :");
+        lbl_cntncc.setFont(FONT_LABEL_BOLD);
+        lbl_cntncc.setForeground(COLOR_TEXT_DARK);
+        lbl_cntncc.setBounds(labelX2, startY, 130, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cntncc);
+
         JComboBox<String> cb_cntncc = new JComboBox<String>();
-        cb_cntncc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        cb_cntncc.setBounds(1168, 75, 394, 30);
+        cb_cntncc.setFont(FONT_TEXT_FIELD);
+        cb_cntncc.setBounds(inputX2, startY, 400, height);
         pn_Capnhatthuoc_nhaptt.add(cb_cntncc);
-        
+
+        JLabel lbl_cnthsd = new JLabel("Hạn Sử Dụng :");
+        lbl_cnthsd.setFont(FONT_LABEL_BOLD);
+        lbl_cnthsd.setForeground(COLOR_TEXT_DARK);
+        lbl_cnthsd.setBounds(labelX2, startY + height + vGap, 130, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cnthsd);
+
+        // Dùng JDateChooser cho HSD
+        JDateChooser date_cnthsd = new JDateChooser();
+        date_cnthsd.setFont(FONT_TEXT_FIELD);
+        date_cnthsd.setDateFormatString("dd/MM/yyyy");
+        date_cnthsd.setBounds(inputX2, startY + height + vGap, 400, height);
+        pn_Capnhatthuoc_nhaptt.add(date_cnthsd);
+        // Đại Ca cần thay biến text_cnthsd thành date_cnthsd trong code logic
+
+        JLabel lbl_cnttkt = new JLabel("Tên Kệ Thuốc :");
+        lbl_cnttkt.setFont(FONT_LABEL_BOLD);
+        lbl_cnttkt.setForeground(COLOR_TEXT_DARK);
+        lbl_cnttkt.setBounds(labelX2, startY + 2 * (height + vGap), 130, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cnttkt);
+
         JComboBox<String> cb_cnttkt = new JComboBox<String>();
-        cb_cnttkt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        cb_cnttkt.setBounds(1168, 157, 394, 30);
+        cb_cnttkt.setFont(FONT_TEXT_FIELD);
+        cb_cnttkt.setBounds(inputX2, startY + 2 * (height + vGap), 400, height);
         pn_Capnhatthuoc_nhaptt.add(cb_cnttkt);
-        
-        text_cnthsd = new JTextField();
-        text_cnthsd.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        text_cnthsd.setColumns(10);
-        text_cnthsd.setBounds(1168, 116, 394, 30);
-        pn_Capnhatthuoc_nhaptt.add(text_cnthsd);
-        
+
+        JLabel lbl_cnttp = new JLabel("Thành Phần :");
+        lbl_cnttp.setFont(FONT_LABEL_BOLD);
+        lbl_cnttp.setForeground(COLOR_TEXT_DARK);
+        lbl_cnttp.setBounds(labelX2, startY + 3 * (height + vGap), 130, height);
+        pn_Capnhatthuoc_nhaptt.add(lbl_cnttp);
+
+        // Dùng JScrollPane cho JTextArea
+        JScrollPane scrollPane_cnttp = new JScrollPane();
+        scrollPane_cnttp.setBounds(inputX2, startY + 3 * (height + vGap), 400, 110);
+        pn_Capnhatthuoc_nhaptt.add(scrollPane_cnttp);
+
         JTextArea textArea_cnttp = new JTextArea();
         textArea_cnttp.setWrapStyleWord(true);
         textArea_cnttp.setLineWrap(true);
-        textArea_cnttp.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        textArea_cnttp.setBounds(1036, 226, 526, 84);
-        pn_Capnhatthuoc_nhaptt.add(textArea_cnttp);
-        
+        textArea_cnttp.setFont(FONT_TEXT_FIELD);
+        scrollPane_cnttp.setViewportView(textArea_cnttp); // Add TextArea vào ScrollPane
+
         JButton btn_cntKhoiphuc = new JButton("Khôi Phục");
-        btn_cntKhoiphuc.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        	}
-        });
-        btn_cntKhoiphuc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_cntKhoiphuc.setBounds(1244, 363, 132, 40);
+        btn_cntKhoiphuc.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_cntKhoiphuc, COLOR_TEXT_MUTED);
+        btn_cntKhoiphuc.setBounds(1260, 350, 132, 40); // Điều chỉnh vị trí
         pn_Capnhatthuoc_nhaptt.add(btn_cntKhoiphuc);
-        
+
         JButton btn_cntCapnhat = new JButton("Cập Nhật");
-        btn_cntCapnhat.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_cntCapnhat.setBounds(1424, 363, 138, 40);
+        btn_cntCapnhat.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_cntCapnhat, COLOR_SUCCESS_GREEN);
+        btn_cntCapnhat.setBounds(1412, 350, 132, 40); // Điều chỉnh vị trí
         pn_Capnhatthuoc_nhaptt.add(btn_cntCapnhat);
-        
+
+        // Panel chứa bộ lọc tìm kiếm thuốc cần cập nhật
         JPanel pn_Capnhatthuoc_tk = new JPanel();
-        pn_Capnhatthuoc_tk.setBorder(new TitledBorder(null, "T\u00ECm Ki\u1EBFm", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-        pn_Capnhatthuoc_tk.setBounds(10, 429, 1564, 80);
+        pn_Capnhatthuoc_tk.setBackground(COLOR_CARD_BACKGROUND);
+        pn_Capnhatthuoc_tk.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Tìm Kiếm Thuốc Cần Cập Nhật", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
+        pn_Capnhatthuoc_tk.setBounds(10, 500, 1564, 80); // Điều chỉnh vị trí
         pn_Capnhatthuoc.add(pn_Capnhatthuoc_tk);
         pn_Capnhatthuoc_tk.setLayout(null);
-        
+
         JLabel lbl_cnt_tkmt = new JLabel("Mã Thuốc :");
-        lbl_cnt_tkmt.setBounds(40, 29, 91, 24);
-        lbl_cnt_tkmt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        lbl_cnt_tkmt.setBounds(40, 30, 91, 30); // Điều chỉnh
+        lbl_cnt_tkmt.setFont(FONT_LABEL_BOLD);
+        lbl_cnt_tkmt.setForeground(COLOR_TEXT_DARK);
         pn_Capnhatthuoc_tk.add(lbl_cnt_tkmt);
-        
-        JLabel lbl_cnt_tktt = new JLabel("Tên Thuốc :");
-        lbl_cnt_tktt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cnt_tktt.setBounds(349, 23, 108, 30);
-        pn_Capnhatthuoc_tk.add(lbl_cnt_tktt);
-        
-        JLabel lbl_cnt_tktkt = new JLabel("Tên Kệ Thuốc :");
-        lbl_cnt_tktkt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_cnt_tktkt.setBounds(779, 23, 125, 30);
-        pn_Capnhatthuoc_tk.add(lbl_cnt_tktkt);
-        
+
         text_cnt_tkmt = new JTextField();
+        text_cnt_tkmt.setFont(FONT_TEXT_FIELD);
         text_cnt_tkmt.setColumns(10);
-        text_cnt_tkmt.setBounds(141, 23, 198, 30);
+        text_cnt_tkmt.setBounds(141, 30, 198, 30); // Điều chỉnh
         pn_Capnhatthuoc_tk.add(text_cnt_tkmt);
-        
+
+        JLabel lbl_cnt_tktt = new JLabel("Tên Thuốc :");
+        lbl_cnt_tktt.setFont(FONT_LABEL_BOLD);
+        lbl_cnt_tktt.setForeground(COLOR_TEXT_DARK);
+        lbl_cnt_tktt.setBounds(370, 30, 108, 30); // Điều chỉnh
+        pn_Capnhatthuoc_tk.add(lbl_cnt_tktt);
+
         text_cnt_tktt = new JTextField();
+        text_cnt_tktt.setFont(FONT_TEXT_FIELD);
         text_cnt_tktt.setColumns(10);
-        text_cnt_tktt.setBounds(467, 23, 302, 30);
+        text_cnt_tktt.setBounds(480, 30, 302, 30); // Điều chỉnh
         pn_Capnhatthuoc_tk.add(text_cnt_tktt);
-        
+
+        JLabel lbl_cnt_tktkt = new JLabel("Tên Kệ Thuốc :");
+        lbl_cnt_tktkt.setFont(FONT_LABEL_BOLD);
+        lbl_cnt_tktkt.setForeground(COLOR_TEXT_DARK);
+        lbl_cnt_tktkt.setBounds(820, 30, 125, 30); // Điều chỉnh
+        pn_Capnhatthuoc_tk.add(lbl_cnt_tktkt);
+
         JComboBox<String> cb_cnt_tktkt = new JComboBox<String>();
-        cb_cnt_tktkt.setBounds(914, 23, 394, 30);
+        cb_cnt_tktkt.setFont(FONT_TEXT_FIELD);
+        cb_cnt_tktkt.setBounds(950, 30, 394, 30); // Điều chỉnh
         pn_Capnhatthuoc_tk.add(cb_cnt_tktkt);
-        
+
         JButton btn_cnt_tk_lammoi = new JButton("Làm Mới");
-        btn_cnt_tk_lammoi.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_cnt_tk_lammoi.setBounds(1398, 20, 138, 40);
+        btn_cnt_tk_lammoi.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_cnt_tk_lammoi, COLOR_TEXT_MUTED);
+        btn_cnt_tk_lammoi.setBounds(1406, 25, 138, 40); // Điều chỉnh
         pn_Capnhatthuoc_tk.add(btn_cnt_tk_lammoi);
-        
-        JPanel pn_capnhatthoc_table = new JPanel();
-        pn_capnhatthoc_table.setBounds(10, 520, 1564, 419);
-        pn_Capnhatthuoc.add(pn_capnhatthoc_table);
-        pn_capnhatthoc_table.setLayout(null);
-        
+
+        // ScrollPane chứa bảng danh sách thuốc
         JScrollPane scP_cnt_table = new JScrollPane();
-        scP_cnt_table.setBounds(0, 0, 1564, 419);
-        pn_capnhatthoc_table.add(scP_cnt_table);
-        
-        table_Capnhatthuoc = new JTable();
+        scP_cnt_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scP_cnt_table.setBounds(10, 590, 1564, 338); // Điều chỉnh vị trí, kích thước
+        pn_Capnhatthuoc.add(scP_cnt_table);
+
+        // Tạo và style bảng table_Capnhatthuoc
+        table_Capnhatthuoc = new JTable() {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_Capnhatthuoc);
         table_Capnhatthuoc.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null, null, null, null, null},
-        	},
+        	new Object[][] {},
         	new String[] {
-        		"M\u00E3 Thu\u1ED1c", "T\u00EAn Thu\u1ED1c", "S\u1ED1 L\u01B0\u1EE3ng", "Gi\u00E1 Nh\u1EADp", "Gi\u00E1 B\u00E1n", "\u0110\u01A1n V\u1ECB T\u00EDnh", "Nh\u00E0 Cung C\u1EA5p", "H\u1EA1n S\u1EED D\u1EE5ng", "T\u00EAn K\u1EC7 Thu\u1ED1c", "Th\u00E0nh Ph\u1EA7n"
+        		"Mã Thuốc", "Tên Thuốc", "Số Lượng", "Giá Nhập", "Giá Bán", "Đơn Vị Tính", "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc", "Thành Phần"
         	}
         ));
+        // Giữ lại các setPreferredWidth
         table_Capnhatthuoc.getColumnModel().getColumn(0).setPreferredWidth(30);
         table_Capnhatthuoc.getColumnModel().getColumn(1).setPreferredWidth(130);
         table_Capnhatthuoc.getColumnModel().getColumn(2).setPreferredWidth(15);
@@ -1392,184 +1568,226 @@ public class TrangChu_GUI {
         table_Capnhatthuoc.getColumnModel().getColumn(8).setPreferredWidth(100);
         table_Capnhatthuoc.getColumnModel().getColumn(9).setPreferredWidth(300);
         scP_cnt_table.setViewportView(table_Capnhatthuoc);
-        
-        JPanel pn_themthuoc1 = new JPanel();
+
+        // ===== KẾT THÚC KHỐI CODE CẬP NHẬT THUỐC =====
+
+
+        // ===== BẮT ĐẦU KHỐI CODE THÊM THUỐC (TỪNG LOẠI) ĐÃ SỬA =====
+        JPanel pn_themthuoc1 = new JPanel(); // Panel chính cho tab này
         maincontent.add(pn_themthuoc1, "Themthuocthuong");
         pn_themthuoc1.setLayout(null);
-        
-        JPanel pn_Themthuoc = new JPanel();
+        pn_themthuoc1.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lbl_Themthuoc = new JLabel("THÊM THUỐC MỚI"); // Tiêu đề
+        lbl_Themthuoc.setFont(FONT_TITLE_MAIN);
+        lbl_Themthuoc.setForeground(COLOR_PRIMARY_BLUE);
+        lbl_Themthuoc.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl_Themthuoc.setBounds(0, 11, 1584, 47);
+        pn_themthuoc1.add(lbl_Themthuoc); // Add vào panel chính
+
+        // Panel chứa form nhập thông tin thêm thuốc
+        JPanel pn_Themthuoc = new JPanel(); // Giữ nguyên tên biến
+        pn_Themthuoc.setBackground(COLOR_CARD_BACKGROUND);
+        pn_Themthuoc.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Thông Tin Thuốc Mới", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
         pn_Themthuoc.setLayout(null);
-        pn_Themthuoc.setBounds(0, 0, 1584, 429);
-        pn_themthuoc1.add(pn_Themthuoc);
-        
+        pn_Themthuoc.setBounds(10, 68, 1564, 410); // Điều chỉnh
+        pn_themthuoc1.add(pn_Themthuoc); // Add vào panel chính
+
+        // Panel chứa ảnh (tương tự panel Cập Nhật)
         JPanel pn_chuaanh_1 = new JPanel();
-        pn_chuaanh_1.setLayout(null);
-        pn_chuaanh_1.setBorder(new LineBorder(new Color(0, 0, 0)));
-        pn_chuaanh_1.setBounds(34, 51, 330, 300);
+        pn_chuaanh_1.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        pn_chuaanh_1.setBackground(COLOR_BACKGROUND_PRIMARY);
+        pn_chuaanh_1.setBounds(34, 40, 330, 300);
         pn_Themthuoc.add(pn_chuaanh_1);
-        
-        JLabel lb_Chuaanh_1 = new JLabel("New label");
-        lb_Chuaanh_1.setBounds(0, 0, 330, 300);
-        pn_chuaanh_1.add(lb_Chuaanh_1);
-        
+        pn_chuaanh_1.setLayout(new BorderLayout(0, 0));
+
+        JLabel lb_Chuaanh_1 = new JLabel("Chưa có ảnh", SwingConstants.CENTER);
+        lb_Chuaanh_1.setFont(FONT_DETAIL_ITALIC);
+        lb_Chuaanh_1.setForeground(COLOR_TEXT_MUTED);
+        pn_chuaanh_1.add(lb_Chuaanh_1, BorderLayout.CENTER);
+
         JButton btn_ChonAnh_1 = new JButton("Chọn Ảnh");
-        btn_ChonAnh_1.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_ChonAnh_1.setBounds(125, 363, 132, 40);
+        btn_ChonAnh_1.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ChonAnh_1, COLOR_TEXT_MUTED);
+        btn_ChonAnh_1.setBounds(125, 350, 132, 40);
         pn_Themthuoc.add(btn_ChonAnh_1);
-        
-        JLabel lbl_Themthuoc = new JLabel("THÊM THUỐC");
-        lbl_Themthuoc.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        lbl_Themthuoc.setBounds(669, 11, 285, 47);
-        pn_Themthuoc.add(lbl_Themthuoc);
-        
+
+        // Các label và input fields (tương tự Cập Nhật, chỉ đổi tên biến)
         JLabel lbl_ttmt = new JLabel("Mã Thuốc :");
-        lbl_ttmt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttmt.setBounds(442, 75, 108, 30);
+        lbl_ttmt.setFont(FONT_LABEL_BOLD);
+        lbl_ttmt.setForeground(COLOR_TEXT_DARK);
+        lbl_ttmt.setBounds(labelX, startY, 120, height);
         pn_Themthuoc.add(lbl_ttmt);
-        
-        JLabel lbl_tttt = new JLabel("Tên Thuốc :");
-        lbl_tttt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_tttt.setBounds(442, 116, 108, 30);
-        pn_Themthuoc.add(lbl_tttt);
-        
-        JLabel lbl_ttsl = new JLabel("Số Lượng :");
-        lbl_ttsl.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttsl.setBounds(442, 157, 108, 30);
-        pn_Themthuoc.add(lbl_ttsl);
-        
-        JLabel lbl_ttgn = new JLabel("Giá Nhập :");
-        lbl_ttgn.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttgn.setBounds(442, 198, 108, 30);
-        pn_Themthuoc.add(lbl_ttgn);
-        
-        JLabel lbl_ttgb = new JLabel("Giá Bán :");
-        lbl_ttgb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttgb.setBounds(442, 239, 108, 30);
-        pn_Themthuoc.add(lbl_ttgb);
-        
-        JLabel lbl_ttdvt = new JLabel("Đơn Vị Tính :");
-        lbl_ttdvt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttdvt.setBounds(442, 280, 115, 30);
-        pn_Themthuoc.add(lbl_ttdvt);
-        
+
         text_ttmt = new JTextField();
-        text_ttmt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_ttmt.setFont(FONT_TEXT_FIELD);
         text_ttmt.setColumns(10);
-        text_ttmt.setBounds(560, 75, 394, 30);
+        text_ttmt.setBounds(inputX, startY, 400, height);
+        text_ttmt.setEditable(false); // Mã thường tự sinh hoặc không cho nhập
+        text_ttmt.setBackground(new Color(230, 230, 230));
         pn_Themthuoc.add(text_ttmt);
-        
+
+        JLabel lbl_tttt = new JLabel("Tên Thuốc :");
+        lbl_tttt.setFont(FONT_LABEL_BOLD);
+        lbl_tttt.setForeground(COLOR_TEXT_DARK);
+        lbl_tttt.setBounds(labelX, startY + height + vGap, 120, height);
+        pn_Themthuoc.add(lbl_tttt);
+
         text_tttt = new JTextField();
-        text_tttt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_tttt.setFont(FONT_TEXT_FIELD);
         text_tttt.setColumns(10);
-        text_tttt.setBounds(560, 116, 394, 30);
+        text_tttt.setBounds(inputX, startY + height + vGap, 400, height);
         pn_Themthuoc.add(text_tttt);
-        
+
+        JLabel lbl_ttsl = new JLabel("Số Lượng :");
+        lbl_ttsl.setFont(FONT_LABEL_BOLD);
+        lbl_ttsl.setForeground(COLOR_TEXT_DARK);
+        lbl_ttsl.setBounds(labelX, startY + 2 * (height + vGap), 120, height);
+        pn_Themthuoc.add(lbl_ttsl);
+
         text_ttsl = new JTextField();
-        text_ttsl.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_ttsl.setFont(FONT_TEXT_FIELD);
         text_ttsl.setColumns(10);
-        text_ttsl.setBounds(560, 157, 394, 30);
+        text_ttsl.setBounds(inputX, startY + 2 * (height + vGap), 400, height);
         pn_Themthuoc.add(text_ttsl);
-        
+
+        JLabel lbl_ttgn = new JLabel("Giá Nhập :");
+        lbl_ttgn.setFont(FONT_LABEL_BOLD);
+        lbl_ttgn.setForeground(COLOR_TEXT_DARK);
+        lbl_ttgn.setBounds(labelX, startY + 3 * (height + vGap), 120, height);
+        pn_Themthuoc.add(lbl_ttgn);
+
         text_ttgn = new JTextField();
-        text_ttgn.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_ttgn.setFont(FONT_TEXT_FIELD);
         text_ttgn.setColumns(10);
-        text_ttgn.setBounds(560, 198, 394, 30);
+        text_ttgn.setBounds(inputX, startY + 3 * (height + vGap), 400, height);
         pn_Themthuoc.add(text_ttgn);
-        
+
+        JLabel lbl_ttgb = new JLabel("Giá Bán :");
+        lbl_ttgb.setFont(FONT_LABEL_BOLD);
+        lbl_ttgb.setForeground(COLOR_TEXT_DARK);
+        lbl_ttgb.setBounds(labelX, startY + 4 * (height + vGap), 120, height);
+        pn_Themthuoc.add(lbl_ttgb);
+
         text_ttgb = new JTextField();
-        text_ttgb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        text_ttgb.setFont(FONT_TEXT_FIELD);
         text_ttgb.setColumns(10);
-        text_ttgb.setBounds(560, 239, 394, 30);
+        text_ttgb.setBounds(inputX, startY + 4 * (height + vGap), 400, height);
         pn_Themthuoc.add(text_ttgb);
-        
-        JLabel lbl_ttncc = new JLabel("Nhà Cung Cấp :");
-        lbl_ttncc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttncc.setBounds(1036, 75, 125, 30);
-        pn_Themthuoc.add(lbl_ttncc);
-        
-        JLabel lbl_tthsd = new JLabel("Hạn Sử Dụng :");
-        lbl_tthsd.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_tthsd.setBounds(1036, 116, 125, 30);
-        pn_Themthuoc.add(lbl_tthsd);
-        
-        JLabel lbl_tttkt = new JLabel("Tên Kệ Thuốc :");
-        lbl_tttkt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_tttkt.setBounds(1036, 157, 125, 30);
-        pn_Themthuoc.add(lbl_tttkt);
-        
-        JLabel lbl_tttp = new JLabel("Thành Phần :");
-        lbl_tttp.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_tttp.setBounds(1036, 198, 108, 30);
-        pn_Themthuoc.add(lbl_tttp);
-        
+
+        JLabel lbl_ttdvt = new JLabel("Đơn Vị Tính :");
+        lbl_ttdvt.setFont(FONT_LABEL_BOLD);
+        lbl_ttdvt.setForeground(COLOR_TEXT_DARK);
+        lbl_ttdvt.setBounds(labelX, startY + 5 * (height + vGap), 120, height);
+        pn_Themthuoc.add(lbl_ttdvt);
+
         JComboBox<String> cb_ttdvt = new JComboBox<String>();
-        cb_ttdvt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        cb_ttdvt.setBounds(560, 280, 394, 30);
+        cb_ttdvt.setFont(FONT_TEXT_FIELD);
+        cb_ttdvt.setBounds(inputX, startY + 5 * (height + vGap), 400, height);
         pn_Themthuoc.add(cb_ttdvt);
-        
+
+        JLabel lbl_ttncc = new JLabel("Nhà Cung Cấp :");
+        lbl_ttncc.setFont(FONT_LABEL_BOLD);
+        lbl_ttncc.setForeground(COLOR_TEXT_DARK);
+        lbl_ttncc.setBounds(labelX2, startY, 130, height);
+        pn_Themthuoc.add(lbl_ttncc);
+
         JComboBox<String> cb_ttncc = new JComboBox<String>();
-        cb_ttncc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        cb_ttncc.setBounds(1168, 75, 394, 30);
+        cb_ttncc.setFont(FONT_TEXT_FIELD);
+        cb_ttncc.setBounds(inputX2, startY, 400, height);
         pn_Themthuoc.add(cb_ttncc);
-        
+
+        JLabel lbl_tthsd = new JLabel("Hạn Sử Dụng :");
+        lbl_tthsd.setFont(FONT_LABEL_BOLD);
+        lbl_tthsd.setForeground(COLOR_TEXT_DARK);
+        lbl_tthsd.setBounds(labelX2, startY + height + vGap, 130, height);
+        pn_Themthuoc.add(lbl_tthsd);
+
+        // Dùng JDateChooser cho HSD
+        JDateChooser date_tthsd = new JDateChooser(); // Tạo biến mới
+        date_tthsd.setFont(FONT_TEXT_FIELD);
+        date_tthsd.setDateFormatString("dd/MM/yyyy");
+        date_tthsd.setBounds(inputX2, startY + height + vGap, 400, height);
+        pn_Themthuoc.add(date_tthsd);
+        // Đại Ca cần thay biến text_tthsd thành date_tthsd trong code logic
+
+        JLabel lbl_tttkt = new JLabel("Tên Kệ Thuốc :");
+        lbl_tttkt.setFont(FONT_LABEL_BOLD);
+        lbl_tttkt.setForeground(COLOR_TEXT_DARK);
+        lbl_tttkt.setBounds(labelX2, startY + 2 * (height + vGap), 130, height);
+        pn_Themthuoc.add(lbl_tttkt);
+
         JComboBox<String> cb_tttkt = new JComboBox<String>();
-        cb_tttkt.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        cb_tttkt.setBounds(1168, 157, 394, 30);
+        cb_tttkt.setFont(FONT_TEXT_FIELD);
+        cb_tttkt.setBounds(inputX2, startY + 2 * (height + vGap), 400, height);
         pn_Themthuoc.add(cb_tttkt);
-        
-        text_tthsd = new JTextField();
-        text_tthsd.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        text_tthsd.setColumns(10);
-        text_tthsd.setBounds(1168, 116, 394, 30);
-        pn_Themthuoc.add(text_tthsd);
-        
+
+        JLabel lbl_tttp = new JLabel("Thành Phần :");
+        lbl_tttp.setFont(FONT_LABEL_BOLD);
+        lbl_tttp.setForeground(COLOR_TEXT_DARK);
+        lbl_tttp.setBounds(labelX2, startY + 3 * (height + vGap), 130, height);
+        pn_Themthuoc.add(lbl_tttp);
+
+        JScrollPane scrollPane_tttp = new JScrollPane(); // ScrollPane cho thành phần
+        scrollPane_tttp.setBounds(inputX2, startY + 3 * (height + vGap), 400, 110);
+        pn_Themthuoc.add(scrollPane_tttp);
+
         JTextArea textArea_tttp = new JTextArea();
         textArea_tttp.setWrapStyleWord(true);
         textArea_tttp.setLineWrap(true);
-        textArea_tttp.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        textArea_tttp.setBounds(1036, 226, 526, 84);
-        pn_Themthuoc.add(textArea_tttp);
-        
+        textArea_tttp.setFont(FONT_TEXT_FIELD);
+        scrollPane_tttp.setViewportView(textArea_tttp); // Add vào ScrollPane
+
         JButton btn_ttLammoi = new JButton("Làm Mới");
-        btn_ttLammoi.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        	}
-        });
-        btn_ttLammoi.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_ttLammoi.setBounds(1134, 363, 132, 40);
+        btn_ttLammoi.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ttLammoi, COLOR_TEXT_MUTED);
+        btn_ttLammoi.setBounds(1124, 350, 132, 40); // Điều chỉnh
         pn_Themthuoc.add(btn_ttLammoi);
-        
+
         JButton btn_ttThem = new JButton("Thêm");
-        btn_ttThem.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_ttThem.setBounds(1276, 363, 138, 40);
+        btn_ttThem.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ttThem, COLOR_PRIMARY_BLUE);
+        btn_ttThem.setBounds(1276, 350, 138, 40); // Điều chỉnh
         pn_Themthuoc.add(btn_ttThem);
-        
-        JButton btn_ttThem_1 = new JButton("Lưu");
-        btn_ttThem_1.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_ttThem_1.setBounds(1424, 363, 138, 40);
-        pn_Themthuoc.add(btn_ttThem_1);
-        
-        JPanel pn_capnhatthoc_table_1 = new JPanel();
-        pn_capnhatthoc_table_1.setLayout(null);
-        pn_capnhatthoc_table_1.setBounds(0, 429, 1584, 510);
-        pn_themthuoc1.add(pn_capnhatthoc_table_1);
-        
+
+        JButton btn_ttLuu = new JButton("Lưu"); // Đổi tên biến
+        btn_ttLuu.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ttLuu, COLOR_SUCCESS_GREEN);
+        btn_ttLuu.setBounds(1424, 350, 130, 40); // Điều chỉnh
+        pn_Themthuoc.add(btn_ttLuu);
+
+        // Bảng hiển thị danh sách thuốc vừa thêm (tạm thời)
         JScrollPane scP_cnt_table_1 = new JScrollPane();
-        scP_cnt_table_1.setBounds(10, 0, 1564, 510);
-        pn_capnhatthoc_table_1.add(scP_cnt_table_1);
-        
-        table_1 = new JTable();
-        
-        
-        table_1 = new JTable();
+        scP_cnt_table_1.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scP_cnt_table_1.setBounds(10, 489, 1564, 439); // Điều chỉnh
+        pn_themthuoc1.add(scP_cnt_table_1); // Add vào panel chính
+
+        // Style bảng table_1
+        table_1 = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_1);
         table_1.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null, null, null, null, null},
-        	},
+        	new Object[][] {},
         	new String[] {
-        		"M\u00E3 Thu\u1ED1c", "T\u00EAn Thu\u1ED1c", "S\u1ED1 L\u01B0\u1EE3ng", "Gi\u00E1 Nh\u1EADp", "Gi\u00E1 B\u00E1n", "\u0110\u01A1n V\u1ECB T\u00EDnh", "Nh\u00E0 Cung C\u1EA5p", "H\u1EA1n S\u1EED D\u1EE5ng", "T\u00EAn K\u1EC7 Thu\u1ED1c", "Th\u00E0nh Ph\u1EA7n"
+        		"Mã Thuốc", "Tên Thuốc", "Số Lượng", "Giá Nhập", "Giá Bán", "Đơn Vị Tính", "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc", "Thành Phần"
         	}
         ));
+        // Giữ lại setPreferredWidth
         table_1.getColumnModel().getColumn(0).setPreferredWidth(30);
         table_1.getColumnModel().getColumn(1).setPreferredWidth(130);
         table_1.getColumnModel().getColumn(2).setPreferredWidth(15);
@@ -1581,69 +1799,95 @@ public class TrangChu_GUI {
         table_1.getColumnModel().getColumn(8).setPreferredWidth(100);
         table_1.getColumnModel().getColumn(9).setPreferredWidth(300);
         scP_cnt_table_1.setViewportView(table_1);
-        
+
+        // ===== KẾT THÚC KHỐI CODE THÊM THUỐC (TỪNG LOẠI) =====
+
+
+        // ===== BẮT ĐẦU KHỐI CODE THÊM THUỐC (TỪ FILE) ĐÃ SỬA =====
         JPanel pn_themthuocfile = new JPanel();
         maincontent.add(pn_themthuocfile, "Themthuocfile");
         pn_themthuocfile.setLayout(null);
-        
+        pn_themthuocfile.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        // Panel chứa tiêu đề và các nút chức năng
         JPanel pn_ttf = new JPanel();
-        pn_ttf.setBounds(0, 0, 1584, 123);
+        pn_ttf.setBackground(COLOR_CARD_BACKGROUND); // Nền trắng
+        pn_ttf.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền
+        pn_ttf.setBounds(10, 11, 1564, 123); // Vị trí
         pn_themthuocfile.add(pn_ttf);
         pn_ttf.setLayout(null);
-        
-        JLabel lbl_ttf_tieude = new JLabel("THÊM NHIỀU THUỐC");
-        lbl_ttf_tieude.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        lbl_ttf_tieude.setBounds(554, 11, 429, 47);
+
+        JLabel lbl_ttf_tieude = new JLabel("THÊM DANH SÁCH THUỐC TỪ FILE EXCEL"); // Tiêu đề
+        lbl_ttf_tieude.setFont(FONT_TITLE_MAIN);
+        lbl_ttf_tieude.setForeground(COLOR_PRIMARY_BLUE);
+        lbl_ttf_tieude.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl_ttf_tieude.setBounds(0, 11, 1564, 47); // Căn giữa
         pn_ttf.add(lbl_ttf_tieude);
-        
+
         JButton btn_ttf_chonfile = new JButton("Chọn File");
-        btn_ttf_chonfile.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_ttf_chonfile.setBounds(164, 74, 139, 38);
+        btn_ttf_chonfile.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ttf_chonfile, COLOR_PRIMARY_BLUE); // Màu xanh
+        btn_ttf_chonfile.setBounds(40, 74, 139, 38); // Vị trí
         pn_ttf.add(btn_ttf_chonfile);
-        
-        JLabel lbl_ttf_tongsothuoc = new JLabel("Tống số thuốc :");
-        lbl_ttf_tongsothuoc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttf_tongsothuoc.setBounds(340, 81, 131, 24);
+
+        JLabel lbl_ttf_tongsothuoc = new JLabel("Tổng số thuốc :");
+        lbl_ttf_tongsothuoc.setFont(FONT_LABEL_BOLD);
+        lbl_ttf_tongsothuoc.setForeground(COLOR_TEXT_DARK);
+        lbl_ttf_tongsothuoc.setBounds(200, 74, 131, 38); // Điều chỉnh
         pn_ttf.add(lbl_ttf_tongsothuoc);
-        
+
         JLabel lbl_ttfile_hienthitongsothuoc = new JLabel("0");
-        lbl_ttfile_hienthitongsothuoc.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        lbl_ttfile_hienthitongsothuoc.setBounds(468, 81, 67, 24);
+        lbl_ttfile_hienthitongsothuoc.setFont(FONT_LABEL_BOLD);
+        lbl_ttfile_hienthitongsothuoc.setForeground(COLOR_DANGER_RED); // Màu đỏ cho số lượng
+        lbl_ttfile_hienthitongsothuoc.setBounds(340, 74, 100, 38); // Điều chỉnh
         pn_ttf.add(lbl_ttfile_hienthitongsothuoc);
-        
+
         JButton btn_ttf_lammoi = new JButton("Làm Mới");
-        btn_ttf_lammoi.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        btn_ttf_lammoi.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ttf_lammoi, COLOR_TEXT_MUTED);
         btn_ttf_lammoi.setBounds(1125, 74, 139, 38);
         pn_ttf.add(btn_ttf_lammoi);
-        
+
         JButton btn_ttf_them = new JButton("Thêm");
-        btn_ttf_them.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        btn_ttf_them.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ttf_them, COLOR_PRIMARY_BLUE);
         btn_ttf_them.setBounds(1274, 74, 139, 38);
         pn_ttf.add(btn_ttf_them);
-        
+
         JButton btn_ttf_luu = new JButton("Lưu");
-        btn_ttf_luu.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_ttf_luu.setBounds(1423, 74, 139, 38);
+        btn_ttf_luu.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_ttf_luu, COLOR_SUCCESS_GREEN);
+        btn_ttf_luu.setBounds(1423, 74, 131, 38); // Điều chỉnh
         pn_ttf.add(btn_ttf_luu);
-        
-        JPanel pn_ttf_table = new JPanel();
-        pn_ttf_table.setBounds(0, 122, 1584, 817);
-        pn_themthuocfile.add(pn_ttf_table);
-        pn_ttf_table.setLayout(null);
-        
+
+        // ScrollPane chứa bảng hiển thị thuốc từ file
         JScrollPane scP_ttf_table = new JScrollPane();
-        scP_ttf_table.setBounds(10, 0, 1564, 817);
-        pn_ttf_table.add(scP_ttf_table);
-        
-        table_2 = new JTable();
+        scP_ttf_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scP_ttf_table.setBounds(10, 145, 1564, 783); // Điều chỉnh
+        pn_themthuocfile.add(scP_ttf_table);
+
+        // Style bảng table_2
+        table_2 = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_2);
         table_2.setModel(new DefaultTableModel(
-            	new Object[][] {
-            		{null, null, null, null, null, null, null, null, null, null},
-            	},
+            	new Object[][] {},
             	new String[] {
-            		"M\u00E3 Thu\u1ED1c", "T\u00EAn Thu\u1ED1c", "S\u1ED1 L\u01B0\u1EE3ng", "Gi\u00E1 Nh\u1EADp", "Gi\u00E1 B\u00E1n", "\u0110\u01A1n V\u1ECB T\u00EDnh", "Nh\u00E0 Cung C\u1EA5p", "H\u1EA1n S\u1EED D\u1EE5ng", "T\u00EAn K\u1EC7 Thu\u1ED1c", "Th\u00E0nh Ph\u1EA7n"
+            		"Mã Thuốc", "Tên Thuốc", "Số Lượng", "Giá Nhập", "Giá Bán", "Đơn Vị Tính", "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc", "Thành Phần"
             	}
             ));
+        // Giữ lại setPreferredWidth
         table_2.getColumnModel().getColumn(0).setPreferredWidth(30);
         table_2.getColumnModel().getColumn(1).setPreferredWidth(130);
         table_2.getColumnModel().getColumn(2).setPreferredWidth(15);
@@ -1655,29 +1899,50 @@ public class TrangChu_GUI {
         table_2.getColumnModel().getColumn(8).setPreferredWidth(100);
         table_2.getColumnModel().getColumn(9).setPreferredWidth(300);
         scP_ttf_table.setViewportView(table_2);
-        
+
+        // ===== KẾT THÚC KHỐI CODE THÊM THUỐC (TỪ FILE) =====
+
+
+        // ===== BẮT ĐẦU KHỐI CODE THUỐC SẮP HẾT HẠN ĐÃ SỬA =====
         JPanel pn_thuocsaphethan = new JPanel();
         maincontent.add(pn_thuocsaphethan, "Thuocsaphethan");
         pn_thuocsaphethan.setLayout(null);
-        
-        JLabel lbl_tshh_tieude = new JLabel("Danh Sách Thuốc Sắp Hết Hạn");
-        lbl_tshh_tieude.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        lbl_tshh_tieude.setBounds(506, 11, 537, 40);
+        pn_thuocsaphethan.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lbl_tshh_tieude = new JLabel("DANH SÁCH THUỐC SẮP HẾT HẠN"); // Tiêu đề
+        lbl_tshh_tieude.setFont(FONT_TITLE_MAIN);
+        lbl_tshh_tieude.setForeground(COLOR_DANGER_RED); // Màu đỏ cảnh báo
+        lbl_tshh_tieude.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl_tshh_tieude.setBounds(0, 11, 1584, 40); // Căn giữa
         pn_thuocsaphethan.add(lbl_tshh_tieude);
-        
+
         JScrollPane scP_tshh_table = new JScrollPane();
-        scP_tshh_table.setBounds(10, 66, 1564, 811);
+        scP_tshh_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scP_tshh_table.setBounds(10, 66, 1564, 800); // Điều chỉnh
         pn_thuocsaphethan.add(scP_tshh_table);
-        
-        table_tshh = new JTable();
+
+        // Style bảng table_tshh
+        table_tshh = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_tshh);
         table_tshh.setModel(new DefaultTableModel(
-            	new Object[][] {
-            		{null, null, null, null, null, null, null, null, null, null},
-            	},
+            	new Object[][] {},
             	new String[] {
-            		"M\u00E3 Thu\u1ED1c", "T\u00EAn Thu\u1ED1c", "S\u1ED1 L\u01B0\u1EE3ng", "Gi\u00E1 Nh\u1EADp", "Gi\u00E1 B\u00E1n", "\u0110\u01A1n V\u1ECB T\u00EDnh", "Nh\u00E0 Cung C\u1EA5p", "H\u1EA1n S\u1EED D\u1EE5ng", "T\u00EAn K\u1EC7 Thu\u1ED1c", "Th\u00E0nh Ph\u1EA7n"
+            		"Mã Thuốc", "Tên Thuốc", "Số Lượng", "Giá Nhập", "Giá Bán", "Đơn Vị Tính", "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc", "Thành Phần"
             	}
             ));
+        // Giữ lại setPreferredWidth
         table_tshh.getColumnModel().getColumn(0).setPreferredWidth(30);
         table_tshh.getColumnModel().getColumn(1).setPreferredWidth(130);
         table_tshh.getColumnModel().getColumn(2).setPreferredWidth(15);
@@ -1689,89 +1954,118 @@ public class TrangChu_GUI {
         table_tshh.getColumnModel().getColumn(8).setPreferredWidth(100);
         table_tshh.getColumnModel().getColumn(9).setPreferredWidth(300);
         scP_tshh_table.setViewportView(table_tshh);
-        
+
         JButton btn_tshh_xuatfile = new JButton("Xuất File");
-        btn_tshh_xuatfile.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_tshh_xuatfile.setBounds(1422, 888, 152, 40);
+        btn_tshh_xuatfile.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_tshh_xuatfile, COLOR_SUCCESS_GREEN);
+        btn_tshh_xuatfile.setBounds(1412, 877, 152, 40); // Điều chỉnh
         pn_thuocsaphethan.add(btn_tshh_xuatfile);
-        
+
+        // ===== KẾT THÚC KHỐI CODE THUỐC SẮP HẾT HẠN =====
+
+
+        // ===== BẮT ĐẦU KHỐI CODE THUỐC BÁN CHẠY ĐÃ SỬA =====
         JPanel pn_thuocbanchay = new JPanel();
         maincontent.add(pn_thuocbanchay, "Thuocbanchay");
         pn_thuocbanchay.setLayout(null);
-        
-        JLabel lbl_tbc_tieude = new JLabel("Danh Sách Thuốc Bán Chạy");
-        lbl_tbc_tieude.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        lbl_tbc_tieude.setBounds(564, 0, 481, 57);
+        pn_thuocbanchay.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lbl_tbc_tieude = new JLabel("DANH SÁCH THUỐC BÁN CHẠY"); // Tiêu đề
+        lbl_tbc_tieude.setFont(FONT_TITLE_MAIN);
+        lbl_tbc_tieude.setForeground(COLOR_SUCCESS_GREEN); // Màu xanh lá
+        lbl_tbc_tieude.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl_tbc_tieude.setBounds(0, 11, 1584, 57); // Căn giữa
         pn_thuocbanchay.add(lbl_tbc_tieude);
-        
+
         JScrollPane scP_tbc_table = new JScrollPane();
-        scP_tbc_table.setBounds(10, 55, 1564, 811);
+        scP_tbc_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scP_tbc_table.setBounds(10, 75, 1564, 791); // Điều chỉnh
         pn_thuocbanchay.add(scP_tbc_table);
-        
-        table_5 = new JTable();
+
+        // Style bảng table_5 (nên đổi tên biến này cho rõ nghĩa, vd: table_thuocBanChay)
+        table_5 = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_5);
         table_5.setModel(new DefaultTableModel(
-            	new Object[][] {
-            		{null, null, null, null, null, null, null, null, null, null},
-            	},
-            	new String[] {
-            		"M\u00E3 Thu\u1ED1c", "T\u00EAn Thu\u1ED1c", "S\u1ED1 L\u01B0\u1EE3ng", "Gi\u00E1 Nh\u1EADp", "Gi\u00E1 B\u00E1n", "\u0110\u01A1n V\u1ECB T\u00EDnh", "Nh\u00E0 Cung C\u1EA5p", "H\u1EA1n S\u1EED D\u1EE5ng", "T\u00EAn K\u1EC7 Thu\u1ED1c", "Th\u00E0nh Ph\u1EA7n"
+            	new Object[][] {},
+            	new String[] { // Nên thêm cột Số Lượng Bán
+            		"Mã Thuốc", "Tên Thuốc", "Số Lượng Bán", "Giá Bán", "Đơn Vị Tính", "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc"
             	}
             ));
-        table_5.getColumnModel().getColumn(0).setPreferredWidth(30);
-        table_5.getColumnModel().getColumn(1).setPreferredWidth(130);
-        table_5.getColumnModel().getColumn(2).setPreferredWidth(15);
-        table_5.getColumnModel().getColumn(3).setPreferredWidth(15);
-        table_5.getColumnModel().getColumn(4).setPreferredWidth(15);
-        table_5.getColumnModel().getColumn(5).setPreferredWidth(15);
-        table_5.getColumnModel().getColumn(6).setPreferredWidth(100);
-        table_5.getColumnModel().getColumn(7).setPreferredWidth(25);
-        table_5.getColumnModel().getColumn(8).setPreferredWidth(100);
-        table_5.getColumnModel().getColumn(9).setPreferredWidth(300);
+        // Điều chỉnh lại setPreferredWidth cho phù hợp cột mới
+        // table_5.getColumnModel().getColumn(0).setPreferredWidth(30); ...
         scP_tbc_table.setViewportView(table_5);
-        
+
         JButton btn_tbc_xuatfile = new JButton("Xuất File");
-        btn_tbc_xuatfile.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_tbc_xuatfile.setBounds(1422, 877, 152, 40);
+        btn_tbc_xuatfile.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_tbc_xuatfile, COLOR_SUCCESS_GREEN);
+        btn_tbc_xuatfile.setBounds(1412, 877, 152, 40); // Điều chỉnh
         pn_thuocbanchay.add(btn_tbc_xuatfile);
-        
+
+        // ===== KẾT THÚC KHỐI CODE THUỐC BÁN CHẠY =====
+
+
+        // ===== BẮT ĐẦU KHỐI CODE THUỐC SẮP HẾT HÀNG ĐÃ SỬA =====
         JPanel pn_thuocsaphethang = new JPanel();
         maincontent.add(pn_thuocsaphethang, "Thuocsaphethang");
         pn_thuocsaphethang.setLayout(null);
-        
-        JLabel lbl_tshhan_tieude = new JLabel("Danh Sách Thuốc Hết Hàng");
-        lbl_tshhan_tieude.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        lbl_tshhan_tieude.setBounds(564, 0, 481, 57);
+        pn_thuocsaphethang.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lbl_tshhan_tieude = new JLabel("DANH SÁCH THUỐC SẮP HẾT HÀNG"); // Tiêu đề
+        lbl_tshhan_tieude.setFont(FONT_TITLE_MAIN);
+        lbl_tshhan_tieude.setForeground(COLOR_DANGER_RED); // Màu đỏ cảnh báo
+        lbl_tshhan_tieude.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl_tshhan_tieude.setBounds(0, 11, 1584, 57); // Căn giữa
         pn_thuocsaphethang.add(lbl_tshhan_tieude);
-        
+
         JScrollPane scP_tshhan_table = new JScrollPane();
-        scP_tshhan_table.setBounds(10, 55, 1564, 811);
+        scP_tshhan_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scP_tshhan_table.setBounds(10, 75, 1564, 791); // Điều chỉnh
         pn_thuocsaphethang.add(scP_tshhan_table);
-        
-        table_tshhan = new JTable();
+
+        // Style bảng table_tshhan
+        table_tshhan = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_tshhan);
         table_tshhan.setModel(new DefaultTableModel(
-            	new Object[][] {
-            		{null, null, null, null, null, null, null, null, null, null},
-            	},
-            	new String[] {
-            		"M\u00E3 Thu\u1ED1c", "T\u00EAn Thu\u1ED1c", "S\u1ED1 L\u01B0\u1EE3ng", "Gi\u00E1 Nh\u1EADp", "Gi\u00E1 B\u00E1n", "\u0110\u01A1n V\u1ECB T\u00EDnh", "Nh\u00E0 Cung C\u1EA5p", "H\u1EA1n S\u1EED D\u1EE5ng", "T\u00EAn K\u1EC7 Thu\u1ED1c", "Th\u00E0nh Ph\u1EA7n"
+            	new Object[][] {},
+            	new String[] { // Chỉ cần hiện các cột cần thiết
+            		"Mã Thuốc", "Tên Thuốc", "Số Lượng Tồn", "Đơn Vị Tính", "Nhà Cung Cấp", "Tên Kệ Thuốc"
             	}
             ));
-        table_tshhan.getColumnModel().getColumn(0).setPreferredWidth(30);
-        table_tshhan.getColumnModel().getColumn(1).setPreferredWidth(130);
-        table_tshhan.getColumnModel().getColumn(2).setPreferredWidth(15);
-        table_tshhan.getColumnModel().getColumn(3).setPreferredWidth(15);
-        table_tshhan.getColumnModel().getColumn(4).setPreferredWidth(15);
-        table_tshhan.getColumnModel().getColumn(5).setPreferredWidth(15);
-        table_tshhan.getColumnModel().getColumn(6).setPreferredWidth(100);
-        table_tshhan.getColumnModel().getColumn(7).setPreferredWidth(25);
-        table_tshhan.getColumnModel().getColumn(8).setPreferredWidth(100);
-        table_tshhan.getColumnModel().getColumn(9).setPreferredWidth(300);
+        // Điều chỉnh setPreferredWidth nếu cần
+        // table_tshhan.getColumnModel().getColumn(0).setPreferredWidth(30); ...
         scP_tshhan_table.setViewportView(table_tshhan);
-        
+
         JButton btn_tshhan_xuatfile = new JButton("Xuất File");
-        btn_tshhan_xuatfile.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        btn_tshhan_xuatfile.setBounds(1422, 877, 152, 40);
+        btn_tshhan_xuatfile.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_tshhan_xuatfile, COLOR_SUCCESS_GREEN);
+        btn_tshhan_xuatfile.setBounds(1412, 877, 152, 40); // Điều chỉnh
         pn_thuocsaphethang.add(btn_tshhan_xuatfile);
+
+        // ===== KẾT THÚC KHỐI CODE THUỐC SẮP HẾT HÀNG =====
         
      // ===== BẮT ĐẦU KHỐI CODE THỐNG KÊ HÓA ĐƠN ĐÃ SỬA =====
         JPanel pn_ThongkeHD = new JPanel();
@@ -1918,7 +2212,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -1945,7 +2239,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -2094,7 +2388,6 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
                 }
                 return c;
             }
@@ -2121,7 +2414,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -2283,7 +2576,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -2310,7 +2603,7 @@ public class TrangChu_GUI {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    c.setForeground(Color.WHITE);
+                    
                 }
                 return c;
             }
@@ -2355,160 +2648,46 @@ public class TrangChu_GUI {
         
         // ===== KẾT THÚC KHỐI CODE THỐNG KÊ HÓA ĐƠN ĐÃ SỬA =====
 
+     // ===== BẮT ĐẦU KHỐI CODE THÊM NHÂN VIÊN ĐÃ SỬA (BỎ MÀU MENU BAR) =====
         JPanel panel_ThemNV = new JPanel();
         maincontent.add(panel_ThemNV, "themNV");
         panel_ThemNV.setLayout(null);
-        
-        JLabel lblTitle_TNV = new JLabel("THÊM NHÂN VIÊN");
-        lblTitle_TNV.setBounds(587, 34, 222, 30);
-        lblTitle_TNV.setFont(new Font("Times New Roman", Font.BOLD, 25));
-        panel_ThemNV.add(lblTitle_TNV);
-        
+        panel_ThemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        // Panel tiêu đề (Dùng màu gốc của Đại Ca)
+        JPanel panel_title_ThemNV = new JPanel();
+        panel_title_ThemNV.setBounds(0, 0, 1584, 67); // Điều chỉnh width cho vừa màn hình
+        panel_title_ThemNV.setBackground(new Color(0, 102, 102)); // <<< DÙNG MÀU GỐC
+        panel_ThemNV.add(panel_title_ThemNV);
+        panel_title_ThemNV.setLayout(null);
+
+        JLabel lblTitle_TNV = new JLabel("THÊM NHÂN VIÊN MỚI");
+        lblTitle_TNV.setBounds(0, 11, 1584, 45); // Căn giữa
+        panel_title_ThemNV.add(lblTitle_TNV);
+        lblTitle_TNV.setFont(FONT_TITLE_MAIN); // Font tiêu đề
+        lblTitle_TNV.setForeground(Color.WHITE); // Chữ trắng
+        lblTitle_TNV.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa text
+
+
+        // Panel ảnh
         JPanel panelAnhNV_TNV = new JPanel();
-        panelAnhNV_TNV.setLayout(null);
-        panelAnhNV_TNV.setBorder(new LineBorder(new Color(0, 0, 0)));
-        panelAnhNV_TNV.setBounds(71, 134, 383, 578);
+        panelAnhNV_TNV.setLayout(new BorderLayout(0, 0));
+        panelAnhNV_TNV.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        panelAnhNV_TNV.setBackground(COLOR_BACKGROUND_PRIMARY);
+        panelAnhNV_TNV.setBounds(40, 80, 383, 500);
         panel_ThemNV.add(panelAnhNV_TNV);
+
         JLabel lblAnhNV_TNV = new JLabel("Chưa có ảnh", SwingConstants.CENTER);
-        lblAnhNV_TNV.setBounds(10, 10, 363, 558);
-        lblAnhNV_TNV.setHorizontalAlignment(SwingConstants.CENTER);
-        lblAnhNV_TNV.setVerticalAlignment(SwingConstants.CENTER);
-        panelAnhNV_TNV.add(lblAnhNV_TNV);
+        lblAnhNV_TNV.setFont(FONT_DETAIL_ITALIC);
+        lblAnhNV_TNV.setForeground(COLOR_TEXT_MUTED);
+        panelAnhNV_TNV.add(lblAnhNV_TNV, BorderLayout.CENTER);
 
-        
-        JPanel panelThongTinNV_TNV = new JPanel();
-        panelThongTinNV_TNV.setLayout(null);
-        panelThongTinNV_TNV.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Th\u00F4ng tin nh\u00E2n vi\u00EAn", TitledBorder.LEADING, 
-        TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 17), new Color(0, 0, 0)));
-        panelThongTinNV_TNV.setBounds(587, 134, 886, 578);
-        panel_ThemNV.add(panelThongTinNV_TNV);
-        
-        JLabel lblMaNV_TNV = new JLabel("Mã nhân viên:");
-        lblMaNV_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblMaNV_TNV.setBounds(34, 63, 140, 32);
-        panelThongTinNV_TNV.add(lblMaNV_TNV);
-
-        txtMaNV_TNV = new JTextField();
-        txtMaNV_TNV.setFont(new Font("Times New Roman",Font.ITALIC | Font.BOLD, 21));
-        txtMaNV_TNV.setEditable(false);
-        txtMaNV_TNV.setEnabled(false);
-        txtMaNV_TNV.setColumns(10);
-        txtMaNV_TNV.setBounds(184, 64, 259, 32);
-        txtMaNV_TNV.setBorder(null);
-        txtMaNV_TNV.setBackground(new Color(240, 240, 240));
-        txtMaNV_TNV.setDisabledTextColor(Color.RED);
-        nhanVien_DAO nv_dao = new nhanVien_DAO();
-        String maMoi = nv_dao.generateNewMaNV();
-        txtMaNV_TNV.setText(maMoi);
-        panelThongTinNV_TNV.add(txtMaNV_TNV);
-
-        JLabel lblGioiTinh_TNV = new JLabel("Giới Tính:");
-        lblGioiTinh_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblGioiTinh_TNV.setBounds(511, 66, 97, 26);
-        panelThongTinNV_TNV.add(lblGioiTinh_TNV);
-        
-        JComboBox<String> cboGIoiTinh_TNV = new JComboBox(new Object[]{});
-        cboGIoiTinh_TNV.setModel(new DefaultComboBoxModel(new String[] {"Nam", "Nữ"}));
-        cboGIoiTinh_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        cboGIoiTinh_TNV.setBounds(649, 67, 155, 30);
-        panelThongTinNV_TNV.add(cboGIoiTinh_TNV);
-        
-        JLabel lblTenNV_TNV = new JLabel("Tên nhân viên:");
-        lblTenNV_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTenNV_TNV.setBounds(34, 144, 140, 32);
-        panelThongTinNV_TNV.add(lblTenNV_TNV);
-        
-        txtTenNV_TNV = new JTextField();
-        txtTenNV_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTenNV_TNV.setColumns(10);
-        txtTenNV_TNV.setBounds(184, 147, 620, 32);
-        panelThongTinNV_TNV.add(txtTenNV_TNV);
-        
-        JLabel lblSDT_TNV = new JLabel("Số điện thoại:");
-        lblSDT_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblSDT_TNV.setBounds(34, 232, 140, 32);
-        panelThongTinNV_TNV.add(lblSDT_TNV);
-        
-        txtSDT_TNV = new JTextField();
-        txtSDT_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtSDT_TNV.setColumns(10);
-        txtSDT_TNV.setBounds(187, 235, 256, 32);
-        panelThongTinNV_TNV.add(txtSDT_TNV);
-        
-        JLabel lblNgaySinh_TNV = new JLabel("Ngày sinh:");
-        lblNgaySinh_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblNgaySinh_TNV.setBounds(511, 232, 103, 32);
-        panelThongTinNV_TNV.add(lblNgaySinh_TNV);
-        
-        JLabel lblChucVu_TNV = new JLabel("Chức vụ:");
-        lblChucVu_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblChucVu_TNV.setBounds(34, 307, 140, 32);
-        panelThongTinNV_TNV.add(lblChucVu_TNV);
-        
-        JComboBox<ChucVu> cboChucVu_TNV = new JComboBox<ChucVu>();
-        cboChucVu_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        cboChucVu_TNV.setBounds(184, 310, 192, 32);
-        panelThongTinNV_TNV.add(cboChucVu_TNV);
-
-        JLabel lblTaiKhoan_TNV = new JLabel("Tài khoản:");
-        lblTaiKhoan_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTaiKhoan_TNV.setBounds(505, 307, 103, 32);
-        panelThongTinNV_TNV.add(lblTaiKhoan_TNV);
-
-        JComboBox<TaiKhoan> cboTaiKhoan_TNV = new JComboBox<TaiKhoan>();
-        cboTaiKhoan_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        cboTaiKhoan_TNV.setBounds(649, 311, 155, 30);
-        panelThongTinNV_TNV.add(cboTaiKhoan_TNV);
-
-
-        
-        chucVu_DAO cv_dao_TNV = new chucVu_DAO(); // Giả sử tên lớp DAO của bạn
-        List<ChucVu> dsChucVu = cv_dao_TNV.getAllChucVu();
-        for (ChucVu cv : dsChucVu) {
-        	cboChucVu_TNV.addItem(cv); // JComboBox sẽ tự động gọi cv.toString() để hiển thị TÊN
-        }
-
-        taiKhoan_DAO tk_dao_TNV = new taiKhoan_DAO(); // Giả sử tên lớp DAO của bạn
-        List<TaiKhoan> dsTaiKhoan = tk_dao_TNV.getAllTaiKhoan();
-        for (TaiKhoan tk : dsTaiKhoan) {
-            cboTaiKhoan_TNV.addItem(tk); // JComboBox sẽ tự động gọi tk.toString() để hiển thị TÊN
-         }
-       
-
-        
-        JDateChooser dateNgaySinh_TNV = new JDateChooser();
-        dateNgaySinh_TNV.setBounds(649, 232, 155, 35);
-        panelThongTinNV_TNV.add(dateNgaySinh_TNV);
-        
-        JPanel panelDiaChi_TNV = new JPanel();
-        panelDiaChi_TNV.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
-        panelDiaChi_TNV.setBounds(10, 385, 855, 151);
-        panelThongTinNV_TNV.add(panelDiaChi_TNV);
-        panelDiaChi_TNV.setLayout(null);
-        
-        txtTinh_TNV = new JTextField();
-        txtTinh_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTinh_TNV.setBounds(127, 44, 214, 33);
-        panelDiaChi_TNV.add(txtTinh_TNV);
-        txtTinh_TNV.setColumns(10);
-        
-        JLabel lblTinh_TNV = new JLabel("Tỉnh:");
-        lblTinh_TNV.setBounds(24, 45, 86, 32);
-        lblTinh_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panelDiaChi_TNV.add(lblTinh_TNV);
-        
-        txtHuyen_TNV = new JTextField();
-        txtHuyen_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtHuyen_TNV.setColumns(10);
-        txtHuyen_TNV.setBounds(600, 44, 214, 33);
-        panelDiaChi_TNV.add(txtHuyen_TNV);
-        
-        JLabel lblHuyen_TNV = new JLabel("Huyện:");
-        lblHuyen_TNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblHuyen_TNV.setBounds(497, 45, 86, 32);
-        panelDiaChi_TNV.add(lblHuyen_TNV);
-        
+        // Nút chọn ảnh (Giữ nguyên code icon)
         JButton btnChonAnh_TNV = new JButton("Chọn ảnh");
+        btnChonAnh_TNV.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnChonAnh_TNV, COLOR_TEXT_MUTED);
+        btnChonAnh_TNV.setBounds(160, 590, 143, 40);
+        // --- Code ActionListener và Icon của Đại Ca ---
         btnChonAnh_TNV.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Chọn ảnh nhân viên");
@@ -2519,48 +2698,186 @@ public class TrangChu_GUI {
                 duongDanAnh_TNV = file.getAbsolutePath();
                 lblAnhNV_TNV.setIcon(new ImageIcon(new ImageIcon(duongDanAnh_TNV).getImage()
                     .getScaledInstance(lblAnhNV_TNV.getWidth(), lblAnhNV_TNV.getHeight(), Image.SCALE_SMOOTH)));
+                lblAnhNV_TNV.setText(null);
             }
         });
-
-        btnChonAnh_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-        btnChonAnh_TNV.setBackground(UIManager.getColor("Button.shadow"));
-        btnChonAnh_TNV.setBounds(197, 751, 143, 40);
-        java.net.URL imgChonAnh_TNV = getClass().getResource("/file-icon.png"); 
-
+        java.net.URL imgChonAnh_TNV = getClass().getResource("/file-icon.png");
         if (imgChonAnh_TNV != null) {
             ImageIcon originalIcon = new ImageIcon(imgChonAnh_TNV);
             Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
             ImageIcon scaledIcon = new ImageIcon(img);
-            btnChonAnh_TNV.setIcon(scaledIcon); 
-
+            btnChonAnh_TNV.setIcon(scaledIcon);
             btnChonAnh_TNV.setHorizontalAlignment(SwingConstants.LEFT);
             btnChonAnh_TNV.setIconTextGap(10);
-            
         } else {
             System.err.println("Lỗi: Không tìm thấy ảnh tại /file-icon.png");
         }
-
+        // --- Hết code ActionListener và Icon ---
         panel_ThemNV.add(btnChonAnh_TNV);
-        
-        JButton btnLamMoi_TNV = new JButton("Làm mới");
-        btnLamMoi_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-        btnLamMoi_TNV.setBackground(UIManager.getColor("Button.shadow"));
-        btnLamMoi_TNV.setBounds(926, 751, 143, 40);
-        java.net.URL imgLamMoi_TNV = getClass().getResource("/icon-refresh.png"); 
 
-        if (imgLamMoi_TNV != null) {
-            ImageIcon originalIcon = new ImageIcon(imgLamMoi_TNV);
-            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
-            ImageIcon scaledIcon = new ImageIcon(img);
-            btnLamMoi_TNV.setIcon(scaledIcon); 
 
-            btnLamMoi_TNV.setHorizontalAlignment(SwingConstants.LEFT);
-            btnLamMoi_TNV.setIconTextGap(10);
-            
-        } else {
-            System.err.println("Lỗi: Không tìm thấy ảnh tại /file-icon.png");
+        // Panel thông tin nhân viên
+        JPanel panelThongTinNV_TNV = new JPanel();
+        panelThongTinNV_TNV.setLayout(null);
+        panelThongTinNV_TNV.setBackground(COLOR_CARD_BACKGROUND);
+        panelThongTinNV_TNV.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Thông tin nhân viên", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
+        panelThongTinNV_TNV.setBounds(450, 80, 1114, 550);
+        panel_ThemNV.add(panelThongTinNV_TNV);
+
+        // Định nghĩa vị trí và khoảng cách
+        int labelX_nv = 40;
+        int inputX_nv = 190;
+        int labelX2_nv = 550;
+        int inputX2_nv = 680;
+        int startY_nv = 40;
+        int height_nv = 33;
+        int vGap_nv = 15;
+
+        JLabel lblMaNV_TNV = new JLabel("Mã nhân viên:");
+        lblMaNV_TNV.setFont(FONT_LABEL_BOLD);
+        lblMaNV_TNV.setForeground(COLOR_TEXT_DARK);
+        lblMaNV_TNV.setBounds(labelX_nv, startY_nv, 140, height_nv);
+        panelThongTinNV_TNV.add(lblMaNV_TNV);
+
+        txtMaNV_TNV = new JTextField();
+        txtMaNV_TNV.setFont(FONT_LABEL_BOLD);
+        txtMaNV_TNV.setForeground(COLOR_DANGER_RED);
+        txtMaNV_TNV.setEditable(false);
+        txtMaNV_TNV.setColumns(10);
+        txtMaNV_TNV.setBounds(inputX_nv, startY_nv, 300, height_nv);
+        txtMaNV_TNV.setBorder(null);
+        txtMaNV_TNV.setBackground(COLOR_CARD_BACKGROUND);
+        nhanVien_DAO nv_dao = new nhanVien_DAO();
+        String maMoi = nv_dao.generateNewMaNV();
+        txtMaNV_TNV.setText(maMoi);
+        panelThongTinNV_TNV.add(txtMaNV_TNV);
+
+        JLabel lblGioiTinh_TNV = new JLabel("Giới Tính:");
+        lblGioiTinh_TNV.setFont(FONT_LABEL_BOLD);
+        lblGioiTinh_TNV.setForeground(COLOR_TEXT_DARK);
+        lblGioiTinh_TNV.setBounds(labelX2_nv, startY_nv, 120, height_nv);
+        panelThongTinNV_TNV.add(lblGioiTinh_TNV);
+
+        JComboBox<String> cboGIoiTinh_TNV = new JComboBox<String>();
+        cboGIoiTinh_TNV.setModel(new DefaultComboBoxModel<String>(new String[] {"Nam", "Nữ"}));
+        cboGIoiTinh_TNV.setFont(FONT_TEXT_FIELD);
+        cboGIoiTinh_TNV.setBounds(inputX2_nv, startY_nv, 350, height_nv);
+        panelThongTinNV_TNV.add(cboGIoiTinh_TNV);
+
+        JLabel lblTenNV_TNV = new JLabel("Tên nhân viên:");
+        lblTenNV_TNV.setFont(FONT_LABEL_BOLD);
+        lblTenNV_TNV.setForeground(COLOR_TEXT_DARK);
+        lblTenNV_TNV.setBounds(labelX_nv, startY_nv + height_nv + vGap_nv, 140, height_nv);
+        panelThongTinNV_TNV.add(lblTenNV_TNV);
+
+        txtTenNV_TNV = new JTextField();
+        txtTenNV_TNV.setFont(FONT_TEXT_FIELD);
+        txtTenNV_TNV.setColumns(10);
+        txtTenNV_TNV.setBounds(inputX_nv, startY_nv + height_nv + vGap_nv, 840, height_nv);
+        panelThongTinNV_TNV.add(txtTenNV_TNV);
+
+        JLabel lblSDT_TNV = new JLabel("Số điện thoại:");
+        lblSDT_TNV.setFont(FONT_LABEL_BOLD);
+        lblSDT_TNV.setForeground(COLOR_TEXT_DARK);
+        lblSDT_TNV.setBounds(labelX_nv, startY_nv + 2*(height_nv + vGap_nv), 140, height_nv);
+        panelThongTinNV_TNV.add(lblSDT_TNV);
+
+        txtSDT_TNV = new JTextField();
+        txtSDT_TNV.setFont(FONT_TEXT_FIELD);
+        txtSDT_TNV.setColumns(10);
+        txtSDT_TNV.setBounds(inputX_nv, startY_nv + 2*(height_nv + vGap_nv), 300, height_nv);
+        panelThongTinNV_TNV.add(txtSDT_TNV);
+
+        JLabel lblNgaySinh_TNV = new JLabel("Ngày sinh:");
+        lblNgaySinh_TNV.setFont(FONT_LABEL_BOLD);
+        lblNgaySinh_TNV.setForeground(COLOR_TEXT_DARK);
+        lblNgaySinh_TNV.setBounds(labelX2_nv, startY_nv + 2*(height_nv + vGap_nv), 120, height_nv);
+        panelThongTinNV_TNV.add(lblNgaySinh_TNV);
+
+        JDateChooser dateNgaySinh_TNV = new JDateChooser();
+        dateNgaySinh_TNV.setFont(FONT_TEXT_FIELD);
+        dateNgaySinh_TNV.setDateFormatString("dd/MM/yyyy");
+        dateNgaySinh_TNV.setBounds(inputX2_nv, startY_nv + 2*(height_nv + vGap_nv), 350, height_nv);
+        panelThongTinNV_TNV.add(dateNgaySinh_TNV);
+
+        JLabel lblChucVu_TNV = new JLabel("Chức vụ:");
+        lblChucVu_TNV.setFont(FONT_LABEL_BOLD);
+        lblChucVu_TNV.setForeground(COLOR_TEXT_DARK);
+        lblChucVu_TNV.setBounds(labelX_nv, startY_nv + 3*(height_nv + vGap_nv), 140, height_nv);
+        panelThongTinNV_TNV.add(lblChucVu_TNV);
+
+        JComboBox<ChucVu> cboChucVu_TNV = new JComboBox<ChucVu>();
+        cboChucVu_TNV.setFont(FONT_TEXT_FIELD);
+        cboChucVu_TNV.setBounds(inputX_nv, startY_nv + 3*(height_nv + vGap_nv), 300, height_nv);
+        panelThongTinNV_TNV.add(cboChucVu_TNV);
+
+        JLabel lblTaiKhoan_TNV = new JLabel("Tài khoản:");
+        lblTaiKhoan_TNV.setFont(FONT_LABEL_BOLD);
+        lblTaiKhoan_TNV.setForeground(COLOR_TEXT_DARK);
+        lblTaiKhoan_TNV.setBounds(labelX2_nv, startY_nv + 3*(height_nv + vGap_nv), 120, height_nv);
+        panelThongTinNV_TNV.add(lblTaiKhoan_TNV);
+
+        JComboBox<TaiKhoan> cboTaiKhoan_TNV = new JComboBox<TaiKhoan>();
+        cboTaiKhoan_TNV.setFont(FONT_TEXT_FIELD);
+        cboTaiKhoan_TNV.setBounds(inputX2_nv, startY_nv + 3*(height_nv + vGap_nv), 350, height_nv);
+        panelThongTinNV_TNV.add(cboTaiKhoan_TNV);
+
+        chucVu_DAO cv_dao_TNV = new chucVu_DAO();
+        List<ChucVu> dsChucVu = cv_dao_TNV.getAllChucVu();
+        for (ChucVu cv : dsChucVu) {
+        	cboChucVu_TNV.addItem(cv);
         }
-        panel_ThemNV.add(btnLamMoi_TNV);
+        taiKhoan_DAO tk_dao_TNV = new taiKhoan_DAO();
+        List<TaiKhoan> dsTaiKhoan = tk_dao_TNV.getAllTaiKhoan();
+        for (TaiKhoan tk : dsTaiKhoan) {
+            cboTaiKhoan_TNV.addItem(tk);
+         }
+
+        JPanel panelDiaChi_TNV = new JPanel();
+        panelDiaChi_TNV.setBackground(COLOR_CARD_BACKGROUND);
+        panelDiaChi_TNV.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Địa chỉ", TitledBorder.LEADING, TitledBorder.TOP,
+             FONT_LABEL_BOLD, COLOR_TEXT_MUTED
+        ));
+        panelDiaChi_TNV.setBounds(labelX_nv, startY_nv + 4*(height_nv + vGap_nv) + 10, 990, 100);
+        panelThongTinNV_TNV.add(panelDiaChi_TNV);
+        panelDiaChi_TNV.setLayout(null);
+
+        JLabel lblTinh_TNV = new JLabel("Tỉnh/TP:");
+        lblTinh_TNV.setBounds(20, 35, 86, height_nv);
+        lblTinh_TNV.setFont(FONT_LABEL_BOLD);
+        lblTinh_TNV.setForeground(COLOR_TEXT_DARK);
+        panelDiaChi_TNV.add(lblTinh_TNV);
+
+        txtTinh_TNV = new JTextField();
+        txtTinh_TNV.setFont(FONT_TEXT_FIELD);
+        txtTinh_TNV.setBounds(110, 35, 345, height_nv);
+        panelDiaChi_TNV.add(txtTinh_TNV);
+        txtTinh_TNV.setColumns(10);
+
+        JLabel lblHuyen_TNV = new JLabel("Quận/Huyện:");
+        lblHuyen_TNV.setFont(FONT_LABEL_BOLD);
+        lblHuyen_TNV.setForeground(COLOR_TEXT_DARK);
+        lblHuyen_TNV.setBounds(480, 35, 120, height_nv);
+        panelDiaChi_TNV.add(lblHuyen_TNV);
+
+        txtHuyen_TNV = new JTextField();
+        txtHuyen_TNV.setFont(FONT_TEXT_FIELD);
+        txtHuyen_TNV.setColumns(10);
+        txtHuyen_TNV.setBounds(610, 35, 360, height_nv);
+        panelDiaChi_TNV.add(txtHuyen_TNV);
+
+        // Nút Làm mới (Giữ nguyên code icon)
+        JButton btnLamMoi_TNV = new JButton("Làm mới");
+        btnLamMoi_TNV.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnLamMoi_TNV, COLOR_TEXT_MUTED);
+        btnLamMoi_TNV.setBounds(1200, 650, 143, 40);
+        // --- Code ActionListener và Icon của Đại Ca ---
         btnLamMoi_TNV.addActionListener(e -> {
             txtTenNV_TNV.setText("");
             txtSDT_TNV.setText("");
@@ -2570,384 +2887,315 @@ public class TrangChu_GUI {
             cboChucVu_TNV.setSelectedIndex(0);
             cboTaiKhoan_TNV.setSelectedIndex(0);
             dateNgaySinh_TNV.setDate(null);
+            lblAnhNV_TNV.setIcon(null);
+            lblAnhNV_TNV.setText("Chưa có ảnh");
+            duongDanAnh_TNV = null;
 
             nhanVien_DAO dao = new nhanVien_DAO();
             txtMaNV_TNV.setText(dao.generateNewMaNV());
         });
-
-
-
-
-        
-        JButton btnThem_TNV = new JButton("Thêm");
-        btnThem_TNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-        btnThem_TNV.setBackground(UIManager.getColor("Button.shadow"));
-        btnThem_TNV.setBounds(1142, 751, 133, 40);
-        java.net.URL imgThem_TNV = getClass().getResource("/icon-add.png"); 
-
-        if (imgThem_TNV != null) {
-            ImageIcon originalIcon = new ImageIcon(imgThem_TNV);
+        java.net.URL imgLamMoi_TNV = getClass().getResource("/icon-refresh.png");
+        if (imgLamMoi_TNV != null) {
+            ImageIcon originalIcon = new ImageIcon(imgLamMoi_TNV);
             Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
             ImageIcon scaledIcon = new ImageIcon(img);
-            btnThem_TNV.setIcon(scaledIcon); 
-
-            btnThem_TNV.setHorizontalAlignment(SwingConstants.LEFT);
-            btnThem_TNV.setIconTextGap(10);
-            
+            btnLamMoi_TNV.setIcon(scaledIcon);
+            btnLamMoi_TNV.setHorizontalAlignment(SwingConstants.LEFT);
+            btnLamMoi_TNV.setIconTextGap(10);
         } else {
-            System.err.println("Lỗi: Không tìm thấy ảnh tại /file-icon.png");
+            System.err.println("Lỗi: Không tìm thấy ảnh tại /icon-refresh.png");
         }
+        // --- Hết code ActionListener và Icon ---
+        panel_ThemNV.add(btnLamMoi_TNV);
 
-        panel_ThemNV.add(btnThem_TNV);
+        // Nút Thêm (Giữ nguyên code icon)
+        JButton btnThem_TNV = new JButton("Thêm");
+        btnThem_TNV.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnThem_TNV, COLOR_SUCCESS_GREEN);
+        btnThem_TNV.setBounds(1370, 650, 133, 40);
+        // --- Code ActionListener và Icon của Đại Ca ---
         btnThem_TNV.addActionListener(e -> {
             try {
                 String ten = txtTenNV_TNV.getText().trim();
                 String sdt = txtSDT_TNV.getText().trim();
                 String gioiTinh = cboGIoiTinh_TNV.getSelectedItem().toString();
                 java.util.Date ngaySinh = dateNgaySinh_TNV.getDate();
-                String maChucVu = cboChucVu_TNV.getSelectedItem() != null ? cboChucVu_TNV.getSelectedItem().toString() : "";
-                String maTaiKhoan = cboTaiKhoan_TNV.getSelectedItem() != null ? cboTaiKhoan_TNV.getSelectedItem().toString() : "";
+                ChucVu cvSelected = (ChucVu) cboChucVu_TNV.getSelectedItem();
+                TaiKhoan tkSelected = (TaiKhoan) cboTaiKhoan_TNV.getSelectedItem();
                 String tinh = txtTinh_TNV.getText().trim();
                 String huyen = txtHuyen_TNV.getText().trim();
                 String anh = duongDanAnh_TNV;
 
-                if (ten.isEmpty() || sdt.isEmpty() || ngaySinh == null || maChucVu.isEmpty() || maTaiKhoan.isEmpty() || anh == null) {
+                if (ten.isEmpty() || sdt.isEmpty() || ngaySinh == null || cvSelected == null || tkSelected == null || anh == null || tinh.isEmpty() || huyen.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin và chọn ảnh!");
                     return;
                 }
+                 if (!sdt.matches("^0\\d{9}$")) {
+                     JOptionPane.showMessageDialog(null, "Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số!");
+                     return;
+                 }
 
-                // Chuyển java.util.Date → LocalDate
                 LocalDate ngaySinhLocal = ngaySinh.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-                // Tạo đối tượng
                 NhanVien nv = new NhanVien();
                 nv.setTenNV(ten);
                 nv.setSoDienThoai(sdt);
                 nv.setGioiTinh(gioiTinh);
                 nv.setNgaySinh(ngaySinhLocal);
-                ChucVu cv = new ChucVu();
-                cv.setMaChucVu(maChucVu);
-                nv.setChucVu(cv);
-                TaiKhoan tk = new TaiKhoan();
-                tk.setMaTK(maTaiKhoan);
-                nv.setTaiKhoan(tk);
+                nv.setChucVu(cvSelected);
+                nv.setTaiKhoan(tkSelected);
                 nv.setDiaChi(tinh + ", " + huyen);
                 nv.setAnh(anh);
 
-                boolean kq = nhanVienDAO.insertNhanVien(nv);
+                nhanVien_DAO dao = new nhanVien_DAO();
+                boolean kq = dao.insertNhanVien(nv);
                 if (kq) {
                     JOptionPane.showMessageDialog(null, "Thêm nhân viên thành công!");
+                    btnLamMoi_TNV.doClick();
                 } else {
                     JOptionPane.showMessageDialog(null, "Không thể thêm nhân viên (kiểm tra lại dữ liệu)!");
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Lỗi: " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Lỗi khi thêm nhân viên: " + ex.getMessage());
             }
         });
+        java.net.URL imgThem_TNV = getClass().getResource("/icon-add.png");
+        if (imgThem_TNV != null) {
+            ImageIcon originalIcon = new ImageIcon(imgThem_TNV);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnThem_TNV.setIcon(scaledIcon);
+            btnThem_TNV.setHorizontalAlignment(SwingConstants.LEFT);
+            btnThem_TNV.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh tại /icon-add.png");
+        }
+        // --- Hết code ActionListener và Icon ---
+        panel_ThemNV.add(btnThem_TNV);
 
-        
-  
+        // ===== KẾT THÚC KHỐI CODE THÊM NHÂN VIÊN =====
+
+     // ===== BẮT ĐẦU KHỐI CODE TÌM KIẾM NHÂN VIÊN ĐÃ SỬA =====
         JPanel panel_TimKiemNV = new JPanel();
         maincontent.add(panel_TimKiemNV, "timkiemnv");
         panel_TimKiemNV.setLayout(null);
-        
+        panel_TimKiemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        // Panel tiêu đề
+        JPanel panel_title_TKNV = new JPanel();
+        panel_title_TKNV.setLayout(null);
+        panel_title_TKNV.setBackground(new Color(0, 102, 102)); // Màu gốc
+        panel_title_TKNV.setBounds(0, 0, 1584, 67); // Điều chỉnh width nếu cần
+        panel_TimKiemNV.add(panel_title_TKNV);
+
         JLabel lblTitle_TKNV = new JLabel("TÌM KIẾM NHÂN VIÊN");
-        lblTitle_TKNV.setBounds(574, 31, 286, 43);
-        lblTitle_TKNV.setFont(new Font("Times New Roman", Font.BOLD, 25));
-        panel_TimKiemNV.add(lblTitle_TKNV);
-        
+        lblTitle_TKNV.setForeground(Color.WHITE);
+        lblTitle_TKNV.setFont(FONT_TITLE_MAIN); // Font tiêu đề
+        lblTitle_TKNV.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa
+        lblTitle_TKNV.setBounds(0, 11, 1584, 45); // Căn giữa
+        panel_title_TKNV.add(lblTitle_TKNV);
+
+        // Panel bộ lọc
+        JPanel pnlFilters_TKNV = new JPanel(); // Đặt tên mới cho dễ hiểu
+        pnlFilters_TKNV.setBackground(COLOR_CARD_BACKGROUND); // Nền trắng
+        pnlFilters_TKNV.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Bộ Lọc Tìm Kiếm", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        )); // Viền và tiêu đề
+        pnlFilters_TKNV.setBounds(10, 80, 1564, 280); // Vị trí bộ lọc
+        panel_TimKiemNV.add(pnlFilters_TKNV);
+        pnlFilters_TKNV.setLayout(null);
+
         JLabel lblTenNV_TKNV = new JLabel("Tên nhân viên:");
-        lblTenNV_TKNV.setBounds(53, 105, 163, 43);
-        lblTenNV_TKNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panel_TimKiemNV.add(lblTenNV_TKNV);
-        
+        lblTenNV_TKNV.setFont(FONT_LABEL_BOLD); // Font label
+        lblTenNV_TKNV.setForeground(COLOR_TEXT_DARK); // Màu chữ
+        lblTenNV_TKNV.setBounds(40, 40, 163, 30); // Vị trí
+        pnlFilters_TKNV.add(lblTenNV_TKNV);
+
         txt_TenNV_TKNV = new JTextField();
-        txt_TenNV_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txt_TenNV_TKNV.setBounds(240, 108, 448, 43);
+        txt_TenNV_TKNV.setFont(FONT_TEXT_FIELD); // Font text field
+        txt_TenNV_TKNV.setBounds(210, 40, 500, 33); // Vị trí
         txt_TenNV_TKNV.setColumns(10);
-        panel_TimKiemNV.add(txt_TenNV_TKNV);
-        
+        pnlFilters_TKNV.add(txt_TenNV_TKNV);
+
         JLabel lblSDT_TKNV = new JLabel("Số điện thoại:");
-        lblSDT_TKNV.setBounds(930, 105, 139, 43);
-        lblSDT_TKNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panel_TimKiemNV.add(lblSDT_TKNV);
-        
+        lblSDT_TKNV.setFont(FONT_LABEL_BOLD); // Font label
+        lblSDT_TKNV.setForeground(COLOR_TEXT_DARK); // Màu chữ
+        lblSDT_TKNV.setBounds(800, 40, 139, 30); // Vị trí
+        pnlFilters_TKNV.add(lblSDT_TKNV);
+
         txtSDT_TKNV = new JTextField();
-        txtSDT_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtSDT_TKNV.setBounds(1079, 108, 370, 43);
+        txtSDT_TKNV.setFont(FONT_TEXT_FIELD); // Font text field
+        txtSDT_TKNV.setBounds(950, 40, 450, 33); // Vị trí
         txtSDT_TKNV.setColumns(10);
-        panel_TimKiemNV.add(txtSDT_TKNV);
-        
+        pnlFilters_TKNV.add(txtSDT_TKNV);
+
         JLabel lblGioiTinh_TK = new JLabel("Giới tính:");
-        lblGioiTinh_TK.setBounds(53, 171, 163, 43);
-        lblGioiTinh_TK.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panel_TimKiemNV.add(lblGioiTinh_TK);
-        
+        lblGioiTinh_TK.setFont(FONT_LABEL_BOLD); // Font label
+        lblGioiTinh_TK.setForeground(COLOR_TEXT_DARK); // Màu chữ
+        lblGioiTinh_TK.setBounds(40, 90, 163, 30); // Vị trí
+        pnlFilters_TKNV.add(lblGioiTinh_TK);
+
         JComboBox<String> cboGioiTinh_TKNV = new JComboBox<String>();
-        cboGioiTinh_TKNV.setModel(new DefaultComboBoxModel(new String[] {"Nam", "Nữ"}));
-        cboGioiTinh_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        cboGioiTinh_TKNV.setBounds(240, 174, 163, 43);
-        panel_TimKiemNV.add(cboGioiTinh_TKNV);
-        
-        JLabel lblVaiTro_TKNV = new JLabel("Vai trò:");
-        lblVaiTro_TKNV.setBounds(930, 171, 139, 43);
-        lblVaiTro_TKNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panel_TimKiemNV.add(lblVaiTro_TKNV);
-        
-        JComboBox<String> cboVaiTro_TKNV = new JComboBox<String>();
-        cboVaiTro_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        cboVaiTro_TKNV.setBounds(1079, 174, 370, 43);
-        panel_TimKiemNV.add(cboVaiTro_TKNV);
-        
+        cboGioiTinh_TKNV.setModel(new DefaultComboBoxModel<String>(new String[] {"Tất cả", "Nam", "Nữ"})); // Thêm "Tất cả"
+        cboGioiTinh_TKNV.setFont(FONT_TEXT_FIELD); // Font text field
+        cboGioiTinh_TKNV.setBounds(210, 90, 163, 33); // Vị trí
+        pnlFilters_TKNV.add(cboGioiTinh_TKNV);
+
+        JLabel lblVaiTro_TKNV = new JLabel("Chức vụ:"); // Đổi thành Chức vụ
+        lblVaiTro_TKNV.setFont(FONT_LABEL_BOLD); // Font label
+        lblVaiTro_TKNV.setForeground(COLOR_TEXT_DARK); // Màu chữ
+        lblVaiTro_TKNV.setBounds(800, 90, 139, 30); // Vị trí
+        pnlFilters_TKNV.add(lblVaiTro_TKNV);
+
+        JComboBox<ChucVu> cboVaiTro_TKNV = new JComboBox<ChucVu>(); // Dùng ChucVu
+        cboVaiTro_TKNV.setFont(FONT_TEXT_FIELD); // Font text field
+        cboVaiTro_TKNV.setBounds(950, 90, 450, 33); // Vị trí
+        // Load chức vụ vào combobox (Thêm lựa chọn null cho "Tất cả")
+        cboVaiTro_TKNV.addItem(null);
+        chucVu_DAO cv_dao_TKNV = new chucVu_DAO();
+        List<ChucVu> dsChucVu_TKNV = cv_dao_TKNV.getAllChucVu();
+        for (ChucVu cv : dsChucVu_TKNV) {
+            cboVaiTro_TKNV.addItem(cv);
+        }
+        pnlFilters_TKNV.add(cboVaiTro_TKNV);
+
+
+        // Panel địa chỉ trong bộ lọc
+        JPanel panelDiaChi_TKNV = new JPanel();
+        panelDiaChi_TKNV.setBackground(COLOR_CARD_BACKGROUND); // Nền trắng
+        panelDiaChi_TKNV.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Địa chỉ", TitledBorder.LEADING, TitledBorder.TOP,
+             FONT_LABEL_BOLD, COLOR_TEXT_MUTED // Màu nhạt hơn
+        ));
+        panelDiaChi_TKNV.setBounds(20, 140, 1524, 80); // Vị trí
+        pnlFilters_TKNV.add(panelDiaChi_TKNV);
+        panelDiaChi_TKNV.setLayout(null);
+
+        JLabel lblTinh_TKNV = new JLabel("Tỉnh/TP:");
+        lblTinh_TKNV.setBounds(20, 30, 86, 30);
+        lblTinh_TKNV.setFont(FONT_LABEL_BOLD); // Font label
+        lblTinh_TKNV.setForeground(COLOR_TEXT_DARK); // Màu chữ
+        panelDiaChi_TKNV.add(lblTinh_TKNV);
+
+        txtTinh_TKNV = new JTextField();
+        txtTinh_TKNV.setBounds(110, 30, 480, 33);
+        txtTinh_TKNV.setFont(FONT_TEXT_FIELD); // Font text field
+        txtTinh_TKNV.setColumns(10);
+        panelDiaChi_TKNV.add(txtTinh_TKNV);
+
+        JLabel lblHuyen_TKNV = new JLabel("Quận/Huyện:");
+        lblHuyen_TKNV.setBounds(650, 30, 120, 30);
+        lblHuyen_TKNV.setFont(FONT_LABEL_BOLD); // Font label
+        lblHuyen_TKNV.setForeground(COLOR_TEXT_DARK); // Màu chữ
+        panelDiaChi_TKNV.add(lblHuyen_TKNV);
+
+        txtHuyen_TKNV = new JTextField();
+        txtHuyen_TKNV.setBounds(780, 30, 500, 33);
+        txtHuyen_TKNV.setFont(FONT_TEXT_FIELD); // Font text field
+        txtHuyen_TKNV.setColumns(10);
+        panelDiaChi_TKNV.add(txtHuyen_TKNV);
+
+        // Nút trong bộ lọc
+        JButton btnLamMoi_TKNV = new JButton("Làm mới");
+        btnLamMoi_TKNV.setFont(FONT_BUTTON_STANDARD); // Font nút
+        styleButton(btnLamMoi_TKNV, COLOR_TEXT_MUTED); // Style nút phụ
+        btnLamMoi_TKNV.setBounds(1400, 230, 140, 40); // Vị trí nút
+        pnlFilters_TKNV.add(btnLamMoi_TKNV);
+
         JButton btnXemCT_TKNV = new JButton("Xem chi tiết");
-        btnXemCT_TKNV.addActionListener(new ActionListener() {
+         btnXemCT_TKNV.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		XemChiTietNV_GUI xemCTNV = new XemChiTietNV_GUI(QuanLyHieuThuocTay);
-                
-                // 2. Hiển thị cửa sổ đó lên
+        		XemChiTietNV_GUI xemCTNV = new XemChiTietNV_GUI(QuanLyHieuThuocTay); // Hoặc (this)
                 xemCTNV.setVisible(true);
         	}
         });
-        
-        btnXemCT_TKNV.setBounds(1079, 382, 125, 36);
-        btnXemCT_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-        panel_TimKiemNV.add(btnXemCT_TKNV);
-        
-        JButton btnLamMoi_TKNV = new JButton("Làm mới");
-        btnLamMoi_TKNV.setBounds(1297, 382, 125, 36);
-        btnLamMoi_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-        panel_TimKiemNV.add(btnLamMoi_TKNV);
-        
-        JScrollBar scrollBar = new JScrollBar();
-        scrollBar.setBounds(625, 600, 17, 48);
-        panel_TimKiemNV.add(scrollBar);
-        
+        btnXemCT_TKNV.setFont(FONT_BUTTON_STANDARD); // Font nút
+        styleButton(btnXemCT_TKNV, COLOR_PRIMARY_BLUE); // Style nút chính
+        btnXemCT_TKNV.setBounds(1240, 230, 140, 40); // Vị trí nút
+        pnlFilters_TKNV.add(btnXemCT_TKNV);
+
+        // ScrollPane và Bảng kết quả
         JScrollPane scrollPane_TKNV = new JScrollPane();
-        scrollPane_TKNV.setBounds(10, 429, 1564, 499);
+        scrollPane_TKNV.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền
+        scrollPane_TKNV.setBounds(10, 370, 1564, 558); // Vị trí bảng
         panel_TimKiemNV.add(scrollPane_TKNV);
-        
-        table_TKNV = new JTable();
-        table_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
+
+        // Style bảng table_TKNV
+        table_TKNV = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground()); // Dùng this
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                    // Không set foreground trắng
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_TKNV); // Áp dụng style chung
         table_TKNV.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null, null, null, null},
-        	},
+        	new Object[][] {}, // Bỏ dòng null
         	new String[] {
-        		"M\u00E3 nh\u00E2n vi\u00EAn", "T\u00EAn nh\u00E2n vi\u00EAn", "Ng\u00E0y sinh", "Gi\u1EDBi t\u00EDnh", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9", "Ch\u1EE9c v\u1EE5", "\u1EA2nh nh\u00E2n vi\u00EAn", "T\u00E0i kho\u1EA3n"
+        		"Mã nhân viên", "Tên nhân viên", "Ngày sinh", "Giới tính", "Số điện thoại", "Địa chỉ", "Chức vụ", "Ảnh nhân viên", "Tài khoản"
         	}
         ));
         scrollPane_TKNV.setViewportView(table_TKNV);
+
+        // ===== KẾT THÚC KHỐI CODE TÌM KIẾM NHÂN VIÊN =====
         
-        JPanel panelDiaChi_TKNV = new JPanel();
-        panelDiaChi_TKNV.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
-        panelDiaChi_TKNV.setBounds(53, 241, 1396, 99);
-        panel_TimKiemNV.add(panelDiaChi_TKNV);
-        panelDiaChi_TKNV.setLayout(null);
-        
-        txtTinh_TKNV = new JTextField();
-        txtTinh_TKNV.setBounds(186, 28, 360, 33);
-        txtTinh_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTinh_TKNV.setColumns(10);
-        panelDiaChi_TKNV.add(txtTinh_TKNV);
-        
-        JLabel lblTinh_TKNV = new JLabel("Tỉnh:");
-        lblTinh_TKNV.setBounds(22, 28, 86, 32);
-        lblTinh_TKNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panelDiaChi_TKNV.add(lblTinh_TKNV);
-        
-        txtHuyen_TKNV = new JTextField();
-        txtHuyen_TKNV.setBounds(1025, 28, 344, 33);
-        txtHuyen_TKNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtHuyen_TKNV.setColumns(10);
-        panelDiaChi_TKNV.add(txtHuyen_TKNV);
-        
-        JLabel lblHuyen_TKNV = new JLabel("Huyện:");
-        lblHuyen_TKNV.setBounds(874, 29, 86, 32);
-        lblHuyen_TKNV.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panelDiaChi_TKNV.add(lblHuyen_TKNV);
-        
+     // ===== BẮT ĐẦU KHỐI CODE CẬP NHẬT NHÂN VIÊN ĐÃ SỬA =====
         JPanel panel_CapNhatNV = new JPanel();
         maincontent.add(panel_CapNhatNV, "capnhatnv");
         panel_CapNhatNV.setLayout(null);
-        
-        
-        //Cập nhật nhân viên
-        JLabel lblTitle_CNNV = new JLabel("CẬP NHẬT NHÂN VIÊN");
-        lblTitle_CNNV.setBounds(570, 33, 277, 52);
-        lblTitle_CNNV.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        panel_CapNhatNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
         panel_CapNhatNV.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                loadDataToTable(table_CNNV); // chỉ load khi tab/panel này được hiện ra
+                loadDataToTable(table_CNNV);
             }
         });
 
-        panel_CapNhatNV.add(lblTitle_CNNV);
-        
+        // Panel tiêu đề
+        JPanel panel_title_TKNV_1 = new JPanel(); // Giữ nguyên tên biến
+        panel_title_TKNV_1.setLayout(null);
+        panel_title_TKNV_1.setBackground(new Color(0, 102, 102)); // Màu gốc
+        panel_title_TKNV_1.setBounds(0, 0, 1584, 67); // Điều chỉnh width nếu cần
+        panel_CapNhatNV.add(panel_title_TKNV_1);
+
+        JLabel lblTitle_TKNV_1 = new JLabel("CẬP NHẬT THÔNG TIN NHÂN VIÊN"); // Đổi text tiêu đề
+        lblTitle_TKNV_1.setForeground(Color.WHITE);
+        lblTitle_TKNV_1.setFont(FONT_TITLE_MAIN); // Font tiêu đề
+        lblTitle_TKNV_1.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa
+        lblTitle_TKNV_1.setBounds(0, 11, 1584, 45); // Căn giữa
+        panel_title_TKNV_1.add(lblTitle_TKNV_1);
+
+
+        // Panel ảnh
         JPanel panelAnh_CNNV = new JPanel();
-        panelAnh_CNNV.setBounds(64, 115, 339, 328);
-        panelAnh_CNNV.setBorder(new LineBorder(new Color(0, 0, 0)));
+        panelAnh_CNNV.setLayout(new BorderLayout(0, 0));
+        panelAnh_CNNV.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        panelAnh_CNNV.setBackground(COLOR_BACKGROUND_PRIMARY);
+        panelAnh_CNNV.setBounds(40, 80, 339, 328); // Vị trí
         panel_CapNhatNV.add(panelAnh_CNNV);
+
         JLabel lblAnhNV_CNNV = new JLabel("Chưa có ảnh", SwingConstants.CENTER);
-        lblAnhNV_CNNV.setBounds(10, 10, 319, 308);
-        lblAnhNV_CNNV.setHorizontalAlignment(SwingConstants.CENTER);
-        lblAnhNV_CNNV.setVerticalAlignment(SwingConstants.CENTER);
-        panelAnh_CNNV.add(lblAnhNV_CNNV);
-        panelAnh_CNNV.setLayout(null);
+        lblAnhNV_CNNV.setFont(FONT_DETAIL_ITALIC);
+        lblAnhNV_CNNV.setForeground(COLOR_TEXT_MUTED);
+        panelAnh_CNNV.add(lblAnhNV_CNNV, BorderLayout.CENTER);
 
-        
-        JLabel lblMaNV_CNNV = new JLabel("Mã nhân viên:");
-        lblMaNV_CNNV.setBounds(498, 115, 152, 37);
-        lblMaNV_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(lblMaNV_CNNV);
-        
-        JLabel lblTenNV_CNNV = new JLabel("Tên nhân viên:");
-        lblTenNV_CNNV.setBounds(498, 163, 152, 37);
-        lblTenNV_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(lblTenNV_CNNV);
-        
-        JLabel lblSDT_CNNV = new JLabel("Số điện thoại:");
-        lblSDT_CNNV.setBounds(498, 211, 152, 37);
-        lblSDT_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(lblSDT_CNNV);
-        
-        txtMaNV_CNNV = new JTextField();
-        txtMaNV_CNNV.setBounds(660, 115, 187, 37);
-        txtMaNV_CNNV.setFont(new Font("Times New Roman", Font.ITALIC, 21));
-        txtMaNV_CNNV.setEditable(false);
-        panel_CapNhatNV.add(txtMaNV_CNNV);
-        txtMaNV_CNNV.setColumns(10);
-        
-        txtTenNV_CNNV = new JTextField();
-        txtTenNV_CNNV.setBounds(660, 163, 379, 37);
-        txtTenNV_CNNV.setFont(new Font("Times New Roman", Font.ITALIC, 21));
-        txtTenNV_CNNV.setColumns(10);
-        panel_CapNhatNV.add(txtTenNV_CNNV);
-        
-        txtSDT_CNNV = new JTextField();
-        txtSDT_CNNV.setBounds(660, 211, 379, 37);
-        txtSDT_CNNV.setFont(new Font("Times New Roman", Font.ITALIC, 21));
-        txtSDT_CNNV.setColumns(10);
-        panel_CapNhatNV.add(txtSDT_CNNV);
-        
-        JLabel lblGioiTinh_CNNV = new JLabel("Giới tính:");
-        lblGioiTinh_CNNV.setBounds(890, 115, 105, 37);
-        lblGioiTinh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(lblGioiTinh_CNNV);
-        
-        JLabel lblNgaySinh_CNNV = new JLabel("Ngày sinh:");
-        lblNgaySinh_CNNV.setBounds(1209, 115, 114, 37);
-        lblNgaySinh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(lblNgaySinh_CNNV);
-        
-        JComboBox<String> cboGIoiTinh_CNNV = new JComboBox<String>();
-        cboGIoiTinh_CNNV.setBounds(1044, 115, 105, 32);
-        cboGIoiTinh_CNNV.setModel(new DefaultComboBoxModel(new String[] {"Nam", "Nữ"}));
-        cboGIoiTinh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(cboGIoiTinh_CNNV);
-        
-        JDateChooser dateNgaySinh_CNNV = new JDateChooser();
-        dateNgaySinh_CNNV.setBounds(1333, 115, 152, 37);
-        dateNgaySinh_CNNV.setDateFormatString("dd/MM/yyyy");
-        panel_CapNhatNV.add(dateNgaySinh_CNNV);
-        
-        JLabel lblChucVu_CNNV = new JLabel("Chức vụ:");
-        lblChucVu_CNNV.setBounds(1127, 163, 136, 37);
-        lblChucVu_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(lblChucVu_CNNV);
-        
-        JComboBox<ChucVu> cboChucVu_CNNV = new JComboBox<ChucVu>();
-        cboChucVu_CNNV.setBounds(1260, 163, 225, 37);
-        cboChucVu_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(cboChucVu_CNNV);
-        
-        JLabel lblTaiKhoan_CNNV = new JLabel("Tài khoản:");
-        lblTaiKhoan_CNNV.setBounds(1127, 211, 136, 37);
-        lblTaiKhoan_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(lblTaiKhoan_CNNV);
-        
-        JComboBox<TaiKhoan> cboTaiKhoan_CNNV = new JComboBox<TaiKhoan>();
-        cboTaiKhoan_CNNV.setBounds(1260, 211, 225, 37);
-        cboTaiKhoan_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(cboTaiKhoan_CNNV);
-        
-        chucVu_DAO cv_dao_CNNV = new chucVu_DAO(); // Giả sử tên lớp DAO của bạn
-        List<ChucVu> dsChucVu_CNNV = cv_dao_CNNV.getAllChucVu();
-        for (ChucVu cv : dsChucVu_CNNV) {
-        	cboChucVu_CNNV.addItem(cv); // JComboBox sẽ tự động gọi cv.toString() để hiển thị TÊN
-        }
-
-        taiKhoan_DAO tk_dao_CNNV = new taiKhoan_DAO(); // Giả sử tên lớp DAO của bạn
-        List<TaiKhoan> dsTaiKhoan_CNNV = tk_dao_CNNV.getAllTaiKhoan();
-        for (TaiKhoan tk : dsTaiKhoan_CNNV) {
-            cboTaiKhoan_CNNV.addItem(tk); // JComboBox sẽ tự động gọi tk.toString() để hiển thị TÊN
-         }
-        
-        JPanel panelDiaChi_CNNV = new JPanel();
-        panelDiaChi_CNNV.setBounds(498, 269, 987, 102);
-        panelDiaChi_CNNV.setLayout(null);
-        panelDiaChi_CNNV.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
-        panel_CapNhatNV.add(panelDiaChi_CNNV);
-        
-        txtTinh_CNNV = new JTextField();
-        txtTinh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTinh_CNNV.setColumns(10);
-        txtTinh_CNNV.setBounds(90, 28, 360, 33);
-        panelDiaChi_CNNV.add(txtTinh_CNNV);
-        
-        JLabel lblTinh_CNNV = new JLabel("Tỉnh:");
-        lblTinh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        lblTinh_CNNV.setBounds(22, 28, 58, 32);
-        panelDiaChi_CNNV.add(lblTinh_CNNV);
-        
-        
-        JLabel lblHuyen_CNNV = new JLabel("Huyện:");
-        lblHuyen_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        lblHuyen_CNNV.setBounds(527, 28, 86, 32);
-        panelDiaChi_CNNV.add(lblHuyen_CNNV);
-        
-        txtHuyen_CNNV = new JTextField();
-        txtHuyen_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtHuyen_CNNV.setColumns(10);
-        txtHuyen_CNNV.setBounds(606, 28, 360, 33);
-        panelDiaChi_CNNV.add(txtHuyen_CNNV);
-        
-        JPanel panelTK_CNNV = new JPanel();
-        panelTK_CNNV.setBounds(498, 396, 987, 102);
-        panelTK_CNNV.setLayout(null);
-        panelTK_CNNV.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "T\u00ECm ki\u1EBFm", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
-        panel_CapNhatNV.add(panelTK_CNNV);
-        
-        txtTenNV_TK_CNNV = new JTextField();
-        txtTenNV_TK_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTenNV_TK_CNNV.setColumns(10);
-        txtTenNV_TK_CNNV.setBounds(190, 28, 260, 33);
-        panelTK_CNNV.add(txtTenNV_TK_CNNV);
-        
-        JLabel lblTenNV_TK_CNNV = new JLabel("Tên nhân viên:");
-        lblTenNV_TK_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        lblTenNV_TK_CNNV.setBounds(22, 28, 132, 32);
-        panelTK_CNNV.add(lblTenNV_TK_CNNV);
-        
-        JLabel lblChucVu_TK_CNNV = new JLabel("Chức vụ:");
-        lblChucVu_TK_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        lblChucVu_TK_CNNV.setBounds(599, 28, 132, 32);
-        panelTK_CNNV.add(lblChucVu_TK_CNNV);
-        
-        JComboBox<ChucVu> cboChucVu_TK_CNNV = new JComboBox<ChucVu>();
-        cboChucVu_TK_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        cboChucVu_TK_CNNV.setBounds(741, 26, 225, 37);
-        chucVu_DAO cv_dao_tk_CNNV = new chucVu_DAO(); // Giả sử tên lớp DAO của bạn
-        List<ChucVu> dsChucVu_tk_CNNV = cv_dao_tk_CNNV.getAllChucVu();
-        for (ChucVu cv : dsChucVu_tk_CNNV) {
-        	cboChucVu_TK_CNNV.addItem(cv); // JComboBox sẽ tự động gọi cv.toString() để hiển thị TÊN
-        }
-        panelTK_CNNV.add(cboChucVu_TK_CNNV);
-        
+     // Nút chọn ảnh (Giữ nguyên code icon)
         JButton btnChonAnh_CNNV = new JButton("Chọn ảnh");
-        btnChonAnh_CNNV.setBounds(171, 469, 152, 37);
-        btnChonAnh_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        btnChonAnh_CNNV.setFont(FONT_BUTTON_STANDARD); // Chỉ set font
+        styleButton(btnChonAnh_CNNV, COLOR_TEXT_MUTED); // Chỉ set màu
+        btnChonAnh_CNNV.setBounds(140, 420, 152, 37); // Vị trí
+        // --- Code ActionListener GỐC của Đại Ca (KHÔNG try-catch) ---
         btnChonAnh_CNNV.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Chọn ảnh nhân viên");
@@ -2956,663 +3204,1050 @@ public class TrangChu_GUI {
             if (result == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
                 duongDanAnh_CNNV = file.getAbsolutePath();
+                // Code gốc load ảnh
                 lblAnhNV_CNNV.setIcon(new ImageIcon(new ImageIcon(duongDanAnh_CNNV).getImage()
                     .getScaledInstance(lblAnhNV_CNNV.getWidth(), lblAnhNV_CNNV.getHeight(), Image.SCALE_SMOOTH)));
+                lblAnhNV_CNNV.setText(null); // Giữ lại dòng này để xóa chữ
             }
         });
-
-        java.net.URL imgURL = getClass().getResource("/file-icon.png"); 
-
+        // --- Code Icon GỐC của Đại Ca ---
+        java.net.URL imgURL = getClass().getResource("/file-icon.png");
         if (imgURL != null) {
             ImageIcon originalIcon = new ImageIcon(imgURL);
             Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
             ImageIcon scaledIcon = new ImageIcon(img);
-            btnChonAnh_CNNV.setIcon(scaledIcon); 
-
+            btnChonAnh_CNNV.setIcon(scaledIcon);
             btnChonAnh_CNNV.setHorizontalAlignment(SwingConstants.LEFT);
             btnChonAnh_CNNV.setIconTextGap(10);
-            
         } else {
             System.err.println("Lỗi: Không tìm thấy ảnh tại /file-icon.png");
         }
-
-
+        // --- Hết code Icon ---
+        panel_CapNhatNV.add(btnChonAnh_CNNV); // Add nút vào panel
+        // --- Hết code ActionListener và Icon ---
         panel_CapNhatNV.add(btnChonAnh_CNNV);
-        
-        JButton btnLamMoi_CNNV = new JButton("Làm mới");
-        btnLamMoi_CNNV.setBounds(645, 532, 152, 37);
-        btnLamMoi_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnLamMoi_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        java.net.URL imgLamMoi_CNNV = getClass().getResource("/icon-refresh.png"); 
 
+        // Panel thông tin cập nhật
+        JPanel pnlInfo_CNNV = new JPanel();
+        pnlInfo_CNNV.setBackground(COLOR_CARD_BACKGROUND);
+        pnlInfo_CNNV.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Thông Tin Cập Nhật", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
+        pnlInfo_CNNV.setBounds(400, 80, 1164, 320);
+        panel_CapNhatNV.add(pnlInfo_CNNV);
+        pnlInfo_CNNV.setLayout(null);
+
+        // Định nghĩa vị trí và khoảng cách
+        int labelX_cnnv = 30;
+        int inputX_cnnv = 170;
+        int labelX2_cnnv = 550;
+        int inputX2_cnnv = 680;
+        int startY_cnnv = 30;
+        int height_cnnv = 33;
+        int vGap_cnnv = 15;
+
+        JLabel lblMaNV_CNNV = new JLabel("Mã nhân viên:");
+        lblMaNV_CNNV.setFont(FONT_LABEL_BOLD);
+        lblMaNV_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblMaNV_CNNV.setBounds(labelX_cnnv, startY_cnnv, 130, height_cnnv);
+        pnlInfo_CNNV.add(lblMaNV_CNNV);
+
+        txtMaNV_CNNV = new JTextField();
+        txtMaNV_CNNV.setFont(FONT_LABEL_BOLD);
+        txtMaNV_CNNV.setForeground(COLOR_DANGER_RED);
+        txtMaNV_CNNV.setBounds(inputX_cnnv, startY_cnnv, 280, height_cnnv);
+        txtMaNV_CNNV.setEditable(false);
+        txtMaNV_CNNV.setBackground(COLOR_CARD_BACKGROUND); // Nền giống panel
+        txtMaNV_CNNV.setBorder(null); // Bỏ viền
+        pnlInfo_CNNV.add(txtMaNV_CNNV);
+        txtMaNV_CNNV.setColumns(10);
+
+        JLabel lblGioiTinh_CNNV = new JLabel("Giới tính:");
+        lblGioiTinh_CNNV.setFont(FONT_LABEL_BOLD);
+        lblGioiTinh_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblGioiTinh_CNNV.setBounds(labelX2_cnnv + 50, startY_cnnv, 120, height_cnnv);
+        pnlInfo_CNNV.add(lblGioiTinh_CNNV);
+
+        JComboBox<String> cboGIoiTinh_CNNV = new JComboBox<String>();
+        cboGIoiTinh_CNNV.setModel(new DefaultComboBoxModel<String>(new String[] {"Nam", "Nữ"}));
+        cboGIoiTinh_CNNV.setFont(FONT_TEXT_FIELD);
+        cboGIoiTinh_CNNV.setBounds(inputX2_cnnv + 50, startY_cnnv, 150, height_cnnv);
+        pnlInfo_CNNV.add(cboGIoiTinh_CNNV);
+
+
+        JLabel lblTenNV_CNNV = new JLabel("Tên nhân viên:");
+        lblTenNV_CNNV.setFont(FONT_LABEL_BOLD);
+        lblTenNV_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblTenNV_CNNV.setBounds(labelX_cnnv, startY_cnnv + height_cnnv + vGap_cnnv, 130, height_cnnv);
+        pnlInfo_CNNV.add(lblTenNV_CNNV);
+
+        txtTenNV_CNNV = new JTextField();
+        txtTenNV_CNNV.setFont(FONT_TEXT_FIELD);
+        txtTenNV_CNNV.setColumns(10);
+        txtTenNV_CNNV.setBounds(inputX_cnnv, startY_cnnv + height_cnnv + vGap_cnnv, 700, height_cnnv);
+        pnlInfo_CNNV.add(txtTenNV_CNNV);
+
+        JLabel lblSDT_CNNV = new JLabel("Số điện thoại:");
+        lblSDT_CNNV.setFont(FONT_LABEL_BOLD);
+        lblSDT_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblSDT_CNNV.setBounds(labelX_cnnv, startY_cnnv + 2*(height_cnnv + vGap_cnnv), 130, height_cnnv);
+        pnlInfo_CNNV.add(lblSDT_CNNV);
+
+        txtSDT_CNNV = new JTextField();
+        txtSDT_CNNV.setFont(FONT_TEXT_FIELD);
+        txtSDT_CNNV.setColumns(10);
+        txtSDT_CNNV.setBounds(inputX_cnnv, startY_cnnv + 2*(height_cnnv + vGap_cnnv), 280, height_cnnv);
+        pnlInfo_CNNV.add(txtSDT_CNNV);
+
+        JLabel lblNgaySinh_CNNV = new JLabel("Ngày sinh:");
+        lblNgaySinh_CNNV.setFont(FONT_LABEL_BOLD);
+        lblNgaySinh_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblNgaySinh_CNNV.setBounds(labelX2_cnnv + 50, startY_cnnv + 2*(height_cnnv + vGap_cnnv), 120, height_cnnv);
+        pnlInfo_CNNV.add(lblNgaySinh_CNNV);
+
+        JDateChooser dateNgaySinh_CNNV = new JDateChooser();
+        dateNgaySinh_CNNV.setFont(FONT_TEXT_FIELD);
+        dateNgaySinh_CNNV.setDateFormatString("dd/MM/yyyy");
+        dateNgaySinh_CNNV.setBounds(inputX2_cnnv + 50, startY_cnnv + 2*(height_cnnv + vGap_cnnv), 200, height_cnnv);
+        pnlInfo_CNNV.add(dateNgaySinh_CNNV);
+
+
+        JLabel lblChucVu_CNNV = new JLabel("Chức vụ:");
+        lblChucVu_CNNV.setFont(FONT_LABEL_BOLD);
+        lblChucVu_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblChucVu_CNNV.setBounds(labelX_cnnv, startY_cnnv + 3*(height_cnnv + vGap_cnnv), 130, height_cnnv);
+        pnlInfo_CNNV.add(lblChucVu_CNNV);
+
+        JComboBox<ChucVu> cboChucVu_CNNV = new JComboBox<ChucVu>();
+        cboChucVu_CNNV.setFont(FONT_TEXT_FIELD);
+        cboChucVu_CNNV.setBounds(inputX_cnnv, startY_cnnv + 3*(height_cnnv + vGap_cnnv), 280, height_cnnv);
+        pnlInfo_CNNV.add(cboChucVu_CNNV);
+
+        JLabel lblTaiKhoan_CNNV = new JLabel("Tài khoản:");
+        lblTaiKhoan_CNNV.setFont(FONT_LABEL_BOLD);
+        lblTaiKhoan_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblTaiKhoan_CNNV.setBounds(labelX2_cnnv + 50, startY_cnnv + 3*(height_cnnv + vGap_cnnv), 120, height_cnnv);
+        pnlInfo_CNNV.add(lblTaiKhoan_CNNV);
+
+        JComboBox<TaiKhoan> cboTaiKhoan_CNNV = new JComboBox<TaiKhoan>();
+        cboTaiKhoan_CNNV.setFont(FONT_TEXT_FIELD);
+        cboTaiKhoan_CNNV.setBounds(inputX2_cnnv + 50, startY_cnnv + 3*(height_cnnv + vGap_cnnv), 350, height_cnnv);
+        pnlInfo_CNNV.add(cboTaiKhoan_CNNV);
+
+        chucVu_DAO cv_dao_CNNV = new chucVu_DAO();
+        List<ChucVu> dsChucVu_CNNV = cv_dao_CNNV.getAllChucVu();
+        for (ChucVu cv : dsChucVu_CNNV) {
+        	cboChucVu_CNNV.addItem(cv);
+        }
+        taiKhoan_DAO tk_dao_CNNV = new taiKhoan_DAO();
+        List<TaiKhoan> dsTaiKhoan_CNNV = tk_dao_CNNV.getAllTaiKhoan();
+        for (TaiKhoan tk : dsTaiKhoan_CNNV) {
+            cboTaiKhoan_CNNV.addItem(tk);
+         }
+
+        // Panel địa chỉ
+        JPanel panelDiaChi_CNNV = new JPanel();
+        panelDiaChi_CNNV.setBackground(COLOR_CARD_BACKGROUND);
+        panelDiaChi_CNNV.setLayout(null);
+        panelDiaChi_CNNV.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Địa chỉ", TitledBorder.LEADING, TitledBorder.TOP,
+             FONT_LABEL_BOLD, COLOR_TEXT_MUTED
+        ));
+        panelDiaChi_CNNV.setBounds(labelX_cnnv, startY_cnnv + 4*(height_cnnv + vGap_cnnv) + 10, 1080, 85);
+        pnlInfo_CNNV.add(panelDiaChi_CNNV);
+
+
+        JLabel lblTinh_CNNV = new JLabel("Tỉnh/TP:");
+        lblTinh_CNNV.setFont(FONT_LABEL_BOLD);
+        lblTinh_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblTinh_CNNV.setBounds(20, 30, 80, height_cnnv);
+        panelDiaChi_CNNV.add(lblTinh_CNNV);
+
+        txtTinh_CNNV = new JTextField();
+        txtTinh_CNNV.setFont(FONT_TEXT_FIELD);
+        txtTinh_CNNV.setColumns(10);
+        txtTinh_CNNV.setBounds(110, 30, 380, height_cnnv);
+        panelDiaChi_CNNV.add(txtTinh_CNNV);
+
+
+        JLabel lblHuyen_CNNV = new JLabel("Quận/Huyện:");
+        lblHuyen_CNNV.setFont(FONT_LABEL_BOLD);
+        lblHuyen_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblHuyen_CNNV.setBounds(530, 30, 120, height_cnnv);
+        panelDiaChi_CNNV.add(lblHuyen_CNNV);
+
+        txtHuyen_CNNV = new JTextField();
+        txtHuyen_CNNV.setFont(FONT_TEXT_FIELD);
+        txtHuyen_CNNV.setColumns(10);
+        txtHuyen_CNNV.setBounds(660, 30, 400, height_cnnv);
+        panelDiaChi_CNNV.add(txtHuyen_CNNV);
+
+
+        // Panel tìm kiếm
+        JPanel panelTK_CNNV = new JPanel();
+        panelTK_CNNV.setBackground(COLOR_CARD_BACKGROUND);
+        panelTK_CNNV.setLayout(null);
+        panelTK_CNNV.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Tìm Kiếm Nhân Viên Cần Cập Nhật", TitledBorder.LEADING, TitledBorder.TOP,
+             FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
+        panelTK_CNNV.setBounds(400, 410, 1164, 80);
+        panel_CapNhatNV.add(panelTK_CNNV);
+
+
+        JLabel lblTenNV_TK_CNNV = new JLabel("Tên nhân viên:");
+        lblTenNV_TK_CNNV.setFont(FONT_LABEL_BOLD);
+        lblTenNV_TK_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblTenNV_TK_CNNV.setBounds(30, 30, 132, 30);
+        panelTK_CNNV.add(lblTenNV_TK_CNNV);
+
+        txtTenNV_TK_CNNV = new JTextField();
+        txtTenNV_TK_CNNV.setFont(FONT_TEXT_FIELD);
+        txtTenNV_TK_CNNV.setColumns(10);
+        txtTenNV_TK_CNNV.setBounds(170, 30, 350, 33);
+        panelTK_CNNV.add(txtTenNV_TK_CNNV);
+
+        JLabel lblChucVu_TK_CNNV = new JLabel("Chức vụ:");
+        lblChucVu_TK_CNNV.setFont(FONT_LABEL_BOLD);
+        lblChucVu_TK_CNNV.setForeground(COLOR_TEXT_DARK);
+        lblChucVu_TK_CNNV.setBounds(560, 30, 100, 30);
+        panelTK_CNNV.add(lblChucVu_TK_CNNV);
+
+        JComboBox<ChucVu> cboChucVu_TK_CNNV = new JComboBox<ChucVu>();
+        cboChucVu_TK_CNNV.setFont(FONT_TEXT_FIELD);
+        cboChucVu_TK_CNNV.setBounds(670, 30, 300, 33);
+        chucVu_DAO cv_dao_tk_CNNV = new chucVu_DAO();
+        cboChucVu_TK_CNNV.addItem(null); // Thêm "Tất cả"
+        List<ChucVu> dsChucVu_tk_CNNV = cv_dao_tk_CNNV.getAllChucVu();
+        for (ChucVu cv : dsChucVu_tk_CNNV) {
+        	cboChucVu_TK_CNNV.addItem(cv);
+        }
+        panelTK_CNNV.add(cboChucVu_TK_CNNV);
+
+
+        // Các nút chức năng dưới form (Giữ nguyên code icon)
+        JButton btnLamMoi_CNNV = new JButton("Làm mới Form");
+        btnLamMoi_CNNV.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnLamMoi_CNNV, COLOR_TEXT_MUTED);
+        btnLamMoi_CNNV.setBounds(860, 500, 152, 40);
+        // --- Code ActionListener và Icon của Đại Ca ---
+        java.net.URL imgLamMoi_CNNV = getClass().getResource("/icon-refresh.png");
         if (imgLamMoi_CNNV != null) {
             ImageIcon originalIcon = new ImageIcon(imgLamMoi_CNNV);
             Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
             ImageIcon scaledIcon = new ImageIcon(img);
-            btnLamMoi_CNNV.setIcon(scaledIcon); 
-
+            btnLamMoi_CNNV.setIcon(scaledIcon);
             btnLamMoi_CNNV.setHorizontalAlignment(SwingConstants.LEFT);
             btnLamMoi_CNNV.setIconTextGap(10);
-            
         } else {
-            System.err.println("Lỗi: Không tìm thấy ảnh tại /file-icon.png");
+            System.err.println("Lỗi: Không tìm thấy ảnh tại /icon-refresh.png");
         }
+        // --- Hết code ActionListener và Icon ---
         panel_CapNhatNV.add(btnLamMoi_CNNV);
-        
-        JButton btnKhoiPhuc_CNNV = new JButton("Khôi phục");
-        btnKhoiPhuc_CNNV.setBounds(890, 532, 171, 37);
-        btnKhoiPhuc_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(btnKhoiPhuc_CNNV);
-        
-        JButton btnCapNhat_CNNV = new JButton("Cập nhật");
-        btnCapNhat_CNNV.setBounds(1326, 532, 126, 37);
-        btnCapNhat_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        panel_CapNhatNV.add(btnCapNhat_CNNV);
-        
-        JScrollPane scrollPane_CNNV = new JScrollPane();
-        scrollPane_CNNV.setBounds(10, 594, 1564, 334);
-        panel_CapNhatNV.add(scrollPane_CNNV);
-        
-        table_CNNV = new JTable();
-        table_CNNV.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null, null, null, null},
-        	},
-        	new String[] {
-        		"M\u00E3 nh\u00E2n vi\u00EAn", "T\u00EAn nh\u00E2n vi\u00EAn", "Ng\u00E0y sinh", "Gi\u1EDBi t\u00EDnh", "Ch\u1EE9c v\u1EE5", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9", "\u1EA2nh", "T\u00E0i kho\u1EA3n"
-        	}
-        ));
-        table_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-     // Xử lý khi click chọn 1 hàng trong bảng
-        table_CNNV.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int selectedRow = table_CNNV.getSelectedRow();
-                if (selectedRow != -1) {
-                    // Lấy dữ liệu từ bảng
-                    String maNV = table_CNNV.getValueAt(selectedRow, 0).toString();
-                    String tenNV = table_CNNV.getValueAt(selectedRow, 1).toString();
-                    String ngaySinhStr = table_CNNV.getValueAt(selectedRow, 2).toString();
-                    String gioiTinh = table_CNNV.getValueAt(selectedRow, 3).toString();
-                    String chucVu = table_CNNV.getValueAt(selectedRow, 4).toString();
-                    String sdt = table_CNNV.getValueAt(selectedRow, 5).toString();
-                    String diaChi = table_CNNV.getValueAt(selectedRow, 6).toString();
-                    String duongDanAnh = table_CNNV.getValueAt(selectedRow, 7).toString();
-                    String taiKhoan = table_CNNV.getValueAt(selectedRow, 8).toString();
 
-                    // Gán dữ liệu vào form
-                    txtMaNV_CNNV.setText(maNV);
-                    txtTenNV_CNNV.setText(tenNV);
-                    txtSDT_CNNV.setText(sdt);
-
-                    // ✅ Giới tính
-                    cboGIoiTinh_CNNV.setSelectedItem(gioiTinh);
-
-                    // ✅ Ngày sinh (chuyển "yyyy-MM-dd" từ DB sang Date)
-                    try {
-                        java.util.Date ngaySinh = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(ngaySinhStr);
-                        dateNgaySinh_CNNV.setDate(ngaySinh);
-                    } catch (Exception ex) {
-                        dateNgaySinh_CNNV.setDate(null);
-                    }
-
-                    // ✅ Chức vụ
-                    for (int i = 0; i < cboChucVu_CNNV.getItemCount(); i++) {
-                        if (cboChucVu_CNNV.getItemAt(i).toString().equals(chucVu)) {
-                            cboChucVu_CNNV.setSelectedIndex(i);
-                            break;
-                        }
-                    }
-
-                    // ✅ Tài khoản
-                    for (int i = 0; i < cboTaiKhoan_CNNV.getItemCount(); i++) {
-                        if (cboTaiKhoan_CNNV.getItemAt(i).toString().equals(taiKhoan)) {
-                            cboTaiKhoan_CNNV.setSelectedIndex(i);
-                            break;
-                        }
-                    }
-
-                    // ✅ Địa chỉ: tách thành Tỉnh và Huyện
-                    if (diaChi.contains(",")) {
-                        String[] parts = diaChi.split(",", 2);
-                        txtTinh_CNNV.setText(parts[0].trim());
-                        txtHuyen_CNNV.setText(parts[1].trim());
-                    } else {
-                        txtTinh_CNNV.setText(diaChi.trim());
-                        txtHuyen_CNNV.setText("");
-                    }
-
-                    // ✅ Ảnh: load từ resource (nếu là /male-1.jpg) hoặc từ ổ đĩa
-                    try {
-                        ImageIcon icon;
-                        if (duongDanAnh.startsWith("/")) {
-                            java.net.URL imgURL = getClass().getResource(duongDanAnh);
-                            if (imgURL != null) {
-                                icon = new ImageIcon(imgURL);
-                            } else {
-                                throw new Exception("Không tìm thấy ảnh trong resource");
-                            }
-                        } else {
-                            icon = new ImageIcon(duongDanAnh);
-                        }
-
-                        Image img = icon.getImage().getScaledInstance(
-                            lblAnhNV_CNNV.getWidth(),
-                            lblAnhNV_CNNV.getHeight(),
-                            Image.SCALE_SMOOTH
-                        );
-                        lblAnhNV_CNNV.setText(null);
-                        lblAnhNV_CNNV.setIcon(new ImageIcon(img));
-
-                    } catch (Exception ex) {
-                        lblAnhNV_CNNV.setText("Không có ảnh");
-                        lblAnhNV_CNNV.setIcon(null);
-                        System.err.println("Lỗi khi load ảnh: " + ex.getMessage());
-                    }
-                }
-            }
-        });
-
-
-
-        scrollPane_CNNV.setViewportView(table_CNNV);
-        
-        JButton btnXoa_CNNV = new JButton("Xóa\r\n");
-        btnXoa_CNNV.setBounds(1111, 532, 152, 37);
-        btnXoa_CNNV.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        JButton btnXoa_CNNV = new JButton("Xóa");
+        btnXoa_CNNV.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnXoa_CNNV, COLOR_DANGER_RED); // Màu đỏ
+        btnXoa_CNNV.setBounds(1030, 500, 152, 40);
         btnXoa_CNNV.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedRow = table_CNNV.getSelectedRow();
+                 int selectedRow = table_CNNV.getSelectedRow();
                 if (selectedRow == -1) {
                     JOptionPane.showMessageDialog(null, "Vui lòng chọn nhân viên cần xóa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-
-                // Lấy mã nhân viên từ bảng
                 String maNV = table_CNNV.getValueAt(selectedRow, 0).toString();
-
-                // Xác nhận xóa
-                int confirm = JOptionPane.showConfirmDialog(null, 
-                        "Bạn có chắc muốn xóa nhân viên có mã: " + maNV + " không?", 
-                        "Xác nhận xóa", 
+                int confirm = JOptionPane.showConfirmDialog(null,
+                        "Bạn có chắc muốn xóa nhân viên có mã: " + maNV + " không?",
+                        "Xác nhận xóa",
                         JOptionPane.YES_NO_OPTION);
-
                 if (confirm == JOptionPane.YES_OPTION) {
                     nhanVien_DAO nv_dao = new nhanVien_DAO();
                     boolean result = nv_dao.deleteNhanVien(maNV);
-
                     if (result) {
                         JOptionPane.showMessageDialog(null, "Xóa nhân viên thành công!");
-                        loadDataToTable(table_CNNV); // Cập nhật lại bảng
+                        loadDataToTable(table_CNNV);
                     } else {
                         JOptionPane.showMessageDialog(null, "Không thể xóa nhân viên! Kiểm tra lại dữ liệu hoặc ràng buộc khóa ngoại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
         });
-
         panel_CapNhatNV.add(btnXoa_CNNV);
+
+        JButton btnKhoiPhuc_CNNV = new JButton("Khôi phục Form");
+        btnKhoiPhuc_CNNV.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnKhoiPhuc_CNNV, COLOR_TEXT_MUTED);
+        btnKhoiPhuc_CNNV.setBounds(1200, 500, 171, 40);
+        panel_CapNhatNV.add(btnKhoiPhuc_CNNV);
+
+        JButton btnCapNhat_CNNV = new JButton("Cập nhật");
+        btnCapNhat_CNNV.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnCapNhat_CNNV, COLOR_SUCCESS_GREEN);
+        btnCapNhat_CNNV.setBounds(1390, 500, 150, 40);
+        panel_CapNhatNV.add(btnCapNhat_CNNV);
+
+
+        // ScrollPane và Bảng
+        JScrollPane scrollPane_CNNV = new JScrollPane();
+        scrollPane_CNNV.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scrollPane_CNNV.setBounds(10, 550, 1564, 378); // Điều chỉnh
+        panel_CapNhatNV.add(scrollPane_CNNV);
+
+        // Style bảng table_CNNV
+        table_CNNV = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground()); // Dùng this
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                    // Không set foreground trắng
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_CNNV);
+        table_CNNV.setModel(new DefaultTableModel(
+        	new Object[][] {},
+        	new String[] {
+        		"Mã NV", "Tên NV", "Ngày sinh", "Giới tính", "Chức vụ", "SĐT", "Địa chỉ", "Ảnh", "Tài khoản"
+        	}
+        ));
+        // Code MouseListener giữ nguyên
+         table_CNNV.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                 int selectedRow = table_CNNV.getSelectedRow();
+                if (selectedRow != -1) {
+                     String maNV = table_CNNV.getValueAt(selectedRow, 0).toString();
+                    String tenNV = table_CNNV.getValueAt(selectedRow, 1).toString();
+                    Object ngaySinhObj = table_CNNV.getValueAt(selectedRow, 2);
+                    String gioiTinh = table_CNNV.getValueAt(selectedRow, 3).toString();
+                    String chucVuStr = table_CNNV.getValueAt(selectedRow, 4).toString();
+                    String sdt = table_CNNV.getValueAt(selectedRow, 5).toString();
+                    String diaChi = table_CNNV.getValueAt(selectedRow, 6) != null ? table_CNNV.getValueAt(selectedRow, 6).toString() : "";
+                    String duongDanAnh = table_CNNV.getValueAt(selectedRow, 7) != null ? table_CNNV.getValueAt(selectedRow, 7).toString() : null;
+                    String taiKhoanStr = table_CNNV.getValueAt(selectedRow, 8).toString();
+
+                    txtMaNV_CNNV.setText(maNV);
+                    txtTenNV_CNNV.setText(tenNV);
+                    txtSDT_CNNV.setText(sdt);
+                    cboGIoiTinh_CNNV.setSelectedItem(gioiTinh);
+
+                    if (ngaySinhObj != null) {
+                         try {
+                            if (ngaySinhObj instanceof String) {
+                                 java.util.Date ngaySinh = new java.text.SimpleDateFormat("yyyy-MM-dd").parse((String)ngaySinhObj);
+                                dateNgaySinh_CNNV.setDate(ngaySinh);
+                            } else if (ngaySinhObj instanceof LocalDate) {
+                                java.util.Date ngaySinh = java.util.Date.from(((LocalDate)ngaySinhObj).atStartOfDay(ZoneId.systemDefault()).toInstant());
+                                dateNgaySinh_CNNV.setDate(ngaySinh);
+                            } else if (ngaySinhObj instanceof java.sql.Date) {
+                                dateNgaySinh_CNNV.setDate((java.sql.Date)ngaySinhObj);
+                            } else if (ngaySinhObj instanceof java.util.Date) {
+                                dateNgaySinh_CNNV.setDate((java.util.Date)ngaySinhObj);
+                            } else { dateNgaySinh_CNNV.setDate(null); }
+                        } catch (Exception ex) {
+                            dateNgaySinh_CNNV.setDate(null);
+                        }
+                    } else { dateNgaySinh_CNNV.setDate(null); }
+
+                    for (int i = 0; i < cboChucVu_CNNV.getItemCount(); i++) {
+                         ChucVu cvItem = cboChucVu_CNNV.getItemAt(i);
+                        if (cvItem != null && cvItem.getTenChucVu().equals(chucVuStr)) {
+                            cboChucVu_CNNV.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+
+                    for (int i = 0; i < cboTaiKhoan_CNNV.getItemCount(); i++) {
+                        TaiKhoan tkItem = cboTaiKhoan_CNNV.getItemAt(i);
+                        if (tkItem != null && tkItem.getTenTK().equals(taiKhoanStr)) {
+                            cboTaiKhoan_CNNV.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+
+                    if (diaChi != null && diaChi.contains(",")) {
+                        String[] parts = diaChi.split(",", 2);
+                        txtTinh_CNNV.setText(parts[0].trim());
+                        txtHuyen_CNNV.setText(parts[1].trim());
+                    } else if (diaChi != null) {
+                        txtTinh_CNNV.setText(diaChi.trim());
+                        txtHuyen_CNNV.setText("");
+                    } else {
+                        txtTinh_CNNV.setText("");
+                         txtHuyen_CNNV.setText("");
+                    }
+
+                    duongDanAnh_CNNV = duongDanAnh;
+                    if (duongDanAnh != null && !duongDanAnh.isEmpty()) {
+                         try {
+                             ImageIcon icon = new ImageIcon(duongDanAnh);
+                             if (icon.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                                 Image img = icon.getImage().getScaledInstance(
+                                    lblAnhNV_CNNV.getWidth(), lblAnhNV_CNNV.getHeight(), Image.SCALE_SMOOTH
+                                );
+                                lblAnhNV_CNNV.setText(null);
+                                lblAnhNV_CNNV.setIcon(new ImageIcon(img));
+                             } else { throw new Exception("Ảnh không hợp lệ"); }
+                        } catch (Exception ex) {
+                            lblAnhNV_CNNV.setText("Lỗi ảnh");
+                            lblAnhNV_CNNV.setIcon(null);
+                        }
+                    } else {
+                         lblAnhNV_CNNV.setText("Chưa có ảnh");
+                        lblAnhNV_CNNV.setIcon(null);
+                    }
+                }
+            }
+        });
+        scrollPane_CNNV.setViewportView(table_CNNV);
+
+
+        // ===== KẾT THÚC KHỐI CODE CẬP NHẬT NHÂN VIÊN =====
         
+     // ===== BẮT ĐẦU KHỐI CODE THÊM NHÀ CUNG CẤP ĐÃ SỬA =====
         JPanel panel_themNCC = new JPanel();
         maincontent.add(panel_themNCC, "themNCC");
         panel_themNCC.setLayout(null);
-        
-        JPanel panel_TitleThemNCC = new JPanel();
-        panel_TitleThemNCC.setBounds(536, 33, 330, 76);
-        panel_themNCC.add(panel_TitleThemNCC);
-        panel_TitleThemNCC.setLayout(null);
-        
-        JLabel lblTitleThemNCC = new JLabel("THÊM NHÀ CUNG CẤP");
-        lblTitleThemNCC.setBounds(35, 20, 348, 35);
-        lblTitleThemNCC.setFont(new Font("Times New Roman", Font.BOLD, 25));
-        panel_TitleThemNCC.add(lblTitleThemNCC);
-        
+        panel_themNCC.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lblTitleThemNCC = new JLabel("THÊM NHÀ CUNG CẤP MỚI"); // Tiêu đề
+        lblTitleThemNCC.setFont(FONT_TITLE_MAIN);
+        lblTitleThemNCC.setForeground(COLOR_PRIMARY_BLUE);
+        lblTitleThemNCC.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitleThemNCC.setBounds(0, 11, 1584, 45); // Vị trí tiêu đề
+        panel_themNCC.add(lblTitleThemNCC);
+
+        // Panel ảnh (Tương tự Thêm Nhân Viên)
+        JPanel panelAnhNCC_TNCC = new JPanel();
+        panelAnhNCC_TNCC.setLayout(new BorderLayout(0,0)); // Dùng BorderLayout
+        panelAnhNCC_TNCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền nhạt
+        panelAnhNCC_TNCC.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền xám nhạt
+        panelAnhNCC_TNCC.setBounds(40, 80, 383, 400); // Điều chỉnh vị trí/kích thước
+        panel_themNCC.add(panelAnhNCC_TNCC);
+        // Thêm label placeholder cho ảnh vào đây nếu muốn
+        JLabel lblAnhNCC_TNCC = new JLabel("Chưa có ảnh NCC", SwingConstants.CENTER);
+        lblAnhNCC_TNCC.setFont(FONT_DETAIL_ITALIC);
+        lblAnhNCC_TNCC.setForeground(COLOR_TEXT_MUTED);
+        panelAnhNCC_TNCC.add(lblAnhNCC_TNCC, BorderLayout.CENTER);
+
+
+        JButton btnChonAnh_TNCC = new JButton("Chọn ảnh");
+        btnChonAnh_TNCC.setFont(FONT_BUTTON_STANDARD); // Font nút
+        styleButton(btnChonAnh_TNCC, COLOR_TEXT_MUTED); // Style nút phụ
+        btnChonAnh_TNCC.setBounds(160, 490, 143, 40); // Điều chỉnh vị trí
+        panel_themNCC.add(btnChonAnh_TNCC);
+        // Đại Ca có thể thêm ActionListener cho nút này sau
+
+        // Panel thông tin NCC
+        JPanel panel_ThongTinNCC = new JPanel();
+        panel_ThongTinNCC.setBackground(COLOR_CARD_BACKGROUND); // Nền trắng
+        panel_ThongTinNCC.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Thông tin nhà cung cấp", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        )); // Viền và tiêu đề
+        panel_ThongTinNCC.setBounds(450, 80, 1114, 380); // Điều chỉnh vị trí/kích thước
+        panel_themNCC.add(panel_ThongTinNCC);
+        panel_ThongTinNCC.setLayout(null);
+
+        // Định nghĩa lại vị trí và khoảng cách
+        int labelX_tncc = 40;
+        int inputX_tncc = 210;
+        int labelX2_tncc = 580;
+        int inputX2_tncc = 710;
+        int startY_tncc = 40;
+        int height_tncc = 33;
+        int vGap_tncc = 15;
+
+        JLabel lblMaNCC_TNCC = new JLabel("Mã nhà cung cấp:");
+        lblMaNCC_TNCC.setFont(FONT_LABEL_BOLD); // Font label
+        lblMaNCC_TNCC.setForeground(COLOR_TEXT_DARK); // Màu chữ
+        lblMaNCC_TNCC.setBounds(labelX_tncc, startY_tncc, 160, height_tncc);
+        panel_ThongTinNCC.add(lblMaNCC_TNCC);
+
+        txtMaNCC_TNCC = new JTextField();
+        txtMaNCC_TNCC.setFont(FONT_LABEL_BOLD); // Font đậm
+        txtMaNCC_TNCC.setForeground(COLOR_DANGER_RED); // Màu đỏ
+        txtMaNCC_TNCC.setEditable(false); // Mã thường tự sinh
+        txtMaNCC_TNCC.setColumns(10);
+        txtMaNCC_TNCC.setBounds(inputX_tncc, startY_tncc, 300, height_tncc); // Điều chỉnh width
+        txtMaNCC_TNCC.setBorder(null); // Bỏ viền
+        txtMaNCC_TNCC.setBackground(COLOR_CARD_BACKGROUND); // Nền giống panel
+        // Cần code để tạo mã NCC mới ở đây
+        // txtMaNCC_TNCC.setText(maMoiNCC);
+        panel_ThongTinNCC.add(txtMaNCC_TNCC);
+
+        JLabel lblTenNCC_TNCC = new JLabel("Tên nhà cung cấp:");
+        lblTenNCC_TNCC.setFont(FONT_LABEL_BOLD);
+        lblTenNCC_TNCC.setForeground(COLOR_TEXT_DARK);
+        lblTenNCC_TNCC.setBounds(labelX_tncc, startY_tncc + height_tncc + vGap_tncc, 179, height_tncc);
+        panel_ThongTinNCC.add(lblTenNCC_TNCC);
+
+        txtTenNCC_TNCC = new JTextField();
+        txtTenNCC_TNCC.setFont(FONT_TEXT_FIELD);
+        txtTenNCC_TNCC.setColumns(10);
+        txtTenNCC_TNCC.setBounds(inputX_tncc, startY_tncc + height_tncc + vGap_tncc, 800, height_tncc); // Kéo dài
+        panel_ThongTinNCC.add(txtTenNCC_TNCC);
+
+        JLabel lblSDTNCC_TNCC = new JLabel("Số điện thoại:");
+        lblSDTNCC_TNCC.setFont(FONT_LABEL_BOLD);
+        lblSDTNCC_TNCC.setForeground(COLOR_TEXT_DARK);
+        lblSDTNCC_TNCC.setBounds(labelX_tncc, startY_tncc + 2*(height_tncc + vGap_tncc), 160, height_tncc);
+        panel_ThongTinNCC.add(lblSDTNCC_TNCC);
+
+        txtSDT_TNCC = new JTextField();
+        txtSDT_TNCC.setFont(FONT_TEXT_FIELD);
+        txtSDT_TNCC.setColumns(10);
+        txtSDT_TNCC.setBounds(inputX_tncc, startY_tncc + 2*(height_tncc + vGap_tncc), 300, height_tncc);
+        panel_ThongTinNCC.add(txtSDT_TNCC);
+
+        JLabel lblEmail_TNCC = new JLabel("Email:");
+        lblEmail_TNCC.setFont(FONT_LABEL_BOLD);
+        lblEmail_TNCC.setForeground(COLOR_TEXT_DARK);
+        lblEmail_TNCC.setBounds(labelX2_tncc, startY_tncc + 2*(height_tncc + vGap_tncc), 120, height_tncc); // Điều chỉnh
+        panel_ThongTinNCC.add(lblEmail_TNCC);
+
+        txtEmail_TNCC = new JTextField();
+        txtEmail_TNCC.setFont(FONT_TEXT_FIELD);
+        txtEmail_TNCC.setColumns(10);
+        txtEmail_TNCC.setBounds(inputX2_tncc, startY_tncc + 2*(height_tncc + vGap_tncc), 300, height_tncc); // Điều chỉnh
+        panel_ThongTinNCC.add(txtEmail_TNCC);
+
+
+        JLabel lblTrangThai_TNCC = new JLabel("Trạng thái:");
+        lblTrangThai_TNCC.setFont(FONT_LABEL_BOLD);
+        lblTrangThai_TNCC.setForeground(COLOR_TEXT_DARK);
+        lblTrangThai_TNCC.setBounds(labelX2_tncc, startY_tncc, 120, height_tncc); // Điều chỉnh
+        panel_ThongTinNCC.add(lblTrangThai_TNCC);
+
+        // Nên dùng JComboBox cho Trạng thái
+        JComboBox<String> cboTrangThai_TNCC = new JComboBox<String>();
+        cboTrangThai_TNCC.setFont(FONT_TEXT_FIELD);
+        cboTrangThai_TNCC.setModel(new DefaultComboBoxModel<>(new String[] {"Đang hợp tác", "Ngừng hợp tác"})); // Ví dụ
+        cboTrangThai_TNCC.setBounds(inputX2_tncc, startY_tncc, 300, height_tncc); // Điều chỉnh
+        panel_ThongTinNCC.add(cboTrangThai_TNCC);
+        // Bỏ JTextField txtTrangThai_TNCC cũ
+
+
+        JLabel lblGhiChu_TNCC = new JLabel("Ghi chú:");
+        lblGhiChu_TNCC.setFont(FONT_LABEL_BOLD);
+        lblGhiChu_TNCC.setForeground(COLOR_TEXT_DARK);
+        lblGhiChu_TNCC.setBounds(labelX_tncc, startY_tncc + 3*(height_tncc + vGap_tncc), 160, height_tncc);
+        panel_ThongTinNCC.add(lblGhiChu_TNCC);
+
+        // Dùng JScrollPane cho Ghi chú
+        JScrollPane scrollPaneGhiChu = new JScrollPane();
+        scrollPaneGhiChu.setBounds(inputX_tncc, startY_tncc + 3*(height_tncc + vGap_tncc), 800, 60); // Điều chỉnh
+        panel_ThongTinNCC.add(scrollPaneGhiChu);
+
+        JTextArea txtGhiChu_TNCC = new JTextArea(); // Đổi thành JTextArea
+        txtGhiChu_TNCC.setFont(FONT_TEXT_FIELD);
+        txtGhiChu_TNCC.setLineWrap(true); // Tự xuống dòng
+        txtGhiChu_TNCC.setWrapStyleWord(true); // Xuống dòng theo từ
+        scrollPaneGhiChu.setViewportView(txtGhiChu_TNCC);
+        // Bỏ JTextField txtGhiChu_TNCC cũ
+
+
+        // Panel địa chỉ
+        JPanel panelDiaChi_TNCC = new JPanel();
+        panelDiaChi_TNCC.setBackground(COLOR_CARD_BACKGROUND);
+        panelDiaChi_TNCC.setLayout(null);
+        panelDiaChi_TNCC.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Địa chỉ", TitledBorder.LEADING, TitledBorder.TOP,
+             FONT_LABEL_BOLD, COLOR_TEXT_MUTED
+        ));
+        panelDiaChi_TNCC.setBounds(labelX_tncc, startY_tncc + 4*(height_tncc + vGap_tncc) + 30, 990, 85); // Điều chỉnh
+        panel_ThongTinNCC.add(panelDiaChi_TNCC);
+
+        JLabel lblTinh_TNCC = new JLabel("Tỉnh/TP:");
+        lblTinh_TNCC.setFont(FONT_LABEL_BOLD);
+        lblTinh_TNCC.setForeground(COLOR_TEXT_DARK);
+        lblTinh_TNCC.setBounds(20, 30, 80, height_tncc);
+        panelDiaChi_TNCC.add(lblTinh_TNCC);
+
+        txtTinh_TNCC = new JTextField();
+        txtTinh_TNCC.setFont(FONT_TEXT_FIELD);
+        txtTinh_TNCC.setColumns(10);
+        txtTinh_TNCC.setBounds(110, 30, 360, height_tncc);
+        panelDiaChi_TNCC.add(txtTinh_TNCC);
+
+        JLabel lblHuyen_TNCC = new JLabel("Quận/Huyện:");
+        lblHuyen_TNCC.setFont(FONT_LABEL_BOLD);
+        lblHuyen_TNCC.setForeground(COLOR_TEXT_DARK);
+        lblHuyen_TNCC.setBounds(500, 30, 120, height_tncc);
+        panelDiaChi_TNCC.add(lblHuyen_TNCC);
+
+        txtHuyen_TNCC = new JTextField();
+        txtHuyen_TNCC.setFont(FONT_TEXT_FIELD);
+        txtHuyen_TNCC.setColumns(10);
+        txtHuyen_TNCC.setBounds(630, 30, 340, height_tncc);
+        panelDiaChi_TNCC.add(txtHuyen_TNCC);
+
+        // Nút chức năng (Thêm, Làm mới...)
+        JButton btnLamMoi_TNCC = new JButton("Làm mới"); // Tạo nút mới
+        btnLamMoi_TNCC.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnLamMoi_TNCC, COLOR_TEXT_MUTED);
+        btnLamMoi_TNCC.setBounds(1250, 475, 140, 40); // Điều chỉnh
+        panel_themNCC.add(btnLamMoi_TNCC);
+
+        JButton btnThem_TNCC = new JButton("Thêm NCC"); // Tạo nút mới
+        btnThem_TNCC.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnThem_TNCC, COLOR_SUCCESS_GREEN);
+        btnThem_TNCC.setBounds(1410, 475, 140, 40); // Điều chỉnh
+        panel_themNCC.add(btnThem_TNCC);
+
+
+        // ScrollPane và Bảng hiển thị NCC đã thêm
         JScrollPane scrollPane_ThemNCC = new JScrollPane();
-        scrollPane_ThemNCC.setBounds(536, 506, 1038, 212);
+        scrollPane_ThemNCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scrollPane_ThemNCC.setBounds(10, 530, 1564, 398); // Điều chỉnh vị trí/kích thước
         panel_themNCC.add(scrollPane_ThemNCC);
-        
-        table_ThemNCC = new JTable();
+
+        // Style bảng table_ThemNCC
+        table_ThemNCC = new JTable() {
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_ThemNCC);
         table_ThemNCC.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null, null, null},
-        	},
+        	new Object[][] {}, // Bỏ dòng null
         	new String[] {
-        		"M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "Email", "Tr\u1EA1ng th\u00E1i", "T\u1EC9nh", "Huy\u1EC7n", "Ghi ch\u00FA"
+        		"Mã NCC", "Tên NCC", "Số điện thoại", "Email", "Trạng thái", "Tỉnh/TP", "Quận/Huyện", "Ghi chú"
         	}
         ));
         scrollPane_ThemNCC.setViewportView(table_ThemNCC);
+
+        // ===== KẾT THÚC KHỐI CODE THÊM NHÀ CUNG CẤP =====
         
-        JPanel panelAnhNCC_TNCC = new JPanel();
-        panelAnhNCC_TNCC.setLayout(null);
-        panelAnhNCC_TNCC.setBorder(new LineBorder(new Color(0, 0, 0)));
-        panelAnhNCC_TNCC.setBounds(45, 140, 383, 578);
-        panel_themNCC.add(panelAnhNCC_TNCC);
-        
-        JButton btnChonAnh_TNCC = new JButton("Chọn ảnh");
-        btnChonAnh_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 17));
-        btnChonAnh_TNCC.setBackground(UIManager.getColor("Button.shadow"));
-        btnChonAnh_TNCC.setBounds(171, 757, 107, 29);
-        panel_themNCC.add(btnChonAnh_TNCC);
-        
-        JPanel panel_ThongTinNCC = new JPanel();
-        panel_ThongTinNCC.setBorder(new TitledBorder(null, "Th\u00F4ng tin nh\u00E0 cung c\u1EA5p", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-        panel_ThongTinNCC.setBounds(536, 140, 1038, 288);
-        panel_themNCC.add(panel_ThongTinNCC);
-        panel_ThongTinNCC.setLayout(null);
-        
-        JLabel lblMaNCC_TNCC = new JLabel("Mã nhà cung cấp:");
-        lblMaNCC_TNCC.setBounds(28, 29, 160, 25);
-        lblMaNCC_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        panel_ThongTinNCC.add(lblMaNCC_TNCC);
-        
-        JLabel lblTenNCC_TNCC = new JLabel("Tên nhà cung cấp:");
-        lblTenNCC_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTenNCC_TNCC.setBounds(28, 65, 179, 37);
-        panel_ThongTinNCC.add(lblTenNCC_TNCC);
-        
-        JLabel lblEmail_TNCC = new JLabel("Email:");
-        lblEmail_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblEmail_TNCC.setBounds(587, 65, 179, 37);
-        panel_ThongTinNCC.add(lblEmail_TNCC);
-        
-        JLabel lblSDTNCC_TNCC = new JLabel("Số điện thoại:");
-        lblSDTNCC_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblSDTNCC_TNCC.setBounds(28, 113, 134, 37);
-        panel_ThongTinNCC.add(lblSDTNCC_TNCC);
-        
-        JLabel lblTrangThai_TNCC = new JLabel("Trạng thái:");
-        lblTrangThai_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTrangThai_TNCC.setBounds(587, 23, 179, 37);
-        panel_ThongTinNCC.add(lblTrangThai_TNCC);
-        
-        JPanel panelDiaChi_TNCC = new JPanel();
-        panelDiaChi_TNCC.setLayout(null);
-        panelDiaChi_TNCC.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
-        panelDiaChi_TNCC.setBounds(24, 161, 1004, 85);
-        panel_ThongTinNCC.add(panelDiaChi_TNCC);
-        
-        txtTinh_TNCC = new JTextField();
-        txtTinh_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTinh_TNCC.setColumns(10);
-        txtTinh_TNCC.setBounds(97, 28, 360, 33);
-        panelDiaChi_TNCC.add(txtTinh_TNCC);
-        
-        JLabel lblTinh_TNCC = new JLabel("Tỉnh:");
-        lblTinh_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTinh_TNCC.setBounds(22, 28, 58, 32);
-        panelDiaChi_TNCC.add(lblTinh_TNCC);
-        
-        JLabel lblHuyen_TNCC = new JLabel("Huyện:");
-        lblHuyen_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblHuyen_TNCC.setBounds(527, 28, 86, 32);
-        panelDiaChi_TNCC.add(lblHuyen_TNCC);
-        
-        txtHuyen_TNCC = new JTextField();
-        txtHuyen_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtHuyen_TNCC.setColumns(10);
-        txtHuyen_TNCC.setBounds(606, 28, 347, 33);
-        panelDiaChi_TNCC.add(txtHuyen_TNCC);
-        
-        txtMaNCC_TNCC = new JTextField();
-        txtMaNCC_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtMaNCC_TNCC.setColumns(10);
-        txtMaNCC_TNCC.setBounds(198, 29, 360, 33);
-        panel_ThongTinNCC.add(txtMaNCC_TNCC);
-        
-        txtTenNCC_TNCC = new JTextField();
-        txtTenNCC_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTenNCC_TNCC.setColumns(10);
-        txtTenNCC_TNCC.setBounds(198, 69, 360, 33);
-        panel_ThongTinNCC.add(txtTenNCC_TNCC);
-        
-        txtTrangThai_TNCC = new JTextField();
-        txtTrangThai_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTrangThai_TNCC.setColumns(10);
-        txtTrangThai_TNCC.setBounds(694, 29, 334, 33);
-        panel_ThongTinNCC.add(txtTrangThai_TNCC);
-        
-        txtEmail_TNCC = new JTextField();
-        txtEmail_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtEmail_TNCC.setColumns(10);
-        txtEmail_TNCC.setBounds(694, 67, 334, 33);
-        panel_ThongTinNCC.add(txtEmail_TNCC);
-        
-        txtSDT_TNCC = new JTextField();
-        txtSDT_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtSDT_TNCC.setColumns(10);
-        txtSDT_TNCC.setBounds(198, 113, 360, 33);
-        panel_ThongTinNCC.add(txtSDT_TNCC);
-        
-        JLabel lblGhiChu_TNCC = new JLabel("Ghi chú:");
-        lblGhiChu_TNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblGhiChu_TNCC.setBounds(587, 113, 179, 37);
-        panel_ThongTinNCC.add(lblGhiChu_TNCC);
-        
-        txtGhiChu_TNCC = new JTextField();
-        txtGhiChu_TNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtGhiChu_TNCC.setColumns(10);
-        txtGhiChu_TNCC.setBounds(694, 115, 334, 33);
-        panel_ThongTinNCC.add(txtGhiChu_TNCC);
-        
+     // ===== BẮT ĐẦU KHỐI CODE CẬP NHẬT NHÀ CUNG CẤP ĐÃ SỬA =====
         JPanel panel_capNhatNCC = new JPanel();
         maincontent.add(panel_capNhatNCC, "capNhatNCC");
         panel_capNhatNCC.setLayout(null);
-        
-        JPanel panelAnh_NCC = new JPanel();
-        panelAnh_NCC.setLayout(null);
-        panelAnh_NCC.setBorder(new LineBorder(new Color(0, 0, 0)));
-        panelAnh_NCC.setBounds(62, 92, 339, 328);
-        panel_capNhatNCC.add(panelAnh_NCC);
-        
-        JLabel lblTitle_CN_NCC = new JLabel("CẬP NHẬT NHÀ CUNG CẤP");
-        lblTitle_CN_NCC.setFont(new Font("Times New Roman", Font.BOLD, 25));
-        lblTitle_CN_NCC.setBounds(632, 29, 367, 52);
+        panel_capNhatNCC.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lblTitle_CN_NCC = new JLabel("CẬP NHẬT THÔNG TIN NHÀ CUNG CẤP"); // Tiêu đề
+        lblTitle_CN_NCC.setFont(FONT_TITLE_MAIN);
+        lblTitle_CN_NCC.setForeground(COLOR_PRIMARY_BLUE);
+        lblTitle_CN_NCC.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitle_CN_NCC.setBounds(0, 11, 1584, 52); // Vị trí tiêu đề
         panel_capNhatNCC.add(lblTitle_CN_NCC);
-        
+
+        // Panel ảnh
+        JPanel panelAnh_NCC = new JPanel(); // Giữ tên biến
+        panelAnh_NCC.setLayout(new BorderLayout(0,0));
+        panelAnh_NCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        panelAnh_NCC.setBackground(COLOR_BACKGROUND_PRIMARY);
+        panelAnh_NCC.setBounds(40, 80, 339, 328); // Vị trí
+        panel_capNhatNCC.add(panelAnh_NCC);
+        // Thêm label placeholder
+        JLabel lblAnh_CNNCC = new JLabel("Chưa có ảnh NCC", SwingConstants.CENTER);
+        lblAnh_CNNCC.setFont(FONT_DETAIL_ITALIC);
+        lblAnh_CNNCC.setForeground(COLOR_TEXT_MUTED);
+        panelAnh_NCC.add(lblAnh_CNNCC, BorderLayout.CENTER);
+
+
+        JButton btnChonAnh_CNNCC = new JButton("Chọn ảnh");
+        btnChonAnh_CNNCC.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnChonAnh_CNNCC, COLOR_TEXT_MUTED);
+        btnChonAnh_CNNCC.setBounds(140, 420, 152, 37); // Vị trí
+        // Đại Ca thêm ActionListener sau
+        panel_capNhatNCC.add(btnChonAnh_CNNCC);
+
+        // Panel thông tin cập nhật
+        JPanel pnlInfo_CNNCC = new JPanel(); // Đặt tên mới
+        pnlInfo_CNNCC.setBackground(COLOR_CARD_BACKGROUND);
+        pnlInfo_CNNCC.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Thông Tin Cập Nhật", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        ));
+        pnlInfo_CNNCC.setBounds(400, 80, 1164, 377); // Vị trí
+        panel_capNhatNCC.add(pnlInfo_CNNCC);
+        pnlInfo_CNNCC.setLayout(null);
+
+        // Định nghĩa vị trí và khoảng cách (tương tự panel Thêm NCC)
+        int labelX_cncc = 40;
+        int inputX_cncc = 210;
+        int labelX2_cncc = 580;
+        int inputX2_cncc = 710;
+        int startY_cncc = 30;
+        int height_cncc = 33;
+        int vGap_cncc = 15;
+
         JLabel lblMaNCC_CNNCC = new JLabel("Mã nhà cung cấp:");
-        lblMaNCC_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblMaNCC_CNNCC.setBounds(488, 92, 152, 37);
-        panel_capNhatNCC.add(lblMaNCC_CNNCC);
-        
+        lblMaNCC_CNNCC.setFont(FONT_LABEL_BOLD);
+        lblMaNCC_CNNCC.setForeground(COLOR_TEXT_DARK);
+        lblMaNCC_CNNCC.setBounds(labelX_cncc, startY_cncc, 160, height_cncc);
+        pnlInfo_CNNCC.add(lblMaNCC_CNNCC);
+
         txtMaNCC_CNNCC = new JTextField();
-        txtMaNCC_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
+        txtMaNCC_CNNCC.setFont(FONT_LABEL_BOLD);
+        txtMaNCC_CNNCC.setForeground(COLOR_DANGER_RED);
         txtMaNCC_CNNCC.setEditable(false);
         txtMaNCC_CNNCC.setColumns(10);
-        txtMaNCC_CNNCC.setBounds(650, 92, 379, 37);
-        panel_capNhatNCC.add(txtMaNCC_CNNCC);
-        
-        JComboBox cboTrangThai_CNNCC = new JComboBox();
-        cboTrangThai_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        cboTrangThai_CNNCC.setBounds(1250, 140, 225, 37);
-        panel_capNhatNCC.add(cboTrangThai_CNNCC);
-        
-        JLabel lblTrangThai_CNNCC = new JLabel("Trạng thái:");
-        lblTrangThai_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTrangThai_CNNCC.setBounds(1117, 140, 136, 37);
-        panel_capNhatNCC.add(lblTrangThai_CNNCC);
-        
-        txtTenNCC_CNNCC = new JTextField();
-        txtTenNCC_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
-        txtTenNCC_CNNCC.setColumns(10);
-        txtTenNCC_CNNCC.setBounds(650, 140, 379, 37);
-        panel_capNhatNCC.add(txtTenNCC_CNNCC);
-        
+        txtMaNCC_CNNCC.setBounds(inputX_cncc, startY_cncc, 300, height_cncc);
+        txtMaNCC_CNNCC.setBorder(null);
+        txtMaNCC_CNNCC.setBackground(COLOR_CARD_BACKGROUND);
+        pnlInfo_CNNCC.add(txtMaNCC_CNNCC);
+
         JLabel lblTenNCC_CNNCC = new JLabel("Tên nhà cung cấp:");
-        lblTenNCC_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTenNCC_CNNCC.setBounds(488, 140, 152, 37);
-        panel_capNhatNCC.add(lblTenNCC_CNNCC);
-        
+        lblTenNCC_CNNCC.setFont(FONT_LABEL_BOLD);
+        lblTenNCC_CNNCC.setForeground(COLOR_TEXT_DARK);
+        lblTenNCC_CNNCC.setBounds(labelX_cncc, startY_cncc + height_cncc + vGap_cncc, 160, height_cncc);
+        pnlInfo_CNNCC.add(lblTenNCC_CNNCC);
+
+        txtTenNCC_CNNCC = new JTextField();
+        txtTenNCC_CNNCC.setFont(FONT_TEXT_FIELD);
+        txtTenNCC_CNNCC.setColumns(10);
+        txtTenNCC_CNNCC.setBounds(inputX_cncc, startY_cncc + height_cncc + vGap_cncc, 800, height_cncc);
+        pnlInfo_CNNCC.add(txtTenNCC_CNNCC);
+
         JLabel lblSDT_CNNCC = new JLabel("Số điện thoại:");
-        lblSDT_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblSDT_CNNCC.setBounds(488, 188, 152, 37);
-        panel_capNhatNCC.add(lblSDT_CNNCC);
-        
+        lblSDT_CNNCC.setFont(FONT_LABEL_BOLD);
+        lblSDT_CNNCC.setForeground(COLOR_TEXT_DARK);
+        lblSDT_CNNCC.setBounds(labelX_cncc, startY_cncc + 2*(height_cncc + vGap_cncc), 160, height_cncc);
+        pnlInfo_CNNCC.add(lblSDT_CNNCC);
+
         txtSDT_CNNCC = new JTextField();
-        txtSDT_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
+        txtSDT_CNNCC.setFont(FONT_TEXT_FIELD);
         txtSDT_CNNCC.setColumns(10);
-        txtSDT_CNNCC.setBounds(650, 188, 379, 37);
-        panel_capNhatNCC.add(txtSDT_CNNCC);
-        
+        txtSDT_CNNCC.setBounds(inputX_cncc, startY_cncc + 2*(height_cncc + vGap_cncc), 300, height_cncc);
+        pnlInfo_CNNCC.add(txtSDT_CNNCC);
+
         JLabel lblEmail_CNNCC = new JLabel("Email:");
-        lblEmail_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblEmail_CNNCC.setBounds(1117, 189, 136, 37);
-        panel_capNhatNCC.add(lblEmail_CNNCC);
-        
-        JPanel panelDiaChi_CNNCC = new JPanel();
-        panelDiaChi_CNNCC.setLayout(null);
-        panelDiaChi_CNNCC.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
-        panelDiaChi_CNNCC.setBounds(488, 318, 987, 102);
-        panel_capNhatNCC.add(panelDiaChi_CNNCC);
-        
-        textField_23 = new JTextField();
-        textField_23.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        textField_23.setColumns(10);
-        textField_23.setBounds(97, 28, 360, 33);
-        panelDiaChi_CNNCC.add(textField_23);
-        
-        JLabel lblTinh_CNNV_1 = new JLabel("Tỉnh:");
-        lblTinh_CNNV_1.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTinh_CNNV_1.setBounds(22, 28, 58, 32);
-        panelDiaChi_CNNCC.add(lblTinh_CNNV_1);
-        
-        JLabel lblHuyen_CNNV_1 = new JLabel("Huyện:");
-        lblHuyen_CNNV_1.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblHuyen_CNNV_1.setBounds(527, 28, 86, 32);
-        panelDiaChi_CNNCC.add(lblHuyen_CNNV_1);
-        
-        textField_24 = new JTextField();
-        textField_24.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        textField_24.setColumns(10);
-        textField_24.setBounds(606, 28, 360, 33);
-        panelDiaChi_CNNCC.add(textField_24);
-        
-        JButton btnLamMoi_CNNCC = new JButton("Làm mới");
-        btnLamMoi_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnLamMoi_CNNCC.setBounds(880, 510, 119, 37);
-        panel_capNhatNCC.add(btnLamMoi_CNNCC);
-        
-        JButton btnChonAnh_CNNCC = new JButton("Chọn ảnh");
-        btnChonAnh_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnChonAnh_CNNCC.setBounds(161, 447, 119, 37);
-        panel_capNhatNCC.add(btnChonAnh_CNNCC);
-        
-        JButton btnKhoiPhuc_CNNCC = new JButton("Khôi phục");
-        btnKhoiPhuc_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnKhoiPhuc_CNNCC.setBounds(1107, 510, 119, 37);
-        panel_capNhatNCC.add(btnKhoiPhuc_CNNCC);
-        
-        JButton btnCapNhat_CNNCC = new JButton("Cập nhật");
-        btnCapNhat_CNNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        btnCapNhat_CNNCC.setBounds(1323, 510, 119, 37);
-        panel_capNhatNCC.add(btnCapNhat_CNNCC);
-        
-        txtEmail_CNNCC = new JTextField();
-        txtEmail_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
-        txtEmail_CNNCC.setEditable(false);
+        lblEmail_CNNCC.setFont(FONT_LABEL_BOLD);
+        lblEmail_CNNCC.setForeground(COLOR_TEXT_DARK);
+        lblEmail_CNNCC.setBounds(labelX2_cncc, startY_cncc + 2*(height_cncc + vGap_cncc), 120, height_cncc);
+        pnlInfo_CNNCC.add(lblEmail_CNNCC);
+
+        txtEmail_CNNCC = new JTextField(); // Giữ lại TextField vì code gốc có dùng
+        txtEmail_CNNCC.setFont(FONT_TEXT_FIELD);
         txtEmail_CNNCC.setColumns(10);
-        txtEmail_CNNCC.setBounds(1250, 188, 225, 37);
-        panel_capNhatNCC.add(txtEmail_CNNCC);
-        
+        txtEmail_CNNCC.setBounds(inputX2_cncc, startY_cncc + 2*(height_cncc + vGap_cncc), 300, height_cncc);
+        pnlInfo_CNNCC.add(txtEmail_CNNCC);
+
+        JLabel lblTrangThai_CNNCC = new JLabel("Trạng thái:");
+        lblTrangThai_CNNCC.setFont(FONT_LABEL_BOLD);
+        lblTrangThai_CNNCC.setForeground(COLOR_TEXT_DARK);
+        lblTrangThai_CNNCC.setBounds(labelX2_cncc, startY_cncc, 120, height_cncc);
+        pnlInfo_CNNCC.add(lblTrangThai_CNNCC);
+
+        JComboBox<String> cboTrangThai_CNNCC = new JComboBox<String>(); // Dùng ComboBox
+        cboTrangThai_CNNCC.setFont(FONT_TEXT_FIELD);
+        cboTrangThai_CNNCC.setModel(new DefaultComboBoxModel<>(new String[] {"Đang hợp tác", "Ngừng hợp tác"}));
+        cboTrangThai_CNNCC.setBounds(inputX2_cncc, startY_cncc, 300, height_cncc);
+        pnlInfo_CNNCC.add(cboTrangThai_CNNCC);
+
         JLabel lblGhiChu_CNNCC = new JLabel("Ghi chú:");
-        lblGhiChu_CNNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblGhiChu_CNNCC.setBounds(1117, 92, 136, 37);
-        panel_capNhatNCC.add(lblGhiChu_CNNCC);
-        
-        txtGhiChu_CNNCC = new JTextField();
-        txtGhiChu_CNNCC.setFont(new Font("Times New Roman", Font.ITALIC, 21));
-        txtGhiChu_CNNCC.setEditable(false);
-        txtGhiChu_CNNCC.setColumns(10);
-        txtGhiChu_CNNCC.setBounds(1250, 91, 225, 37);
-        panel_capNhatNCC.add(txtGhiChu_CNNCC);
-        
+        lblGhiChu_CNNCC.setFont(FONT_LABEL_BOLD);
+        lblGhiChu_CNNCC.setForeground(COLOR_TEXT_DARK);
+        lblGhiChu_CNNCC.setBounds(labelX_cncc, startY_cncc + 3*(height_cncc + vGap_cncc), 160, height_cncc);
+        pnlInfo_CNNCC.add(lblGhiChu_CNNCC);
+
+        // Dùng JScrollPane cho Ghi chú
+        JScrollPane scrollPaneGhiChu_CNNCC = new JScrollPane();
+        scrollPaneGhiChu_CNNCC.setBounds(inputX_cncc, startY_cncc + 3*(height_cncc + vGap_cncc), 800, 60);
+        pnlInfo_CNNCC.add(scrollPaneGhiChu_CNNCC);
+
+        JTextArea txtGhiChu_CNNCC = new JTextArea(); // Đổi thành JTextArea
+        txtGhiChu_CNNCC.setFont(FONT_TEXT_FIELD);
+        txtGhiChu_CNNCC.setLineWrap(true);
+        txtGhiChu_CNNCC.setWrapStyleWord(true);
+        scrollPaneGhiChu_CNNCC.setViewportView(txtGhiChu_CNNCC);
+        // Bỏ JTextField txtGhiChu_CNNCC cũ
+
+        // Panel địa chỉ
+        JPanel panelDiaChi_CNNCC = new JPanel();
+        panelDiaChi_CNNCC.setBackground(COLOR_CARD_BACKGROUND);
+        panelDiaChi_CNNCC.setLayout(null);
+        panelDiaChi_CNNCC.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Địa chỉ", TitledBorder.LEADING, TitledBorder.TOP,
+             FONT_LABEL_BOLD, COLOR_TEXT_MUTED
+        ));
+        panelDiaChi_CNNCC.setBounds(labelX_cncc, startY_cncc + 4*(height_cncc + vGap_cncc) + 30, 1080, 85);
+        pnlInfo_CNNCC.add(panelDiaChi_CNNCC);
+
+        JLabel lblTinh_CNNV_1 = new JLabel("Tỉnh/TP:"); // Đổi tên label cho rõ
+        lblTinh_CNNV_1.setFont(FONT_LABEL_BOLD);
+        lblTinh_CNNV_1.setForeground(COLOR_TEXT_DARK);
+        lblTinh_CNNV_1.setBounds(20, 30, 80, height_cncc);
+        panelDiaChi_CNNCC.add(lblTinh_CNNV_1);
+
+        JTextField txtTinh_CNNCC = new JTextField(); // Đổi tên biến cho rõ
+        txtTinh_CNNCC.setFont(FONT_TEXT_FIELD);
+        txtTinh_CNNCC.setColumns(10);
+        txtTinh_CNNCC.setBounds(110, 30, 380, height_cncc);
+        panelDiaChi_CNNCC.add(txtTinh_CNNCC);
+
+        JLabel lblHuyen_CNNV_1 = new JLabel("Quận/Huyện:"); // Đổi tên label
+        lblHuyen_CNNV_1.setFont(FONT_LABEL_BOLD);
+        lblHuyen_CNNV_1.setForeground(COLOR_TEXT_DARK);
+        lblHuyen_CNNV_1.setBounds(530, 30, 120, height_cncc);
+        panelDiaChi_CNNCC.add(lblHuyen_CNNV_1);
+
+        JTextField txtHuyen_CNNCC = new JTextField(); // Đổi tên biến
+        txtHuyen_CNNCC.setFont(FONT_TEXT_FIELD);
+        txtHuyen_CNNCC.setColumns(10);
+        txtHuyen_CNNCC.setBounds(660, 30, 400, height_cncc);
+        panelDiaChi_CNNCC.add(txtHuyen_CNNCC);
+
+
+        // Các nút chức năng
+        JButton btnLamMoi_CNNCC = new JButton("Làm mới Form");
+        btnLamMoi_CNNCC.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnLamMoi_CNNCC, COLOR_TEXT_MUTED);
+        btnLamMoi_CNNCC.setBounds(880, 470, 150, 40); // Điều chỉnh
+        panel_capNhatNCC.add(btnLamMoi_CNNCC);
+
+        JButton btnKhoiPhuc_CNNCC = new JButton("Khôi phục");
+        btnKhoiPhuc_CNNCC.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnKhoiPhuc_CNNCC, COLOR_TEXT_MUTED);
+        btnKhoiPhuc_CNNCC.setBounds(1050, 470, 150, 40); // Điều chỉnh
+        panel_capNhatNCC.add(btnKhoiPhuc_CNNCC);
+
+        JButton btnCapNhat_CNNCC = new JButton("Cập nhật");
+        btnCapNhat_CNNCC.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnCapNhat_CNNCC, COLOR_SUCCESS_GREEN);
+        btnCapNhat_CNNCC.setBounds(1220, 470, 150, 40); // Điều chỉnh
+        panel_capNhatNCC.add(btnCapNhat_CNNCC);
+
+
+        // ScrollPane và Bảng
         JScrollPane scrollPane_CNNCC = new JScrollPane();
-        scrollPane_CNNCC.setBounds(62, 614, 1413, 212);
+        scrollPane_CNNCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scrollPane_CNNCC.setBounds(10, 520, 1564, 408); // Điều chỉnh
         panel_capNhatNCC.add(scrollPane_CNNCC);
-        
-        table_CNNCC = new JTable();
+
+        // Style bảng table_CNNCC
+        table_CNNCC = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_CNNCC);
         table_CNNCC.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{"", null, null, null, null, null, null, null},
-        	},
+        	new Object[][] {},
         	new String[] {
-        		"M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "Email", "Tr\u1EA1ng th\u00E1i", "Huy\u1EC7n", "T\u1EC9nh", "Ghi ch\u00FA"
+        		"Mã NCC", "Tên NCC", "Số điện thoại", "Email", "Trạng thái", "Quận/Huyện", "Tỉnh/TP", "Ghi chú"
         	}
         ));
         scrollPane_CNNCC.setViewportView(table_CNNCC);
+
+        // ===== KẾT THÚC KHỐI CODE CẬP NHẬT NHÀ CUNG CẤP =====
         
+     // ===== BẮT ĐẦU KHỐI CODE TÌM KIẾM NHÀ CUNG CẤP ĐÃ SỬA =====
         JPanel panel_TimKiemNCC = new JPanel();
         maincontent.add(panel_TimKiemNCC, "timKiemNCC");
         panel_TimKiemNCC.setLayout(null);
-        
+        panel_TimKiemNCC.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+
+        JLabel lblTitle_TKNCC = new JLabel("TÌM KIẾM NHÀ CUNG CẤP"); // Tiêu đề
+        lblTitle_TKNCC.setFont(FONT_TITLE_MAIN);
+        lblTitle_TKNCC.setForeground(COLOR_PRIMARY_BLUE);
+        lblTitle_TKNCC.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitle_TKNCC.setBounds(0, 11, 1584, 43); // Vị trí
+        panel_TimKiemNCC.add(lblTitle_TKNCC);
+
+        // Panel bộ lọc thông tin
         JPanel panel_ThongTinTKNCC = new JPanel();
         panel_ThongTinTKNCC.setLayout(null);
-        panel_ThongTinTKNCC.setBorder(new TitledBorder(null, "Th\u00F4ng tin nh\u00E0 cung c\u1EA5p", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-        panel_ThongTinTKNCC.setBounds(100, 92, 1088, 288);
+        panel_ThongTinTKNCC.setBackground(COLOR_CARD_BACKGROUND); // Nền trắng
+        panel_ThongTinTKNCC.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Bộ Lọc Tìm Kiếm", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
+        )); // Viền và tiêu đề
+        panel_ThongTinTKNCC.setBounds(10, 68, 1564, 350); // Vị trí
         panel_TimKiemNCC.add(panel_ThongTinTKNCC);
-        
+
+        // Định nghĩa vị trí và khoảng cách (tương tự Thêm NCC)
+        int labelX_tkncc = 40;
+        int inputX_tkncc = 210;
+        int labelX2_tkncc = 580;
+        int inputX2_tkncc = 710;
+        int startY_tkncc = 40;
+        int height_tkncc = 33;
+        int vGap_tkncc = 15;
+
         JLabel lblMaNCC_TKNCC = new JLabel("Mã nhà cung cấp:");
-        lblMaNCC_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblMaNCC_TKNCC.setBounds(28, 29, 160, 25);
+        lblMaNCC_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblMaNCC_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblMaNCC_TKNCC.setBounds(labelX_tkncc, startY_tkncc, 160, height_tkncc);
         panel_ThongTinTKNCC.add(lblMaNCC_TKNCC);
-        
-        JLabel lblTenNCC_TKNCC = new JLabel("Tên nhà cung cấp:");
-        lblTenNCC_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTenNCC_TKNCC.setBounds(28, 65, 179, 37);
-        panel_ThongTinTKNCC.add(lblTenNCC_TKNCC);
-        
-        JLabel lblEmail_TKNCC = new JLabel("Email:");
-        lblEmail_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblEmail_TKNCC.setBounds(587, 65, 179, 37);
-        panel_ThongTinTKNCC.add(lblEmail_TKNCC);
-        
-        JLabel lblSDTNCC_TKNCC = new JLabel("Số điện thoại:");
-        lblSDTNCC_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblSDTNCC_TKNCC.setBounds(28, 113, 134, 37);
-        panel_ThongTinTKNCC.add(lblSDTNCC_TKNCC);
-        
-        JLabel lblTrangThai_TKNCC = new JLabel("Trạng thái:");
-        lblTrangThai_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTrangThai_TKNCC.setBounds(587, 23, 179, 37);
-        panel_ThongTinTKNCC.add(lblTrangThai_TKNCC);
-        
-        JPanel panelDiaChi_TKNCC = new JPanel();
-        panelDiaChi_TKNCC.setLayout(null);
-        panelDiaChi_TKNCC.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "\u0110\u1ECBa ch\u1EC9", TitledBorder.LEADING, TitledBorder.TOP, new Font("Times New Roman", Font.BOLD, 14), new Color(0, 0, 0)));
-        panelDiaChi_TKNCC.setBounds(24, 161, 1004, 85);
-        panel_ThongTinTKNCC.add(panelDiaChi_TKNCC);
-        
-        txtHuyen_TKNCC = new JTextField();
-        txtHuyen_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtHuyen_TKNCC.setColumns(10);
-        txtHuyen_TKNCC.setBounds(97, 28, 360, 33);
-        panelDiaChi_TKNCC.add(txtHuyen_TKNCC);
-        
-        JLabel lblTinh_TKNCC = new JLabel("Tỉnh:");
-        lblTinh_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblTinh_TKNCC.setBounds(22, 28, 58, 32);
-        panelDiaChi_TKNCC.add(lblTinh_TKNCC);
-        
-        JLabel lblHuyen_TKNCC = new JLabel("Huyện:");
-        lblHuyen_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblHuyen_TKNCC.setBounds(527, 28, 86, 32);
-        panelDiaChi_TKNCC.add(lblHuyen_TKNCC);
-        
-        txtHuyen_TKNC = new JTextField();
-        txtHuyen_TKNC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtHuyen_TKNC.setColumns(10);
-        txtHuyen_TKNC.setBounds(606, 28, 347, 33);
-        panelDiaChi_TKNCC.add(txtHuyen_TKNC);
-        
+
         txtMaNCC_TKNCC = new JTextField();
-        txtMaNCC_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtMaNCC_TKNCC.setFont(FONT_TEXT_FIELD);
         txtMaNCC_TKNCC.setColumns(10);
-        txtMaNCC_TKNCC.setBounds(198, 29, 360, 33);
+        txtMaNCC_TKNCC.setBounds(inputX_tkncc, startY_tkncc, 300, height_tkncc);
         panel_ThongTinTKNCC.add(txtMaNCC_TKNCC);
-        
+
+        JLabel lblTenNCC_TKNCC = new JLabel("Tên nhà cung cấp:");
+        lblTenNCC_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblTenNCC_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblTenNCC_TKNCC.setBounds(labelX_tkncc, startY_tkncc + height_tkncc + vGap_tncc, 179, height_tkncc);
+        panel_ThongTinTKNCC.add(lblTenNCC_TKNCC);
+
         txtTenNCC_TKNCC = new JTextField();
-        txtTenNCC_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtTenNCC_TKNCC.setFont(FONT_TEXT_FIELD);
         txtTenNCC_TKNCC.setColumns(10);
-        txtTenNCC_TKNCC.setBounds(198, 69, 360, 33);
+        txtTenNCC_TKNCC.setBounds(inputX_tkncc, startY_tkncc + height_tkncc + vGap_tncc, 800, height_tkncc);
         panel_ThongTinTKNCC.add(txtTenNCC_TKNCC);
-        
-        txtTrangThai_TKNCC = new JTextField();
-        txtTrangThai_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtTrangThai_TKNCC.setColumns(10);
-        txtTrangThai_TKNCC.setBounds(694, 29, 334, 33);
-        panel_ThongTinTKNCC.add(txtTrangThai_TKNCC);
-        
-        txtEmail_TKNCC = new JTextField();
-        txtEmail_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
-        txtEmail_TKNCC.setColumns(10);
-        txtEmail_TKNCC.setBounds(694, 67, 334, 33);
-        panel_ThongTinTKNCC.add(txtEmail_TKNCC);
-        
+
+        JLabel lblSDTNCC_TKNCC = new JLabel("Số điện thoại:");
+        lblSDTNCC_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblSDTNCC_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblSDTNCC_TKNCC.setBounds(labelX_tkncc, startY_tkncc + 2*(height_tkncc + vGap_tncc), 160, height_tkncc);
+        panel_ThongTinTKNCC.add(lblSDTNCC_TKNCC);
+
         txtSDT_TKNCC = new JTextField();
-        txtSDT_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+        txtSDT_TKNCC.setFont(FONT_TEXT_FIELD);
         txtSDT_TKNCC.setColumns(10);
-        txtSDT_TKNCC.setBounds(198, 113, 360, 33);
+        txtSDT_TKNCC.setBounds(inputX_tkncc, startY_tkncc + 2*(height_tkncc + vGap_tncc), 300, height_tkncc);
         panel_ThongTinTKNCC.add(txtSDT_TKNCC);
-        
+
+        JLabel lblEmail_TKNCC = new JLabel("Email:");
+        lblEmail_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblEmail_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblEmail_TKNCC.setBounds(labelX2_tkncc, startY_tkncc + 2*(height_tkncc + vGap_tncc), 120, height_tkncc);
+        panel_ThongTinTKNCC.add(lblEmail_TKNCC);
+
+        txtEmail_TKNCC = new JTextField();
+        txtEmail_TKNCC.setFont(FONT_TEXT_FIELD);
+        txtEmail_TKNCC.setColumns(10);
+        txtEmail_TKNCC.setBounds(inputX2_tkncc, startY_tkncc + 2*(height_tkncc + vGap_tncc), 300, height_tkncc);
+        panel_ThongTinTKNCC.add(txtEmail_TKNCC);
+
+        JLabel lblTrangThai_TKNCC = new JLabel("Trạng thái:");
+        lblTrangThai_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblTrangThai_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblTrangThai_TKNCC.setBounds(labelX2_tkncc, startY_tkncc, 120, height_tkncc);
+        panel_ThongTinTKNCC.add(lblTrangThai_TKNCC);
+
+        JComboBox<String> cboTrangThai_TKNCC = new JComboBox<String>(); // Dùng ComboBox
+        cboTrangThai_TKNCC.setFont(FONT_TEXT_FIELD);
+        cboTrangThai_TKNCC.setModel(new DefaultComboBoxModel<>(new String[] {"Tất cả", "Đang hợp tác", "Ngừng hợp tác"})); // Thêm "Tất cả"
+        cboTrangThai_TKNCC.setBounds(inputX2_tkncc, startY_tkncc, 300, height_tkncc);
+        panel_ThongTinTKNCC.add(cboTrangThai_TKNCC);
+        // Bỏ JTextField txtTrangThai_TKNCC cũ
+
+
         JLabel lblGhiChu_TKNCC = new JLabel("Ghi chú:");
-        lblGhiChu_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 21));
-        lblGhiChu_TKNCC.setBounds(587, 113, 179, 37);
+        lblGhiChu_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblGhiChu_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblGhiChu_TKNCC.setBounds(labelX_tkncc, startY_tkncc + 3*(height_tkncc + vGap_tncc), 160, height_tkncc);
         panel_ThongTinTKNCC.add(lblGhiChu_TKNCC);
-        
-        txtGhiChu_TKNCC = new JTextField();
-        txtGhiChu_TKNCC.setFont(new Font("Times New Roman", Font.PLAIN, 21));
+
+        txtGhiChu_TKNCC = new JTextField(); // Giữ lại TextField nếu chỉ tìm kiếm
+        txtGhiChu_TKNCC.setFont(FONT_TEXT_FIELD);
         txtGhiChu_TKNCC.setColumns(10);
-        txtGhiChu_TKNCC.setBounds(694, 115, 334, 33);
+        txtGhiChu_TKNCC.setBounds(inputX_tkncc, startY_tkncc + 3*(height_tkncc + vGap_tncc), 800, height_tkncc);
         panel_ThongTinTKNCC.add(txtGhiChu_TKNCC);
-        
-        JLabel lblTitle_TKNCC = new JLabel("TÌM KIẾM NHÀ CUNG CẤP");
-        lblTitle_TKNCC.setFont(new Font("Times New Roman", Font.BOLD, 25));
-        lblTitle_TKNCC.setBounds(473, 38, 387, 43);
-        panel_TimKiemNCC.add(lblTitle_TKNCC);
-        
+
+
+        // Panel địa chỉ
+        JPanel panelDiaChi_TKNCC = new JPanel();
+        panelDiaChi_TKNCC.setBackground(COLOR_CARD_BACKGROUND);
+        panelDiaChi_TKNCC.setLayout(null);
+        panelDiaChi_TKNCC.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+             "Địa chỉ", TitledBorder.LEADING, TitledBorder.TOP,
+             FONT_LABEL_BOLD, COLOR_TEXT_MUTED
+        ));
+        panelDiaChi_TKNCC.setBounds(labelX_tkncc, startY_tkncc + 4*(height_tkncc + vGap_tncc) + 10, 1018, 85); // Điều chỉnh width
+        panel_ThongTinTKNCC.add(panelDiaChi_TKNCC);
+
+        JLabel lblTinh_TKNCC = new JLabel("Tỉnh/TP:");
+        lblTinh_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblTinh_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblTinh_TKNCC.setBounds(20, 30, 80, height_tkncc);
+        panelDiaChi_TKNCC.add(lblTinh_TKNCC);
+
+        JTextField txtTinh_TKNCC = new JTextField(); // Đổi tên biến cho rõ
+        txtTinh_TKNCC.setFont(FONT_TEXT_FIELD);
+        txtTinh_TKNCC.setColumns(10);
+        txtTinh_TKNCC.setBounds(110, 30, 360, height_tkncc);
+        panelDiaChi_TKNCC.add(txtTinh_TKNCC);
+
+        JLabel lblHuyen_TKNCC = new JLabel("Quận/Huyện:");
+        lblHuyen_TKNCC.setFont(FONT_LABEL_BOLD);
+        lblHuyen_TKNCC.setForeground(COLOR_TEXT_DARK);
+        lblHuyen_TKNCC.setBounds(500, 30, 120, height_tkncc);
+        panelDiaChi_TKNCC.add(lblHuyen_TKNCC);
+
+        JTextField txtHuyen_TKNCC = new JTextField(); // Đổi tên biến cho rõ
+        txtHuyen_TKNCC.setFont(FONT_TEXT_FIELD);
+        txtHuyen_TKNCC.setColumns(10);
+        txtHuyen_TKNCC.setBounds(630, 30, 360, height_tkncc);
+        panelDiaChi_TKNCC.add(txtHuyen_TKNCC);
+
+        // Nút Làm mới cho bộ lọc
+        JButton btnLamMoi_TKNCC = new JButton("Làm mới bộ lọc"); // Tạo nút mới
+        btnLamMoi_TKNCC.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnLamMoi_TKNCC, COLOR_TEXT_MUTED);
+        btnLamMoi_TKNCC.setBounds(1400, 240, 160, 40); // Điều chỉnh vị trí ngoài panel lọc
+        panel_ThongTinTKNCC.add(btnLamMoi_TKNCC);
+
+
+        // ScrollPane và Bảng kết quả tìm kiếm
         JScrollPane scrollPane_TKNCC = new JScrollPane();
-        scrollPane_TKNCC.setBounds(100, 411, 1088, 177);
+        scrollPane_TKNCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scrollPane_TKNCC.setBounds(10, 429, 1564, 561); // Điều chỉnh vị trí/kích thước
         panel_TimKiemNCC.add(scrollPane_TKNCC);
-        
-        table_TKNCC = new JTable();
+
+        // Style bảng table_TKNCC
+        table_TKNCC = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_TKNCC);
         table_TKNCC.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null, null, null},
-        	},
+        	new Object[][] {}, // Bỏ dòng null
         	new String[] {
-        		"M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "Email", "Tr\u1EA1ng th\u00E1i", "Huy\u1EC7n", "T\u1EC9nh", "Ghi ch\u00FA"
+        		"Mã NCC", "Tên NCC", "Số điện thoại", "Email", "Trạng thái", "Quận/Huyện", "Tỉnh/TP", "Ghi chú"
         	}
         ));
         scrollPane_TKNCC.setViewportView(table_TKNCC);
-        
-        JPanel panel_QLPhieuDatHangNCC = new JPanel();
-        maincontent.add(panel_QLPhieuDatHangNCC, "name_2519755264700");
-        panel_QLPhieuDatHangNCC.setLayout(new BorderLayout(0, 0));
-        
-        JPanel panel = new JPanel();
-        panel_QLPhieuDatHangNCC.add(panel, BorderLayout.NORTH);
-        
-        JLabel lblTimKiemNCC = new JLabel("Tìm kiếm:");
-        lblTimKiemNCC.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel.add(lblTimKiemNCC);
-        
-        txtTimKiem = new JTextField();
-        txtTimKiem.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        panel.add(txtTimKiem);
-        txtTimKiem.setColumns(10);
-        
-        JButton btnTim = new JButton("Tìm");
-        btnTim.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel.add(btnTim);
-        
-        JScrollPane scrollPane = new JScrollPane();
-        panel_QLPhieuDatHangNCC.add(scrollPane, BorderLayout.CENTER);
-        
-        table = new JTable();
-        table.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null},
-        	},
-        	new String[] {
-        		"M\u00E3 phi\u1EBFu ", "M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "Ng\u00E0y \u0111\u1EB7t", "T\u1ED5ng ti\u1EC1n ", "Tr\u1EA1ng th\u00E1i"
-        	}
-        ));
-        scrollPane.setViewportView(table);
-        
-        JPanel panel_1 = new JPanel();
-        panel_QLPhieuDatHangNCC.add(panel_1, BorderLayout.SOUTH);
-        
-        JButton btnNewButton = new JButton("Tạo mới");
-        btnNewButton.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel_1.add(btnNewButton);
-        
-        JButton btnNewButton_1 = new JButton("Xem/Sửa");
-        btnNewButton_1.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel_1.add(btnNewButton_1);
-        
-        JButton btnNewButton_2 = new JButton("Xóa");
-        btnNewButton_2.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel_1.add(btnNewButton_2);
+
+        // ===== KẾT THÚC KHỐI CODE TÌM KIẾM NHÀ CUNG CẤP =====
         
         QuanLyHieuThuocTay.setVisible(true);
     }
@@ -3620,317 +4255,392 @@ public class TrangChu_GUI {
     // Phương thức hỗ trợ tạo nút trong thanh sidebar
     private JButton createSidebarButton(String text, String iconPath) {
         JButton button = new JButton(text);
-        button.setFont(new Font("Ariel", Font.BOLD, 20));
-        button.setForeground(Color.WHITE);
-        button.setBackground(new Color(0, 102, 102));
+        button.setFont(FONT_LABEL_BOLD.deriveFont(16f));
+        button.setForeground(COLOR_SIDEBAR_TEXT);
+        button.setBackground(COLOR_SIDEBAR_BG_END);
         button.setFocusPainted(false);
         button.setHorizontalAlignment(SwingConstants.LEFT);
         button.setBorderPainted(false);
-        button.setIcon(new ImageIcon(iconPath));
-        addHoverEffect(button, new Color(0, 153, 255), 1.2f);
+        button.setOpaque(false); // QUAN TRỌNG
+        button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, button.getPreferredSize().height + 10));
+        button.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+//        ImageIcon icon = loadIcon(iconPath);
+//        if (icon != null) {
+//            Image img = icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+//            button.setIcon(new ImageIcon(img));
+//            button.setIconTextGap(15);
+//        }
         return button;
     }
 
-    // Phương thức hỗ trợ thêm hiệu ứng hover cho nút
-    private void addHoverEffect(JButton button, Color hoverColor, float hoverScale) {
+ // Phương thức hỗ trợ thêm hiệu ứng hover cho nút sidebar (CHỈ HOVER)
+    private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                button.setBackground(hoverColor);
-                button.setFont(button.getFont().deriveFont(button.getFont().getSize() * hoverScale));
+                if (button != selectedMainMenuButton) { // Chỉ hover nếu chưa selected
+                    button.setOpaque(true);
+                    button.setBackground(COLOR_SIDEBAR_BUTTON_HOVER);
+                }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                button.setBackground(new Color(0, 102, 102));
-                button.setFont(button.getFont().deriveFont(button.getFont().getSize() / hoverScale));
-            }
-        });
-    }
-
-    // Phương thức hỗ trợ gắn menu thả xuống (popup menu) cho nút
-    private void addPopupMenu(JButton button, JPopupMenu popupMenu) {
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!popupMenu.isVisible()) {
-                    popupMenu.show(button, button.getWidth(), 0); // Hiển thị menu bên phải nút
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (!popupMenu.isVisible()) {
-                    popupMenu.show(button, button.getWidth(), 0);
-                } else {
-                    popupMenu.setVisible(false); // Nhấn lần nữa để ẩn menu
+                if (button != selectedMainMenuButton) { // Chỉ reset nếu chưa selected
+                    button.setOpaque(false);
+                    button.setBackground(COLOR_SIDEBAR_BG_END); // Màu nền cũ không quan trọng
                 }
             }
         });
-
-        // Ẩn menu khi click ra ngoài khu vực nút hoặc menu
-        Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
-            if (event instanceof MouseEvent me && me.getID() == MouseEvent.MOUSE_PRESSED) {
-                Component clicked = me.getComponent();
-                if (popupMenu.isVisible()) {
-                    boolean outsideButton = !SwingUtilities.isDescendingFrom(clicked, button);
-                    boolean outsidePopup = !SwingUtilities.isDescendingFrom(clicked, popupMenu);
-                    if (outsideButton && outsidePopup) {
-                        popupMenu.setVisible(false);
-                    }
-                }
-            }
-        }, AWTEvent.MOUSE_EVENT_MASK);
     }
-    
-    private JMenuItem currentSelectedItem = null;
-    private JTextField txtTimKiem;
-    private JTable table;
+ // === CÁC HÀM TẠO SUBMENU PANEL (DẠNG ACCORDION - CÁCH 2) ===
 
- // Phương thức nâng cao để định dạng (style) menu popup
-    private void stylePopupMenu(JPopupMenu popupMenu) {
-        popupMenu.setBackground(new Color(0, 102, 102));
-        popupMenu.setBorder(BorderFactory.createLineBorder(new Color(0, 153, 153), 2));
-        popupMenu.setOpaque(true);
+    // Submenu cho Hệ Thống (JPanel)
+    private JPanel createSystemSubmenuPanel() {
+        JPanel submenuPanel = new JPanel();
+        submenuPanel.setLayout(new BoxLayout(submenuPanel, BoxLayout.Y_AXIS));
+        submenuPanel.setBackground(COLOR_SIDEBAR_BG_END);
+        submenuPanel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
+        submenuPanel.setVisible(false);
+        submenuPanel.setOpaque(true);
+        submenuPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        for (Component component : popupMenu.getComponents()) {
-            if (component instanceof JMenuItem || component instanceof JMenu) {
-                JMenuItem menuItem = (JMenuItem) component;
-                menuItem.setFont(new Font("Arial", Font.BOLD, 16));
-                menuItem.setForeground(Color.WHITE);
-                menuItem.setBackground(new Color(0, 102, 102));
-                menuItem.setPreferredSize(new Dimension(180, 35));
-                menuItem.setOpaque(true);
-                menuItem.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-                // hiệu ứng hover
-                menuItem.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(MouseEvent e) {
-                        if (menuItem != currentSelectedItem) { // chỉ đổi màu khi chưa được chọn
-                            menuItem.setBackground(new Color(0, 153, 255));
-                        }
-                    }
-
-                    @Override
-                    public void mouseExited(MouseEvent e) {
-                        if (menuItem != currentSelectedItem) { // trở lại màu cũ nếu không phải trang đang chọn
-                            menuItem.setBackground(new Color(0, 102, 102));
-                        }
-                    }
-
-                    @Override
-                    public void mousePressed(MouseEvent e) {
-                        // bỏ chọn item cũ
-                        if (currentSelectedItem != null) {
-                            currentSelectedItem.setBackground(new Color(0, 102, 102));
-                        }
-
-                        // đánh dấu item mới
-                        currentSelectedItem = menuItem;
-                        currentSelectedItem.setBackground(new Color(0, 153, 255)); // màu cố định của trang đang mở
-                    }
-                });
-
-                // nếu là JMenu có submenu thì gọi lại
-                if (component instanceof JMenu) {
-                    JPopupMenu subPopup = ((JMenu) component).getPopupMenu();
-                    stylePopupMenu(subPopup);
-                }
-            } else if (component instanceof JSeparator) {
-                component.setBackground(new Color(0, 153, 153));
-                component.setForeground(new Color(0, 153, 153));
-            }
+        JButton btnTrangChu;
+        if (Beans.isDesignTime()) {
+            btnTrangChu = new JButton("Trang Chủ (Design)");
+        } else {
+            btnTrangChu = createSubmenuButton("Trang Chủ");
+            btnTrangChu.addActionListener(e -> {
+               CardLayout cl = (CardLayout) maincontent.getLayout();
+               cl.show(maincontent, "trangChu");
+           });
         }
-    }
-    
+       submenuPanel.add(btnTrangChu);
+        
+        JButton btnTaikhoan;
+        if (Beans.isDesignTime()) {
+            btnTaikhoan = new JButton("Tài Khoản (Design)");
+        } else {
+            btnTaikhoan = createSubmenuButton("Tài Khoản");
+            // btnTaikhoan.addActionListener(e -> { /* Code xử lý */ });
+        }
+        submenuPanel.add(btnTaikhoan);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
 
-
-    // Submenu for Hệ Thống
-    private JPopupMenu createSystemSubmenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem mniTaikhoan = new JMenuItem("Tài Khoản");
-//        mniTaikhoan.addActionListener(e -> JOptionPane.showMessageDialog(this, "Tài Khoản"));
-        popupMenu.add(mniTaikhoan);
-        popupMenu.addSeparator();
-        JMenuItem mniTrogiup = new JMenuItem("Trợ Giúp");
-//        mniTrogiup.addActionListener(e -> JOptionPane.showMessageDialog(this, "Trợ Giúp"));
-        popupMenu.add(mniTrogiup);
-        popupMenu.addSeparator();
-        JMenuItem mniDangxuat = new JMenuItem("Đăng Xuất");
-//        mniDangxuat.addActionListener(e -> JOptionPane.showMessageDialog(this, "Đăng Xuất"));
-        popupMenu.add(mniDangxuat);
-        return popupMenu;
-    }
-
-    // Submenu for Thuốc
-    private JPopupMenu createMedicineSubmenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
-
-        JMenuItem mniThemthuocthuong = new JMenuItem("Thêm");
-        mniThemthuocthuong.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "Themthuocthuong");
-        });
-        popupMenu.add(mniThemthuocthuong);
-
-        JMenuItem mniThemthuoctheofile = new JMenuItem("Thêm File");
-        mniThemthuoctheofile.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "Themthuocfile");
-        });
-        popupMenu.add(mniThemthuoctheofile);
-
-        popupMenu.addSeparator();
-
-        JMenuItem mniTimkiemthuoc = new JMenuItem("Tìm Kiếm");
-        mniTimkiemthuoc.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "timkiemSP");
-        });
-        popupMenu.add(mniTimkiemthuoc);
-
-        popupMenu.addSeparator();
-
-        JMenuItem mniCapnhatthuoc = new JMenuItem("Cập Nhật");
-        mniCapnhatthuoc.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "Capnhatthuoc");
-        });
-        popupMenu.add(mniCapnhatthuoc);
-
-        popupMenu.addSeparator();
-
-        JMenuItem mniThuocSapHetHan = new JMenuItem("Thuốc Sắp Hết Hạn");
-        mniThuocSapHetHan.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "Thuocsaphethan");
-        });
-        popupMenu.add(mniThuocSapHetHan);
-
-        JMenuItem mniThuocBanChay = new JMenuItem("Thuốc Bán Chạy");
-        mniThuocBanChay.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "Thuocbanchay");
-        });
-        popupMenu.add(mniThuocBanChay);
-
-        JMenuItem mniThuocSapHetHang = new JMenuItem("Thuốc Sắp Hết Hàng");
-        mniThuocSapHetHang.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "Thuocsaphethang");
-        });
-        popupMenu.add(mniThuocSapHetHang);
-
-        return popupMenu;
+        JButton btnTrogiup;
+        if (Beans.isDesignTime()) {
+            btnTrogiup = new JButton("Trợ Giúp (Design)");
+        } else {
+            btnTrogiup = createSubmenuButton("Trợ Giúp");
+            // btnTrogiup.addActionListener(e -> { /* Code xử lý */ });
+        }
+        submenuPanel.add(btnTrogiup);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+        
+        submenuPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, submenuPanel.getPreferredSize().height));
+        return submenuPanel;
     }
 
-    // Submenu for Hóa Đơn
-    private JPopupMenu createInvoiceSubmenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem mniThemhoadon = new JMenuItem("Thêm");
-        mniThemhoadon.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "themHoaDon");
-        });
-        popupMenu.add(mniThemhoadon);
-        popupMenu.addSeparator();
-        JMenuItem mniTimkiemhoadon = new JMenuItem("Tìm Kiếm");
-        mniTimkiemhoadon.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "timKiemHoaDon");
-        });
-        popupMenu.add(mniTimkiemhoadon);
-        popupMenu.addSeparator();
-        JMenuItem mniThongkehoadon = new JMenuItem("Thống Kê");
-        mniThongkehoadon.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "ThongkeHD");
-        });
-        popupMenu.add(mniThongkehoadon);
-        return popupMenu;
+    // Submenu cho Nhân Viên (JPanel)
+    private JPanel createEmployeeSubmenuPanel() {
+        JPanel submenuPanel = new JPanel();
+        submenuPanel.setLayout(new BoxLayout(submenuPanel, BoxLayout.Y_AXIS));
+        submenuPanel.setBackground(COLOR_SIDEBAR_BG_END);
+        submenuPanel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
+        submenuPanel.setVisible(false);
+        submenuPanel.setOpaque(true);
+        submenuPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnThemnv;
+        if (Beans.isDesignTime()) {
+            btnThemnv = new JButton("Thêm (Design)");
+        } else {
+            btnThemnv = createSubmenuButton("Thêm");
+            btnThemnv.addActionListener(e -> {
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "themNV");
+            });
+        }
+        submenuPanel.add(btnThemnv);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnCapnhatnv;
+        if (Beans.isDesignTime()) {
+            btnCapnhatnv = new JButton("Cập Nhật (Design)");
+        } else {
+            btnCapnhatnv = createSubmenuButton("Cập Nhật");
+            btnCapnhatnv.addActionListener(e -> {
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "capnhatnv");
+            });
+        }
+        submenuPanel.add(btnCapnhatnv);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnTimkiemnv;
+        if (Beans.isDesignTime()) {
+            btnTimkiemnv = new JButton("Tìm Kiếm (Design)");
+        } else {
+            btnTimkiemnv = createSubmenuButton("Tìm Kiếm");
+            btnTimkiemnv.addActionListener(e -> {
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "timkiemnv");
+            });
+        }
+        submenuPanel.add(btnTimkiemnv);
+
+        submenuPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, submenuPanel.getPreferredSize().height));
+        return submenuPanel;
     }
 
-    // Submenu for Nhân Viên
-    private JPopupMenu createEmployeeSubmenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem mniThemnv = new JMenuItem("Thêm");
-        mniThemnv.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "themNV");
-        });
-        popupMenu.add(mniThemnv);
-        popupMenu.addSeparator();
-        JMenuItem mniCapnhatnv = new JMenuItem("Cập Nhật");
-        mniCapnhatnv.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "capnhatnv");
-        });
-        popupMenu.add(mniCapnhatnv);
-        popupMenu.addSeparator();
-        JMenuItem mniTimkiemnv = new JMenuItem("Tìm Kiếm");
-        mniTimkiemnv.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "timkiemnv");
-        });
-        popupMenu.add(mniTimkiemnv);
-        return popupMenu;
+    // Submenu cho Khách Hàng (JPanel)
+    private JPanel createCustomerSubmenuPanel() {
+        JPanel submenuPanel = new JPanel();
+        submenuPanel.setLayout(new BoxLayout(submenuPanel, BoxLayout.Y_AXIS));
+        submenuPanel.setBackground(COLOR_SIDEBAR_BG_END);
+        submenuPanel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
+        submenuPanel.setVisible(false);
+        submenuPanel.setOpaque(true);
+        submenuPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnThemkh;
+        if (Beans.isDesignTime()) {
+            btnThemkh = new JButton("Thêm (Design)");
+        } else {
+            btnThemkh = createSubmenuButton("Thêm");
+            btnThemkh.addActionListener(e -> {
+                ThemKH_GUI themKhDialog = new ThemKH_GUI(QuanLyHieuThuocTay); // Hoặc (this)
+                new ThemKH_Controller(themKhDialog, this);
+                themKhDialog.setVisible(true);
+            });
+        }
+        submenuPanel.add(btnThemkh);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnCapnhatkh;
+        if (Beans.isDesignTime()) {
+            btnCapnhatkh = new JButton("Cập Nhật (Design)");
+        } else {
+            btnCapnhatkh = createSubmenuButton("Cập Nhật");
+            btnCapnhatkh.addActionListener(e -> {
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "capNhatKH");
+            });
+        }
+        submenuPanel.add(btnCapnhatkh);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnTimkiemkh;
+        if (Beans.isDesignTime()) {
+            btnTimkiemkh = new JButton("Tìm Kiếm (Design)");
+        } else {
+            btnTimkiemkh = createSubmenuButton("Tìm Kiếm");
+            btnTimkiemkh.addActionListener(e -> {
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "timkiemkh");
+            });
+        }
+        submenuPanel.add(btnTimkiemkh);
+
+        submenuPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, submenuPanel.getPreferredSize().height));
+        return submenuPanel;
     }
 
-    // Submenu for Nhà Cung Cấp
-    private JPopupMenu createSupplierSubmenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem mniThemncc = new JMenuItem("Thêm");
-        mniThemncc.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "themNCC");
-        });
-        popupMenu.add(mniThemncc);
-        popupMenu.addSeparator();
-        JMenuItem mniCapnhatncc = new JMenuItem("Cập Nhật");
-        mniCapnhatncc.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "capNhatNCC");
-        });
-        popupMenu.add(mniCapnhatncc);
-        popupMenu.addSeparator();
-        JMenuItem mniTimkiemncc = new JMenuItem("Tìm Kiếm");
-        mniTimkiemncc.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "timKiemNCC");
-        });
-        popupMenu.add(mniTimkiemncc);
-        return popupMenu;
+ // Submenu cho Thuốc (JPanel) - ĐÃ SỬA LỖI cl = null
+    private JPanel createMedicineSubmenuPanel() {
+        JPanel submenuPanel = new JPanel();
+        submenuPanel.setLayout(new BoxLayout(submenuPanel, BoxLayout.Y_AXIS));
+        submenuPanel.setBackground(COLOR_SIDEBAR_BG_END);
+        submenuPanel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
+        submenuPanel.setVisible(false);
+        submenuPanel.setOpaque(true);
+        submenuPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnThemthuocthuong;
+        if(Beans.isDesignTime()){ btnThemthuocthuong = new JButton("Thêm (Design)"); }
+        else {
+            btnThemthuocthuong = createSubmenuButton("Thêm");
+            btnThemthuocthuong.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "Themthuocthuong");
+            });
+        }
+        submenuPanel.add(btnThemthuocthuong);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnThemthuoctheofile;
+        if(Beans.isDesignTime()){ btnThemthuoctheofile = new JButton("Thêm File (Design)"); }
+        else {
+            btnThemthuoctheofile = createSubmenuButton("Thêm File");
+            btnThemthuoctheofile.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "Themthuocfile");
+            });
+        }
+        submenuPanel.add(btnThemthuoctheofile);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnTimkiemthuoc;
+        if(Beans.isDesignTime()){ btnTimkiemthuoc = new JButton("Tìm Kiếm (Design)"); }
+        else {
+            btnTimkiemthuoc = createSubmenuButton("Tìm Kiếm");
+            btnTimkiemthuoc.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "timkiemSP");
+            });
+        }
+        submenuPanel.add(btnTimkiemthuoc);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnCapnhatthuoc;
+        if(Beans.isDesignTime()){ btnCapnhatthuoc = new JButton("Cập Nhật (Design)"); }
+        else {
+            btnCapnhatthuoc = createSubmenuButton("Cập Nhật");
+            btnCapnhatthuoc.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "Capnhatthuoc");
+            });
+        }
+        submenuPanel.add(btnCapnhatthuoc);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnThuocSapHetHan;
+        if(Beans.isDesignTime()){ btnThuocSapHetHan = new JButton("Sắp Hết Hạn (Design)"); }
+        else {
+            btnThuocSapHetHan = createSubmenuButton("Thuốc Sắp Hết Hạn");
+            btnThuocSapHetHan.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "Thuocsaphethan");
+            });
+        }
+        submenuPanel.add(btnThuocSapHetHan);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnThuocBanChay;
+        if(Beans.isDesignTime()){ btnThuocBanChay = new JButton("Bán Chạy (Design)"); }
+        else {
+            btnThuocBanChay = createSubmenuButton("Thuốc Bán Chạy");
+            btnThuocBanChay.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "Thuocbanchay");
+            });
+        }
+        submenuPanel.add(btnThuocBanChay);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnThuocSapHetHang;
+        if(Beans.isDesignTime()){ btnThuocSapHetHang = new JButton("Sắp Hết Hàng (Design)"); }
+        else {
+            btnThuocSapHetHang = createSubmenuButton("Thuốc Sắp Hết Hàng");
+            btnThuocSapHetHang.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "Thuocsaphethang");
+            });
+        }
+        submenuPanel.add(btnThuocSapHetHang);
+
+        submenuPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, submenuPanel.getPreferredSize().height));
+        return submenuPanel;
     }
 
-    // Submenu for Khách Hàng
-    private JPopupMenu createCustomerSubmenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem mniThemkh = new JMenuItem("Thêm");
-        mniThemkh.addActionListener(e -> {
-        	// 1. Tạo một đối tượng của cửa sổ ThemKH_GUI
-            //    Truyền "QuanLyHieuThuocTay" (JFrame cha) vào làm tham số
-            ThemKH_GUI themKhDialog = new ThemKH_GUI(QuanLyHieuThuocTay);
-            new ThemKH_Controller(themKhDialog, this);
-            // 2. Hiển thị cửa sổ đó lên
-            themKhDialog.setVisible(true);
-        });
-        popupMenu.add(mniThemkh);
-        popupMenu.addSeparator();
-        JMenuItem mniCapnhatkh = new JMenuItem("Cập Nhật");
-        mniCapnhatkh.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "capNhatKH");
-        });
-        popupMenu.add(mniCapnhatkh);
-        popupMenu.addSeparator();
-        JMenuItem mniTimkiemkh = new JMenuItem("Tìm Kiếm");
-        mniTimkiemkh.addActionListener(e -> {
-            CardLayout cl = (CardLayout) maincontent.getLayout();
-            cl.show(maincontent, "timkiemkh");
-        });
-        popupMenu.add(mniTimkiemkh);
-        return popupMenu;
+    // Submenu cho Hóa Đơn (JPanel) - ĐÃ SỬA LỖI cl = null
+    private JPanel createInvoiceSubmenuPanel() {
+        JPanel submenuPanel = new JPanel();
+        submenuPanel.setLayout(new BoxLayout(submenuPanel, BoxLayout.Y_AXIS));
+        submenuPanel.setBackground(COLOR_SIDEBAR_BG_END);
+        submenuPanel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
+        submenuPanel.setVisible(false);
+        submenuPanel.setOpaque(true);
+        submenuPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnThemhoadon;
+        if(Beans.isDesignTime()){ btnThemhoadon = new JButton("Thêm (Design)"); }
+        else {
+            btnThemhoadon = createSubmenuButton("Thêm");
+            btnThemhoadon.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "themHoaDon");
+            });
+        }
+        submenuPanel.add(btnThemhoadon);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnTimkiemhoadon;
+        if(Beans.isDesignTime()){ btnTimkiemhoadon = new JButton("Tìm Kiếm (Design)"); }
+        else {
+            btnTimkiemhoadon = createSubmenuButton("Tìm Kiếm");
+            btnTimkiemhoadon.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "timKiemHoaDon");
+            });
+        }
+        submenuPanel.add(btnTimkiemhoadon);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnThongkehoadon;
+        if(Beans.isDesignTime()){ btnThongkehoadon = new JButton("Thống Kê (Design)"); }
+        else {
+            btnThongkehoadon = createSubmenuButton("Thống Kê");
+            btnThongkehoadon.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "ThongkeHD");
+            });
+        }
+        submenuPanel.add(btnThongkehoadon);
+
+        submenuPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, submenuPanel.getPreferredSize().height));
+        return submenuPanel;
+    }
+
+     // Submenu cho Nhà Cung Cấp (JPanel) - ĐÃ SỬA LỖI cl = null
+    private JPanel createSupplierSubmenuPanel() {
+        JPanel submenuPanel = new JPanel();
+        submenuPanel.setLayout(new BoxLayout(submenuPanel, BoxLayout.Y_AXIS));
+        submenuPanel.setBackground(COLOR_SIDEBAR_BG_END);
+        submenuPanel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
+        submenuPanel.setVisible(false);
+        submenuPanel.setOpaque(true);
+        submenuPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton btnThemncc;
+        if(Beans.isDesignTime()){ btnThemncc = new JButton("Thêm (Design)"); }
+        else {
+            btnThemncc = createSubmenuButton("Thêm");
+            btnThemncc.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "themNCC");
+            });
+        }
+        submenuPanel.add(btnThemncc);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnCapnhatncc;
+        if(Beans.isDesignTime()){ btnCapnhatncc = new JButton("Cập Nhật (Design)"); }
+        else {
+            btnCapnhatncc = createSubmenuButton("Cập Nhật");
+            btnCapnhatncc.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "capNhatNCC");
+            });
+        }
+        submenuPanel.add(btnCapnhatncc);
+        submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
+
+        JButton btnTimkiemncc;
+        if(Beans.isDesignTime()){ btnTimkiemncc = new JButton("Tìm Kiếm (Design)"); }
+        else {
+            btnTimkiemncc = createSubmenuButton("Tìm Kiếm");
+            btnTimkiemncc.addActionListener(e -> { // Lấy cl cục bộ
+                CardLayout cl = (CardLayout) maincontent.getLayout();
+                cl.show(maincontent, "timKiemNCC");
+            });
+        }
+        submenuPanel.add(btnTimkiemncc);
+
+        submenuPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, submenuPanel.getPreferredSize().height));
+        return submenuPanel;
     }
     
     public void loadDataTableKH() {
@@ -3963,6 +4673,39 @@ public class TrangChu_GUI {
             });
         }
     }
+    
+ // Hàm tạo nút cho submenu con
+    private JButton createSubmenuButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(FONT_TEXT_FIELD.deriveFont(15f)); // Font nhỏ hơn nút chính
+        button.setForeground(COLOR_SIDEBAR_TEXT);
+        button.setBackground(COLOR_SIDEBAR_BG_END); // Màu nền
+        button.setFocusPainted(false);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setBorderPainted(false);
+        button.setOpaque(false); // Trong suốt ban đầu
+        button.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10)); // Padding
+        button.setAlignmentX(Component.LEFT_ALIGNMENT); // Căn trái
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, button.getPreferredSize().height + 5)); // Giới hạn chiều cao
+
+        // Hiệu ứng hover đơn giản cho nút con
+        button.addMouseListener(new MouseAdapter() {
+             @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setOpaque(true);
+                button.setBackground(COLOR_SIDEBAR_BUTTON_HOVER);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setOpaque(false);
+                 button.setBackground(COLOR_SIDEBAR_BG_END); // Không quan trọng vì opaque = false
+            }
+        });
+
+        return button;
+    }
+    
     private void loadDataToTable(JTable table) {
         // Lấy model của bảng được truyền vào
         DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -4033,5 +4776,61 @@ public class TrangChu_GUI {
         header.setReorderingAllowed(false); // Không cho phép sắp xếp lại cột
         header.setResizingAllowed(true); // Cho phép thay đổi kích thước cột
     }
+    
+ // Hàm thêm listener cho hiệu ứng accordion (ĐÃ SỬA)
+    private void addAccordionListener(JButton mainButton, JPanel submenuPanel, JPanel sidebarContainer) {
+        // Áp dụng hiệu ứng hover cho nút chính này
+        addHoverEffect(mainButton); // <<< GỌI Ở ĐÂY
 
+        mainButton.addActionListener(e -> {
+            // Kiểm tra xem có panel con nào đang mở không
+            if (currentVisibleSubmenu != null && currentVisibleSubmenu != submenuPanel) {
+                currentVisibleSubmenu.setVisible(false); // Ẩn panel con cũ
+                // Reset style nút chính cũ (nếu muốn)
+                 if (selectedMainMenuButton != null) {
+                    selectedMainMenuButton.setOpaque(false);
+                    selectedMainMenuButton.setBackground(COLOR_SIDEBAR_BG_END);
+                 }
+            }
+
+            // Đảo trạng thái hiển thị của panel con được click
+            boolean isVisible = !submenuPanel.isVisible();
+            submenuPanel.setVisible(isVisible);
+
+            // Cập nhật nút chính đang được chọn và style của nó
+            if (isVisible) {
+                selectedMainMenuButton = mainButton;
+                selectedMainMenuButton.setOpaque(true); // Hiện màu nền selected
+                selectedMainMenuButton.setBackground(COLOR_SIDEBAR_BUTTON_SELECTED);
+                currentVisibleSubmenu = submenuPanel;
+            } else {
+                // Nếu đóng panel đang mở, bỏ chọn nút chính
+                mainButton.setOpaque(false); // Trở lại trong suốt
+                mainButton.setBackground(COLOR_SIDEBAR_BG_END);
+                selectedMainMenuButton = null;
+                currentVisibleSubmenu = null;
+            }
+
+
+            // Cập nhật lại layout của sidebar
+            sidebarContainer.revalidate();
+            sidebarContainer.repaint();
+        });
+    }
+    
+    private ImageIcon loadIcon(String path) {
+        try {
+            java.net.URL imgURL = getClass().getResource(path);
+            if (imgURL != null) {
+                return new ImageIcon(imgURL);
+            } else {
+                System.err.println("Không tìm thấy icon: " + path);
+                return null;
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi load icon: " + path + " - " + e.getMessage());
+            return null;
+        }
+    }
+    
 }
