@@ -9,22 +9,37 @@ public class NhaCungCap {
     private String email;
     private String diaChi;
     private boolean trangThai; // true: Đang hợp tác, false: Ngừng hợp tác
+    private String ghiChu;
     
-    public NhaCungCap() {
+	public NhaCungCap() {
     }
 
     public NhaCungCap(String maNhaCungCap) {
         this.maNhaCungCap = maNhaCungCap;
     }
+    
+    public NhaCungCap(String maNhaCungCap, String tenNhaCungCap) {
+        this.maNhaCungCap = maNhaCungCap;
+        this.tenNhaCungCap = tenNhaCungCap;
+    }
 
-    public NhaCungCap(String maNhaCungCap, String tenNhaCungCap, String soDienThoai, String email, String diaChi, boolean trangThai) {
+    public NhaCungCap(String maNhaCungCap, String tenNhaCungCap, String soDienThoai, String email, String diaChi, boolean trangThai,String ghiChu) {
         this.maNhaCungCap = maNhaCungCap;
         this.tenNhaCungCap = tenNhaCungCap;
         this.soDienThoai = soDienThoai;
         this.email = email;
         this.diaChi = diaChi;
         this.trangThai = trangThai;
+        this.ghiChu = ghiChu;
     }
+
+	public String getGhiChu() {
+		return ghiChu;
+	}
+
+	public void setGhiChu(String ghiChu) {
+		this.ghiChu = ghiChu;
+	}
 
     // Getters and Setters
     public String getMaNhaCungCap() {

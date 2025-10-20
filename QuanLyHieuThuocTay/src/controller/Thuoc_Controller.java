@@ -3,6 +3,8 @@ package controller;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import dao.keThuoc_DAO;
+import dao.nhaCungCap_DAO;
 import dao.thuoc_DAO;
 import entity.KeThuoc;
 import entity.NhaCungCap;
@@ -13,13 +15,19 @@ import gui.TrangChu_GUI;
 import java.awt.Image;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 public class Thuoc_Controller {
     private thuoc_DAO dao;
     private TrangChu_GUI trangChuGUI;
+    private File selectedFile = null;
+    private String filePath = null;
 
     public Thuoc_Controller(TrangChu_GUI trangChuGUI) {
         this.trangChuGUI = trangChuGUI;
@@ -28,6 +36,8 @@ public class Thuoc_Controller {
         // hiển thị dữ liệu ban đầu
         hienThiThuoc();
         hienThiThuocLenCapNhat();
+        hienThiThuocLenThemThuoc();
+        hienThiThuocLenThemThuocFile();
         loadComboboxData();
 
         // ======= SỰ KIỆN TAB TÌM KIẾM =======
@@ -64,6 +74,35 @@ public class Thuoc_Controller {
             trangChuGUI.cb_tkt_ncc.setSelectedIndex(0);
             hienThiThuoc();
         });
+        
+        // nút làm mới tab thêm thuốc
+        trangChuGUI.btn_ttLammoi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                // xóa dữ liệu các ô nhập
+                trangChuGUI.text_tttt.setText("");
+                trangChuGUI.text_ttsl.setText("");
+                trangChuGUI.text_ttgn.setText("");
+                trangChuGUI.text_ttgb.setText("");
+                trangChuGUI.textArea_tttp.setText("");
+
+                // reset combobox
+                trangChuGUI.cb_ttdvt.setSelectedIndex(0);
+                trangChuGUI.cb_ttncc.setSelectedIndex(0);
+                trangChuGUI.cb_tttkt.setSelectedIndex(0);
+
+                // reset ngày
+                trangChuGUI.date_tthsd.setDate(null);
+
+                // reset ảnh
+                trangChuGUI.lb_Chuaanh_tt.setIcon(null);
+                trangChuGUI.lb_Chuaanh_tt.setText("Chưa có ảnh");
+
+                // xóa chọn hàng trong bảng (nếu có)
+                trangChuGUI.table_themthuoc.clearSelection();
+            }
+        });
 
         // ======= SỰ KIỆN TAB CẬP NHẬT =======
 
@@ -81,7 +120,7 @@ public class Thuoc_Controller {
         };
         trangChuGUI.cb_cnt_tktkt.addItemListener(filterCntListener);
 
-        // click vào bảng cập nhật để hiển thị dữ liệu lên form (gồm ảnh)
+        // click vào bảng cập nhật để hiển thị dữ liệu lên form (gồm ảnh) cập nhật thuốc
         trangChuGUI.table_Capnhatthuoc.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -123,6 +162,7 @@ public class Thuoc_Controller {
                 }
             }
         });
+        
 
      // nút khôi phục
         trangChuGUI.btn_cntKhoiphuc.addActionListener(e -> {
@@ -177,7 +217,70 @@ public class Thuoc_Controller {
         });
 
 
-        // nút chọn ảnh
+
+        // nút chọn file
+        trangChuGUI.btn_ttf_chonfile.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn file Excel");
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "File Excel (*.xls, *.xlsx)", "xls", "xlsx"));
+            
+            int result = fileChooser.showOpenDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                selectedFile = fileChooser.getSelectedFile();
+                filePath = selectedFile.getAbsolutePath();
+
+                int tongSoThuoc = 0;
+                try (FileInputStream fis = new FileInputStream(selectedFile)) {
+                    Workbook workbook;
+                    if (filePath.endsWith(".xlsx")) {
+                        workbook = new XSSFWorkbook(fis);
+                    } else {
+                        workbook = new HSSFWorkbook(fis);
+                    }
+
+                    Sheet sheet = workbook.getSheetAt(0); // đọc sheet đầu tiên
+                    for (int i = 1; i <= sheet.getLastRowNum(); i++) { // bỏ dòng tiêu đề (i = 1)
+                        Row row = sheet.getRow(i);
+                        if (row == null) continue; // bỏ dòng trống hoàn toàn
+
+                        Cell cellTenThuoc = row.getCell(0); // cột A
+                        if (cellTenThuoc != null && !cellTenThuoc.toString().trim().isEmpty()) {
+                            tongSoThuoc++;
+                        }
+                    }
+                    workbook.close();
+
+                    // hiển thị lên label
+                    trangChuGUI.lbl_ttfile_hienthitongsothuoc.setText(""+tongSoThuoc);
+
+                    System.out.println("Đã chọn file: " + filePath);
+                    System.out.println("Tổng số thuốc: " + tongSoThuoc);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Lỗi đọc file Excel!");
+                }
+            }
+        });
+         
+        // nút làm mới file
+        trangChuGUI.btn_ttf_lammoi.addActionListener(e -> {
+            // xóa label hiển thị tổng số thuốc
+            trangChuGUI.lbl_ttfile_hienthitongsothuoc.setText("0");
+
+            // reset file
+            selectedFile = null;
+            filePath = null;
+
+            System.out.println("Đã làm mới thông tin file để thêm thuốc mới.");
+            JOptionPane.showMessageDialog(null, "Đã làm mới thông tin file. Bạn có thể chọn file mới để thêm thuốc.");
+        });
+
+
+
+        
+     // nút chọn ảnh cập nhật thuốc
         trangChuGUI.btn_cnt_ChonAnh.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Chọn ảnh đại diện thuốc");
@@ -198,6 +301,30 @@ public class Thuoc_Controller {
 
                 // lưu đường dẫn ảnh vào label để lấy lại khi cập nhật
                 trangChuGUI.lb_Chuaanh.setToolTipText(path);
+            }
+        });
+        
+     // nút chọn ảnh thêm thuốc
+        trangChuGUI.btn_ChonAnh_tt.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn ảnh đại diện thuốc");
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Hình ảnh (*.jpg, *.png, *.jpeg)", "jpg", "png", "jpeg"));
+            int result = fileChooser.showOpenDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                String path = selectedFile.getAbsolutePath();
+
+                ImageIcon icon = new ImageIcon(path);
+                Image img = icon.getImage().getScaledInstance(
+                        trangChuGUI.lb_Chuaanh_tt.getWidth(),
+                        trangChuGUI.lb_Chuaanh_tt.getHeight(),
+                        Image.SCALE_SMOOTH);
+                trangChuGUI.lb_Chuaanh_tt.setIcon(new ImageIcon(img));
+                trangChuGUI.lb_Chuaanh_tt.setText("");
+
+                // lưu đường dẫn ảnh vào label để lấy lại khi cập nhật
+                trangChuGUI.lb_Chuaanh_tt.setToolTipText(path);
             }
         });
 
@@ -272,8 +399,10 @@ public class Thuoc_Controller {
                 boolean updated = dao.updateThuoc(t);
                 if (updated) {
                     JOptionPane.showMessageDialog(trangChuGUI, "Cập nhật thuốc thành công!");
-                    hienThiThuocLenCapNhat();
                     hienThiThuoc();
+                    hienThiThuocLenCapNhat();
+                    hienThiThuocLenThemThuoc();
+                    hienThiThuocLenThemThuocFile();
                 } else {
                     JOptionPane.showMessageDialog(trangChuGUI, "Cập nhật thất bại!");
                 }
@@ -302,6 +431,217 @@ public class Thuoc_Controller {
         });
 
         trangChuGUI.cb_cnt_tktkt.addActionListener(e -> timKiemThuoc_TK());
+        
+        // thêm thuốc
+        trangChuGUI.btn_ttThem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    // lấy dữ liệu từ form
+                    String maThuoc = trangChuGUI.text_ttmt.getText().trim();
+                    String tenThuoc = trangChuGUI.text_tttt.getText().trim();
+                    String donViTinh = trangChuGUI.cb_ttdvt.getSelectedItem().toString();
+                    String tenNCC = trangChuGUI.cb_ttncc.getSelectedItem().toString();
+                    String loaiKe = trangChuGUI.cb_tttkt.getSelectedItem().toString();
+                    String thanhPhan = trangChuGUI.textArea_tttp.getText().trim();
+                    String anh = (trangChuGUI.lb_Chuaanh_tt.getIcon() != null)
+                            ? trangChuGUI.lb_Chuaanh_tt.getToolTipText() // giả sử bạn lưu đường dẫn ảnh vào tooltip
+                            : null;
+
+                    // kiểm tra dữ liệu
+                    if (tenThuoc.isEmpty() || trangChuGUI.text_ttsl.getText().isEmpty() ||
+                        trangChuGUI.text_ttgn.getText().isEmpty() || trangChuGUI.text_ttgb.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin thuốc!", "Thiếu dữ liệu", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
+                    int soLuong = Integer.parseInt(trangChuGUI.text_ttsl.getText().trim());
+                    double giaNhap = Double.parseDouble(trangChuGUI.text_ttgn.getText().trim());
+                    double giaBan = Double.parseDouble(trangChuGUI.text_ttgb.getText().trim());
+
+                    java.util.Date date = trangChuGUI.date_tthsd.getDate();
+                    if (date == null) {
+                        JOptionPane.showMessageDialog(null, "Vui lòng chọn hạn sử dụng!", "Thiếu dữ liệu", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                    java.sql.Date hanSuDung = new java.sql.Date(date.getTime());
+
+                    // lấy mã NCC và mã Kệ từ dao
+                    String maNCC = dao.getMaNCCTheoTen(tenNCC);  
+                    String maKe = dao.getMaKeTheoTen(loaiKe);     
+
+                    if (maNCC == null || maKe == null) {
+                        JOptionPane.showMessageDialog(null, "Không tìm thấy mã NCC hoặc mã Kệ tương ứng!", "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // tạo đối tượng Thuoc
+                    Thuoc t = new Thuoc();
+                    t.setMaThuoc(maThuoc);
+                    t.setTenThuoc(tenThuoc);
+                    t.setSoLuong(soLuong);
+                    t.setGiaNhap(giaNhap);
+                    t.setGiaBan(giaBan);
+                    t.setHanSuDung(hanSuDung.toLocalDate());
+                    t.setThanhPhan(thanhPhan);
+                    t.setDonViTinh(donViTinh);
+                    t.setAnh(anh);
+
+                    KeThuoc ke = new KeThuoc(maKe, loaiKe);
+                    NhaCungCap ncc = new NhaCungCap(maNCC, tenNCC);
+                    t.setKeThuoc(ke);
+                    t.setNhaCungCap(ncc);
+
+                    // thêm thuốc
+                    boolean result = dao.themThuoc(t);
+                    if (result) {
+                        JOptionPane.showMessageDialog(null, "Thêm thuốc thành công!");
+                        
+                        // load thuốc mới lên bảng
+                        hienThiThuoc();
+                        hienThiThuocLenCapNhat();
+                        hienThiThuocLenThemThuoc();
+                        hienThiThuocLenThemThuocFile();
+                        
+                        // cập nhật mã thuốc mới để thêm tiếp
+                        trangChuGUI.text_ttmt.setText(dao.getNextMaThuoc());
+
+                        // làm mới các ô nhập
+                        trangChuGUI.text_tttt.setText("");
+                        trangChuGUI.text_ttsl.setText("");
+                        trangChuGUI.text_ttgn.setText("");
+                        trangChuGUI.text_ttgb.setText("");
+                        trangChuGUI.textArea_tttp.setText("");
+                        trangChuGUI.cb_ttdvt.setSelectedIndex(0);
+                        trangChuGUI.cb_ttncc.setSelectedIndex(0);
+                        trangChuGUI.cb_tttkt.setSelectedIndex(0);
+                        trangChuGUI.date_tthsd.setDate(null);
+                        trangChuGUI.lb_Chuaanh_tt.setIcon(null);
+                        trangChuGUI.lb_Chuaanh_tt.setText("Chưa có ảnh");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Thêm thuốc thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Số lượng, giá nhập và giá bán phải là số hợp lệ!", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Có lỗi xảy ra khi thêm thuốc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
+        trangChuGUI.btn_ttf_them.addActionListener(e -> {
+            if (selectedFile == null) {
+                JOptionPane.showMessageDialog(null, "Vui lòng chọn file Excel trước khi thêm!");
+                return;
+            }
+
+            try (FileInputStream fis = new FileInputStream(selectedFile)) {
+                Workbook workbook;
+                if (filePath.endsWith(".xlsx")) {
+                    workbook = new XSSFWorkbook(fis);
+                } else {
+                    workbook = new HSSFWorkbook(fis);
+                }
+
+                Sheet sheet = workbook.getSheetAt(0); // đọc sheet đầu tiên
+                int soThuocThem = 0;
+
+                thuoc_DAO thuocDAO = new thuoc_DAO();
+                nhaCungCap_DAO nccDAO = new nhaCungCap_DAO();
+                keThuoc_DAO keThuocDAO = new keThuoc_DAO();
+
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row == null) continue;
+
+                    // Cấu trúc file Excel (theo bạn mô tả):
+                    // A: tên thuốc, B: số lượng, C: giá nhập, D: giá bán,
+                    // E: hạn sử dụng, F: thành phần, G: đơn vị tính, 
+                    // H: ảnh, I: kệ thuốc, J: tên nhà cung cấp
+                    String tenThuoc = getCellValue(row.getCell(0));
+                    String soluong = getCellValue(row.getCell(1));
+                    String giaNhap = getCellValue(row.getCell(2));
+                    String giaBan = getCellValue(row.getCell(3));
+                    String hanSD = getCellValue(row.getCell(4));
+                    String thanhPhan = getCellValue(row.getCell(5));
+                    String donViTinh = getCellValue(row.getCell(6));
+                    String anh = getCellValue(row.getCell(7));
+                    String tenKeThuoc = getCellValue(row.getCell(8));
+                    String tenNCC = getCellValue(row.getCell(9));
+
+                    if (tenThuoc.isEmpty()) continue; // bỏ dòng trống
+
+                    // === xử lý NhaCungCap ===
+                    NhaCungCap ncc = nccDAO.getNhaCungCapTheoTen(tenNCC);
+                    if (ncc == null) {
+                        // chưa có → tạo mã mới
+                        String maNCC = nccDAO.generateNewMaNCC();
+                        ncc = new NhaCungCap(maNCC, tenNCC, "", "", "", true,"");
+                        nccDAO.themNhaCungCap(ncc);
+                    }
+
+                    // === xử lý KeThuoc ===
+                    KeThuoc ke = keThuocDAO.getKeThuocTheoTen(tenKeThuoc);
+                    if (ke == null) {
+                        JOptionPane.showMessageDialog(null,
+                            "Kệ thuốc '" + tenKeThuoc + "' không tồn tại. Vui lòng chọn lại!",
+                            "Lỗi kệ thuốc",
+                            JOptionPane.ERROR_MESSAGE);
+                        return; // dừng lại, không thêm thuốc
+                    }
+
+                    // === tạo thuốc mới ===
+                    String maThuoc = thuocDAO.getNextMaThuoc();
+
+                    Thuoc thuoc = new Thuoc(
+                        maThuoc,
+                        tenThuoc,
+                        Double.parseDouble(giaNhap),
+                        Double.parseDouble(giaBan),
+                        Integer.parseInt(soluong),
+                        LocalDate.parse(hanSD),
+                        thanhPhan,
+                        donViTinh,
+                        anh,
+                        ke,
+                        ncc
+                    );
+                    
+                 // sau khi thêm thuốc xong
+                    NhaCungCap_Controller nccController = new NhaCungCap_Controller(trangChuGUI);
+                    nccController.loadDataToTableThemNCC();
+
+                    boolean ok = thuocDAO.themThuoc(thuoc);
+                    if (ok) soThuocThem++;
+                }
+
+                workbook.close();
+                hienThiThuoc();
+                hienThiThuocLenCapNhat();
+                hienThiThuocLenThemThuoc();
+                hienThiThuocLenThemThuocFile();
+                loadComboboxData();
+                
+
+                JOptionPane.showMessageDialog(null, "Đã thêm " + soThuocThem + " thuốc mới từ file Excel!");
+                trangChuGUI.lbl_ttfile_hienthitongsothuoc.setText(String.valueOf(soThuocThem));
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Lỗi khi thêm dữ liệu từ file Excel!");
+            }
+        });
+
+
+
+    }
+    
+    private String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        cell.setCellType(CellType.STRING);
+        return cell.getStringCellValue().trim();
     }
 
     // ======= HIỂN THỊ DỮ LIỆU =======
@@ -322,14 +662,28 @@ public class Thuoc_Controller {
     private void hienThiThuocTheoLoc() {
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_tkt.getModel();
         model.setRowCount(0);
+
         List<Thuoc> dsThuoc = dao.getAllThuoc();
+
+        // lấy giá trị được chọn, có thể null
+        Object keObj = trangChuGUI.cb_tkt_kethuoc.getSelectedItem();
+        Object tenObj = trangChuGUI.cb_tkt_tenthuoc.getSelectedItem();
+        Object nccObj = trangChuGUI.cb_tkt_ncc.getSelectedItem();
+
+        // nếu 1 trong 3 combobox chưa chọn thì return luôn, tránh lỗi null
+        if (keObj == null || tenObj == null || nccObj == null) {
+            return;
+        }
+
+        String keChon = keObj.toString();
+        String tenChon = tenObj.toString();
+        String nccChon = nccObj.toString();
+
         for (Thuoc t : dsThuoc) {
-            boolean matchKe = trangChuGUI.cb_tkt_kethuoc.getSelectedItem().equals("Tất cả")
-                    || t.getKeThuoc().getLoaiKe().equals(trangChuGUI.cb_tkt_kethuoc.getSelectedItem());
-            boolean matchTen = trangChuGUI.cb_tkt_tenthuoc.getSelectedItem().equals("Tất cả")
-                    || t.getTenThuoc().equals(trangChuGUI.cb_tkt_tenthuoc.getSelectedItem());
-            boolean matchNCC = trangChuGUI.cb_tkt_ncc.getSelectedItem().equals("Tất cả")
-                    || t.getNhaCungCap().getTenNhaCungCap().equals(trangChuGUI.cb_tkt_ncc.getSelectedItem());
+            boolean matchKe = keChon.equals("Tất cả") || t.getKeThuoc().getLoaiKe().equals(keChon);
+            boolean matchTen = tenChon.equals("Tất cả") || t.getTenThuoc().equals(tenChon);
+            boolean matchNCC = nccChon.equals("Tất cả") || t.getNhaCungCap().getTenNhaCungCap().equals(nccChon);
+
             if (matchKe && matchTen && matchNCC) {
                 model.addRow(new Object[]{
                         t.getMaThuoc(), t.getTenThuoc(), t.getSoLuong(), t.getGiaNhap(),
@@ -352,14 +706,41 @@ public class Thuoc_Controller {
             });
         }
     }
+    
+    private void hienThiThuocLenThemThuoc() {
+        DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_themthuoc.getModel();
+        model.setRowCount(0);
+        List<Thuoc> dsThuoc = dao.getAllThuoc();
+        for (Thuoc t : dsThuoc) {
+            model.addRow(new Object[]{
+                    t.getMaThuoc(), t.getTenThuoc(), t.getSoLuong(), t.getGiaNhap(), t.getGiaBan(),
+                    t.getDonViTinh(), t.getNhaCungCap().getTenNhaCungCap(),
+                    t.getHanSuDung(), t.getKeThuoc().getLoaiKe(), t.getThanhPhan(), t.getAnh()
+            });
+        }
+    }
+    
+    private void hienThiThuocLenThemThuocFile() {
+        DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_ttf.getModel();
+        model.setRowCount(0);
+        List<Thuoc> dsThuoc = dao.getAllThuoc();
+        for (Thuoc t : dsThuoc) {
+            model.addRow(new Object[]{
+                    t.getMaThuoc(), t.getTenThuoc(), t.getSoLuong(), t.getGiaNhap(), t.getGiaBan(),
+                    t.getDonViTinh(), t.getNhaCungCap().getTenNhaCungCap(),
+                    t.getHanSuDung(), t.getKeThuoc().getLoaiKe(), t.getThanhPhan(), t.getAnh()
+            });
+        }
+    }
 
     // ======= BỘ LỌC TÌM KIẾM =======
 
     private void timKiemThuoc_TK() {
         String maTK = trangChuGUI.text_cnt_tkmt.getText().trim();
         String tenTK = trangChuGUI.text_cnt_tktt.getText().trim();
-        String keTK = trangChuGUI.cb_cnt_tktkt.getSelectedItem().toString().trim();
-        filterTable(trangChuGUI.table_Capnhatthuoc, maTK, tenTK, keTK);
+        Object selectedItem = trangChuGUI.cb_cnt_tktkt.getSelectedItem();
+        String tenThuoc = selectedItem != null ? selectedItem.toString() : "";
+        filterTable(trangChuGUI.table_Capnhatthuoc, maTK, tenTK, tenThuoc);
     }
 
     private void filterTable(JTable table, String maTK, String tenTK, String keTK) {
@@ -399,6 +780,9 @@ public class Thuoc_Controller {
         trangChuGUI.cb_cntncc.removeAllItems();
         trangChuGUI.cb_cntdvt.removeAllItems();
         trangChuGUI.cb_cnt_tktkt.removeAllItems();
+        trangChuGUI.cb_ttdvt.removeAllItems();
+        trangChuGUI.cb_ttncc.removeAllItems();
+        trangChuGUI.cb_tttkt.removeAllItems();
 
         trangChuGUI.cb_tkt_kethuoc.addItem("Tất cả");
         trangChuGUI.cb_tkt_tenthuoc.addItem("Tất cả");
@@ -430,6 +814,18 @@ public class Thuoc_Controller {
             if (((DefaultComboBoxModel<String>) trangChuGUI.cb_cnt_tktkt.getModel())
                     .getIndexOf(t.getKeThuoc().getLoaiKe()) == -1)
                 trangChuGUI.cb_cnt_tktkt.addItem(t.getKeThuoc().getLoaiKe());
+            
+            
+            if (((DefaultComboBoxModel<String>) trangChuGUI.cb_tttkt.getModel())
+                    .getIndexOf(t.getKeThuoc().getLoaiKe()) == -1)
+                trangChuGUI.cb_tttkt.addItem(t.getKeThuoc().getLoaiKe());
+            if (((DefaultComboBoxModel<String>) trangChuGUI.cb_ttncc.getModel())
+                    .getIndexOf(t.getNhaCungCap().getTenNhaCungCap()) == -1)
+                trangChuGUI.cb_ttncc.addItem(t.getNhaCungCap().getTenNhaCungCap());
+            if (((DefaultComboBoxModel<String>) trangChuGUI.cb_ttdvt.getModel())
+                    .getIndexOf(t.getDonViTinh()) == -1)
+                trangChuGUI.cb_ttdvt.addItem(t.getDonViTinh());
+            
         }
     }
 }

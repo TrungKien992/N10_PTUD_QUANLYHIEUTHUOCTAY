@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -35,4 +36,42 @@ public class keThuoc_DAO {
         }
         return dsKe;
     }
+    
+    public KeThuoc getKeThuocTheoTen(String tenKe) {
+        String sql = "SELECT * FROM KeThuoc WHERE loaiKe = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, tenKe);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new KeThuoc(
+                    rs.getString("maKe"),
+                    rs.getInt("viTri"),
+                    rs.getString("loaiKe")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public String generateNewMaKe() {
+        String prefix = "K";
+        String sql = "SELECT TOP 1 maKe FROM KeThuoc ORDER BY maKe DESC";
+        try (Connection con = ConnectDB.getConnection();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                String last = rs.getString("maKe");
+                int num = Integer.parseInt(last.replace(prefix, ""));
+                return String.format("%s%03d", prefix, num + 1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "K001";
+    }
+
 }

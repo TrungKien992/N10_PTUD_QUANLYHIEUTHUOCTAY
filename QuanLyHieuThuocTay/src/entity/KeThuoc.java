@@ -14,6 +14,11 @@ public class KeThuoc {
         this.maKe = maKe;
     }
     
+    public KeThuoc(String maKe, String loaiKe) {
+        this.maKe = maKe;
+        this.loaiKe = loaiKe;
+    }
+    
     public KeThuoc(String maKe, int viTri, String loaiKe) {
         this.maKe = maKe;
         this.viTri = viTri;

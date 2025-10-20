@@ -31,7 +31,8 @@ public class nhaCungCap_DAO {
                     rs.getString("soDienThoai"),
                     rs.getString("email"),
                     rs.getString("diaChi"),
-                    rs.getBoolean("trangThai")
+                    rs.getBoolean("trangThai"),
+                    rs.getString("ghiChu")
                 );
                 dsNCC.add(ncc);
             }
@@ -58,7 +59,8 @@ public class nhaCungCap_DAO {
                         rs.getString("soDienThoai"),
                         rs.getString("email"),
                         rs.getString("diaChi"),
-                        rs.getBoolean("trangThai")
+                        rs.getBoolean("trangThai"),
+                        rs.getString("ghiChu")
                     );
                 }
             }
@@ -67,12 +69,41 @@ public class nhaCungCap_DAO {
         }
         return null;
     }
+    
+    /**
+     * Lấy thông tin nhà cung cấp theo tên
+     */
+    public NhaCungCap getNhaCungCapTheoTen(String tenNCC) {
+        String sql = "SELECT * FROM NhaCungCap WHERE tenNhaCungCap = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, tenNCC);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new NhaCungCap(
+                        rs.getString("maNhaCungCap"),
+                        rs.getString("tenNhaCungCap"),
+                        rs.getString("soDienThoai"),
+                        rs.getString("email"),
+                        rs.getString("diaChi"),
+                        rs.getBoolean("trangThai"),
+                        rs.getString("ghiChu")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
 
     /**
      * Thêm một nhà cung cấp mới
      */
     public boolean themNhaCungCap(NhaCungCap ncc) {
-        String sql = "INSERT INTO NhaCungCap(maNhaCungCap, tenNhaCungCap, soDienThoai, email, diaChi, trangThai) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO NhaCungCap(maNhaCungCap, tenNhaCungCap, soDienThoai, email, diaChi, trangThai, ghiChu) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             
@@ -82,6 +113,8 @@ public class nhaCungCap_DAO {
             ps.setString(4, ncc.getEmail());
             ps.setString(5, ncc.getDiaChi());
             ps.setBoolean(6, ncc.isTrangThai());
+            ps.setString(7, ncc.getGhiChu());
+        
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -94,7 +127,7 @@ public class nhaCungCap_DAO {
      * Cập nhật thông tin nhà cung cấp
      */
     public boolean updateNhaCungCap(NhaCungCap ncc) {
-        String sql = "UPDATE NhaCungCap SET tenNhaCungCap = ?, soDienThoai = ?, email = ?, diaChi = ?, trangThai = ? WHERE maNhaCungCap = ?";
+        String sql = "UPDATE NhaCungCap SET tenNhaCungCap = ?, soDienThoai = ?, email = ?, diaChi = ?, trangThai = ?,ghiChu = ? WHERE maNhaCungCap = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             
@@ -104,6 +137,7 @@ public class nhaCungCap_DAO {
             ps.setString(4, ncc.getDiaChi());
             ps.setBoolean(5, ncc.isTrangThai());
             ps.setString(6, ncc.getMaNhaCungCap());
+            ps.setString(7, ncc.getGhiChu());
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -125,11 +159,11 @@ public class nhaCungCap_DAO {
                 String lastID = rs.getString("maNhaCungCap");
                 int number = Integer.parseInt(lastID.replace(prefix, ""));
                 number++;
-                return String.format("%s%03d", prefix, number);
+                return String.format("%s%02d", prefix, number);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return prefix + "001"; // Nếu bảng đang rỗng
+        return prefix + "01"; // Nếu bảng đang rỗng
     }
 }

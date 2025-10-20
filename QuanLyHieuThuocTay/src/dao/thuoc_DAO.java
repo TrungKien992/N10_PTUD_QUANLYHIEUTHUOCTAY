@@ -164,4 +164,43 @@ public class thuoc_DAO {
         }
         return ma;
     }
+    
+    public String getNextMaThuoc() {
+        String nextMa = "T01";
+        String sql = "SELECT MAX(maThuoc) FROM Thuoc";
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            if (rs.next()) {
+                String lastMa = rs.getString(1);
+                if (lastMa != null && lastMa.startsWith("T")) {
+                    int number = Integer.parseInt(lastMa.substring(1)); // bỏ chữ T
+                    number++;
+                    nextMa = String.format("T%02d", number); // định dạng T01, T02,...
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nextMa;
+    }
+
+ // trong thuoc_DAO.java
+    public String getMaKeTheoTen(String tenKe) {
+        String maKe = null;
+        String sql = "SELECT MaKe FROM KeThuoc WHERE LoaiKe = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, tenKe);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                maKe = rs.getString("MaKe");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return maKe;
+    }
+
 }
