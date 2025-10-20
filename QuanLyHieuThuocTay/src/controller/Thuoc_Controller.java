@@ -97,7 +97,12 @@ public class Thuoc_Controller {
                         trangChuGUI.text_cntgb.setText(String.valueOf(t.getGiaBan()));
                         trangChuGUI.cb_cntdvt.setSelectedItem(t.getDonViTinh());
                         trangChuGUI.cb_cntncc.setSelectedItem(t.getNhaCungCap().getTenNhaCungCap());
-                        trangChuGUI.text_cnthsd.setText(t.getHanSuDung().toString());
+                        if (t.getHanSuDung() != null) {
+                            java.util.Date date = java.sql.Date.valueOf(t.getHanSuDung());
+                            trangChuGUI.date_cnthsd.setDate(date);
+                        } else {
+                            trangChuGUI.date_cnthsd.setDate(null);
+                        }
                         trangChuGUI.cb_cnt_tkt.setSelectedItem(t.getKeThuoc().getLoaiKe());
                         trangChuGUI.textArea_cnttp.setText(t.getThanhPhan());
 
@@ -139,12 +144,11 @@ public class Thuoc_Controller {
                 trangChuGUI.text_cntgn.setText(String.valueOf(thuocGoc.getGiaNhap()));
                 trangChuGUI.text_cntgb.setText(String.valueOf(thuocGoc.getGiaBan()));
 
-                // định dạng ngày theo dd-MM-yyyy
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 if (thuocGoc.getHanSuDung() != null) {
-                    trangChuGUI.text_cnthsd.setText(thuocGoc.getHanSuDung().format(formatter));
+                    java.util.Date date = java.sql.Date.valueOf(thuocGoc.getHanSuDung());
+                    trangChuGUI.date_cnthsd.setDate(date);
                 } else {
-                    trangChuGUI.text_cnthsd.setText("");
+                    trangChuGUI.date_cnthsd.setDate(null);
                 }
 
                 trangChuGUI.textArea_cnttp.setText(thuocGoc.getThanhPhan());
@@ -207,15 +211,15 @@ public class Thuoc_Controller {
                 double giaBan = Double.parseDouble(trangChuGUI.text_cntgb.getText().trim());
                 String donViTinh = trangChuGUI.cb_cntdvt.getSelectedItem().toString();
 
-                String hsdStr = trangChuGUI.text_cnthsd.getText().trim();
-                LocalDate hanSuDung;
-                try {
-                    hanSuDung = LocalDate.parse(hsdStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                } catch (Exception exDate) {
-                    JOptionPane.showMessageDialog(trangChuGUI,
-                            "Hạn sử dụng không đúng định dạng (yyyy-MM-dd). Ví dụ: 2025-10-19");
+                java.util.Date hsdDate = trangChuGUI.date_cnthsd.getDate();
+                LocalDate hanSuDung = null;
+                if (hsdDate != null) {
+                    hanSuDung = new java.sql.Date(hsdDate.getTime()).toLocalDate();
+                } else {
+                    JOptionPane.showMessageDialog(trangChuGUI, "Vui lòng chọn hạn sử dụng!");
                     return;
                 }
+
 
                 String thanhPhan = trangChuGUI.textArea_cnttp.getText().trim();
                 String loaiKe = trangChuGUI.cb_cnt_tkt.getSelectedItem().toString();

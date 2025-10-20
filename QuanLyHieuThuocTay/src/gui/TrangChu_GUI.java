@@ -202,6 +202,7 @@ public class TrangChu_GUI extends JFrame{
 	private JTextField txtTimKiem;
 	private JTable table;
 	private nhanVien_DAO nvDAO;
+	public JDateChooser date_cnthsd;
     
 
 	// ========== BẢNG MÀU VÀ FONT CHỮ HIỆN ĐẠI ==========
@@ -1449,7 +1450,7 @@ public class TrangChu_GUI extends JFrame{
         pn_Capnhatthuoc_nhaptt.add(lbl_cnthsd);
 
         // Dùng JDateChooser cho HSD
-        JDateChooser date_cnthsd = new JDateChooser();
+        date_cnthsd = new JDateChooser();
         date_cnthsd.setFont(FONT_TEXT_FIELD);
         date_cnthsd.setDateFormatString("dd/MM/yyyy");
         date_cnthsd.setBounds(inputX2, startY + height + vGap, 400, height);
