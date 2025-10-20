@@ -1,28 +1,16 @@
 package gui;
 
 import java.awt.EventQueue;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Image;
-import javax.swing.JTextField;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
+
 import javax.swing.border.TitledBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
-import javax.swing.JTable;
+
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -40,9 +28,7 @@ import entity.ChucVu;
 import entity.KhachHang;
 import entity.NhanVien;
 import entity.TaiKhoan;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
+
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Connection;
@@ -50,10 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.awt.event.ActionEvent;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.BorderFactory;
-import javax.swing.JTextArea;
-import javax.swing.JTabbedPane;
+
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -203,6 +186,11 @@ public class TrangChu_GUI extends JFrame{
 	private JTable table;
 	private nhanVien_DAO nvDAO;
 	public JDateChooser date_cnthsd;
+	private TaiKhoan currentUser;
+    private String currentUserName;
+	private JButton btnTaikhoan;
+	private JDateChooser loadDataQLTK;
+	private JTable tableQLTK;
     
 
 	// ========== BẢNG MÀU VÀ FONT CHỮ HIỆN ĐẠI ==========
@@ -258,9 +246,36 @@ public class TrangChu_GUI extends JFrame{
     /**
      * Create the application.
      */
+	// Constructor mặc định (có thể giữ lại để test)
     public TrangChu_GUI() {
+         // Lấy thông tin từ biến static của Dangnhap_GUI
+         this.currentUser = Dangnhap_GUI.taiKhoanLogin;
+         this.currentUserName = Dangnhap_GUI.tenNhanVienLogin;
+         // Kiểm tra nếu chưa đăng nhập thì quay lại màn hình đăng nhập
+         if (this.currentUser == null) {
+             // Đóng cửa sổ hiện tại (nếu có) và mở lại đăng nhập
+             // Cần xử lý cẩn thận nếu đang chạy từ main của TrangChu_GUI
+             // Tốt nhất là main chỉ nên chạy Dangnhap_GUI
+             System.err.println("Chưa đăng nhập!");
+             // Có thể đóng frame hiện tại và mở Dangnhap_GUI ở đây
+             // Hoặc throw exception
+             // Ví dụ đơn giản:
+              if (QuanLyHieuThuocTay != null) { // Nếu frame đã được tạo (dù là rỗng)
+                  QuanLyHieuThuocTay.dispose();
+              }
+              Dangnhap_GUI login = new Dangnhap_GUI();
+              login.setVisible(true);
+              return; // Dừng việc khởi tạo TrangChu_GUI
+         }
         initialize();
     }
+
+    // (Optional) Constructor nhận thông tin đăng nhập
+    // public TrangChu_GUI(TaiKhoan user, String userName) {
+    //     this.currentUser = user;
+    //     this.currentUserName = userName;
+    //     initialize();
+    // }
 
     /**
      * Initialize the contents of the frame.
@@ -293,12 +308,21 @@ public class TrangChu_GUI extends JFrame{
         sidebar.setPreferredSize(new Dimension(220, 0));
         sidebar.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5)); 
 
-        JLabel lblLogo = new JLabel("Scam", SwingConstants.CENTER);
-        lblLogo.setOpaque(true);
-        lblLogo.setBackground(new Color(0, 153, 153));
-        lblLogo.setForeground(Color.WHITE);
-        lblLogo.setFont(new Font("Arial", Font.BOLD, 30));
-        sidebar.add(lblLogo);
+        JPanel logoPanel = new JPanel(new BorderLayout());
+        logoPanel.setOpaque(false); // Trong suốt để lấy nền gradient
+        JLabel lblUserName = new JLabel(currentUserName != null ? currentUserName : "N/A", SwingConstants.CENTER); // Tên NV/TK
+        lblUserName.setForeground(Color.WHITE);
+        lblUserName.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        logoPanel.add(lblUserName, BorderLayout.CENTER);
+
+        JLabel lblUserRole = new JLabel(currentUser.getQuyenHan(), SwingConstants.CENTER); // Quyền hạn
+        lblUserRole.setForeground(new Color(200, 220, 255)); // Màu nhạt hơn
+        lblUserRole.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        logoPanel.add(lblUserRole, BorderLayout.SOUTH);
+        logoPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60)); // Giới hạn chiều cao
+        logoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        sidebar.add(logoPanel); 
 
         sidebar.add(Box.createRigidArea(new Dimension(0, 15)));
 
@@ -362,7 +386,32 @@ public class TrangChu_GUI extends JFrame{
         sidebar.add(Box.createVerticalGlue()); 
 
         // --- Nút Đăng xuất ---
+     // Trong initialize(), phần tạo nút Đăng xuất ở sidebar
         JButton btnMenu_DX = createSidebarButton("Đăng xuất", "/icons/logout_16.png");
+        addHoverEffect(btnMenu_DX);
+        btnMenu_DX.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(QuanLyHieuThuocTay, // Hoặc this
+             "Bạn có chắc muốn đăng xuất?", "Xác nhận đăng xuất", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                // Đóng TrangChu_GUI
+                if (QuanLyHieuThuocTay != null) {
+                     QuanLyHieuThuocTay.dispose();
+                } else {
+                    // Nếu TrangChu_GUI extends JFrame, dùng dispose();
+                    // dispose();
+                }
+
+                // Reset thông tin đăng nhập
+                Dangnhap_GUI.taiKhoanLogin = null;
+                Dangnhap_GUI.tenNhanVienLogin = null;
+
+                // Mở lại cửa sổ Đăng nhập
+                EventQueue.invokeLater(() -> {
+                    Dangnhap_GUI login = new Dangnhap_GUI();
+                    login.setVisible(true);
+                });
+            }
+        });
         sidebar.add(btnMenu_DX);
         sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
@@ -4688,7 +4737,187 @@ public class TrangChu_GUI extends JFrame{
         btnNewButton_2.setFont(new Font("Times New Roman", Font.BOLD, 20));
         panel_1.add(btnNewButton_2);
         
-        
+     // ===== PANEL QUẢN LÝ TÀI KHOẢN (ADMIN) =====
+        JPanel pn_QuanLyTaiKhoan = new JPanel();
+        maincontent.add(pn_QuanLyTaiKhoan, "quanLyTaiKhoan"); // Add panel vào CardLayout
+        pn_QuanLyTaiKhoan.setLayout(new BorderLayout(10, 10)); // Dùng BorderLayout
+        pn_QuanLyTaiKhoan.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+        pn_QuanLyTaiKhoan.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding
+
+        JLabel lblTitleQLTK = new JLabel("QUẢN LÝ TÀI KHOẢN HỆ THỐNG");
+        lblTitleQLTK.setFont(FONT_TITLE_MAIN); // Font tiêu đề
+        lblTitleQLTK.setForeground(COLOR_PRIMARY_BLUE); // Màu tiêu đề
+        lblTitleQLTK.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa
+        pn_QuanLyTaiKhoan.add(lblTitleQLTK, BorderLayout.NORTH); // Thêm tiêu đề vào vị trí NORTH
+
+        JScrollPane scrollPaneQLTK = new JScrollPane();
+        scrollPaneQLTK.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền
+        pn_QuanLyTaiKhoan.add(scrollPaneQLTK, BorderLayout.CENTER); // Thêm bảng vào vị trí CENTER
+
+        // Khởi tạo và style bảng tableQLTK (gán vào biến toàn cục)
+        tableQLTK = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground()); // Dùng this
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                    // Không set foreground trắng
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(tableQLTK); // Áp dụng style chung
+        tableQLTK.setModel(new DefaultTableModel(
+            new Object[][] {}, // Dữ liệu trống ban đầu
+            new String[] {"Mã TK", "Tên Tài Khoản", "Quyền Hạn"} // Các cột hiển thị
+        ));
+        scrollPaneQLTK.setViewportView(tableQLTK); // Đặt bảng vào ScrollPane
+
+        // Panel chức năng (Thêm, Xóa trắng form) đặt ở SOUTH
+        JPanel pnlChucNangQLTK = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5)); // FlowLayout căn trái
+        pnlChucNangQLTK.setOpaque(false); // Trong suốt để lấy nền của pn_QuanLyTaiKhoan
+        pn_QuanLyTaiKhoan.add(pnlChucNangQLTK, BorderLayout.SOUTH); // Thêm panel chức năng vào SOUTH
+
+        JLabel lblMaTK_QL = new JLabel("Mã TK:");
+        lblMaTK_QL.setFont(FONT_LABEL_BOLD);
+        lblMaTK_QL.setForeground(COLOR_TEXT_DARK);
+        pnlChucNangQLTK.add(lblMaTK_QL);
+
+        JTextField txtMaTK_QL = new JTextField(10);
+        txtMaTK_QL.setFont(FONT_TEXT_FIELD);
+        pnlChucNangQLTK.add(txtMaTK_QL);
+
+        JLabel lblTenTK_QL = new JLabel("Tên TK:");
+        lblTenTK_QL.setFont(FONT_LABEL_BOLD);
+        lblTenTK_QL.setForeground(COLOR_TEXT_DARK);
+        pnlChucNangQLTK.add(lblTenTK_QL);
+
+        JTextField txtTenTK_QL = new JTextField(15);
+        txtTenTK_QL.setFont(FONT_TEXT_FIELD);
+        pnlChucNangQLTK.add(txtTenTK_QL);
+
+        JLabel lblMatKhau_QL = new JLabel("Mật Khẩu:");
+        lblMatKhau_QL.setFont(FONT_LABEL_BOLD);
+        lblMatKhau_QL.setForeground(COLOR_TEXT_DARK);
+        pnlChucNangQLTK.add(lblMatKhau_QL);
+
+        JPasswordField txtMatKhau_QL = new JPasswordField(15);
+        txtMatKhau_QL.setFont(FONT_TEXT_FIELD);
+        pnlChucNangQLTK.add(txtMatKhau_QL);
+
+        JLabel lblQuyenHan_QL = new JLabel("Quyền Hạn:");
+        lblQuyenHan_QL.setFont(FONT_LABEL_BOLD);
+        lblQuyenHan_QL.setForeground(COLOR_TEXT_DARK);
+        pnlChucNangQLTK.add(lblQuyenHan_QL);
+
+        JComboBox<String> cboQuyenHan_QL = new JComboBox<>(new String[]{
+            "Quản lý",
+            "Nhân viên bán hàng",
+            "Nhân viên kho",
+            "(Chưa cấp)" // Lựa chọn cho NULL
+        });
+        cboQuyenHan_QL.setFont(FONT_TEXT_FIELD);
+        pnlChucNangQLTK.add(cboQuyenHan_QL);
+
+        JButton btnThemTK = new JButton("Thêm Tài Khoản");
+        btnThemTK.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnThemTK, COLOR_SUCCESS_GREEN); // Style nút thêm
+        pnlChucNangQLTK.add(btnThemTK);
+
+        JButton btnXoaTrangQLTK = new JButton("Xóa Trắng Form");
+        btnXoaTrangQLTK.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnXoaTrangQLTK, COLOR_TEXT_MUTED); // Style nút xóa trắng
+        pnlChucNangQLTK.add(btnXoaTrangQLTK);
+
+        // --- Xử lý sự kiện cho panel QLTK ---
+        taiKhoan_DAO tkDAO_QL = new taiKhoan_DAO(); // Khởi tạo DAO
+
+        // Click vào bảng QLTK -> hiện thông tin lên form
+        tableQLTK.addMouseListener(new MouseAdapter() {
+             @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = tableQLTK.getSelectedRow();
+                if (row != -1) {
+                     txtMaTK_QL.setText(tableQLTK.getValueAt(row, 0).toString());
+                     txtTenTK_QL.setText(tableQLTK.getValueAt(row, 1).toString());
+                     txtMatKhau_QL.setText(""); // Luôn xóa field mật khẩu khi chọn
+                     Object quyenObj = tableQLTK.getValueAt(row, 2);
+                     // Hiển thị quyền hiện tại
+                     cboQuyenHan_QL.setSelectedItem(quyenObj != null && !quyenObj.toString().equals("(Chưa cấp)") ? quyenObj.toString() : "(Chưa cấp)");
+                     txtMaTK_QL.setEditable(false); // Không cho sửa mã khi đã chọn từ bảng
+                     txtTenTK_QL.requestFocus(); // Focus vào Tên TK để dễ sửa
+                }
+            }
+        });
+
+        // Nút Xóa trắng form QLTK
+        btnXoaTrangQLTK.addActionListener(e -> {
+             txtMaTK_QL.setText("");
+             txtTenTK_QL.setText("");
+             txtMatKhau_QL.setText("");
+             cboQuyenHan_QL.setSelectedIndex(cboQuyenHan_QL.getItemCount() - 1); // Chọn "(Chưa cấp)"
+             tableQLTK.clearSelection(); // Bỏ chọn dòng trên bảng
+             txtMaTK_QL.setEditable(true); // Cho phép nhập lại mã khi xóa trắng
+             txtMaTK_QL.requestFocus(); // Focus vào ô mã TK
+        });
+
+        // Nút Thêm Tài Khoản (Admin)
+        btnThemTK.addActionListener(e -> {
+            String maTK = txtMaTK_QL.getText().trim();
+            String tenTK = txtTenTK_QL.getText().trim();
+            String matKhau = new String(txtMatKhau_QL.getPassword());
+            String quyen = cboQuyenHan_QL.getSelectedItem().toString();
+
+            // Kiểm tra nhập liệu
+            if (maTK.isEmpty() || tenTK.isEmpty() || matKhau.isEmpty()) {
+                JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Vui lòng nhập đầy đủ Mã TK, Tên TK và Mật khẩu!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                txtMaTK_QL.requestFocus(); // Focus vào ô Mã TK nếu rỗng
+                return;
+            }
+            // (Thêm kiểm tra định dạng maTK nếu muốn, ví dụ: phải bắt đầu bằng TK...)
+
+            TaiKhoan tkMoi = new TaiKhoan();
+            tkMoi.setMaTK(maTK); // Dùng mã TK người dùng nhập
+            tkMoi.setTenTK(tenTK);
+            tkMoi.setMatKhau(matKhau); // !!! Nhớ mã hóa mật khẩu ở DAO !!!
+            tkMoi.setQuyenHan(quyen.equals("(Chưa cấp)") ? null : quyen); // Xử lý "(Chưa cấp)" thành NULL
+
+            // Gọi hàm addTaiKhoan từ DAO (đã có kiểm tra trùng mã/tên bên trong)
+            if (tkDAO_QL.addTaiKhoan(tkMoi)) {
+                JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Thêm tài khoản '" + maTK + "' thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+
+                // Load lại bảng tài khoản (gọi trực tiếp)
+                try {
+                    DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
+                    model.setRowCount(0);
+                    List<TaiKhoan> list = tkDAO_QL.getAllTaiKhoan();
+                    for (TaiKhoan tk : list) {
+                         model.addRow(new Object[]{tk.getMaTK(), tk.getTenTK(), tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()});
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace(); // In lỗi nếu load lại bảng thất bại
+                }
+
+                btnXoaTrangQLTK.doClick(); // Xóa trắng form sau khi thêm thành công
+
+                // HIỆN DIALOG THÊM NHÂN VIÊN
+                nhanVien_DAO nvDAO_moi = new nhanVien_DAO();
+                String maNV_moi = nvDAO_moi.generateNewMaNV(); // Tạo mã NV mới
+                ThemNhanVienSauKhiTaoTK_GUI themNVDialog = new ThemNhanVienSauKhiTaoTK_GUI(
+                    QuanLyHieuThuocTay, // Frame cha
+                    tkMoi,             // Tài khoản vừa tạo
+                    maNV_moi           // Mã NV mới
+                );
+                themNVDialog.setVisible(true); // Hiển thị dialog
+
+            }
+            // else { // Không cần else vì DAO đã hiện JOptionPane lỗi trùng lặp }
+        });
+
+        // ===== KẾT THÚC PANEL QUẢN LÝ TÀI KHOẢN =====
         
         new KhachHang_Controller(this);
         Thuoc_Controller controller = new Thuoc_Controller(this);
@@ -4762,13 +4991,44 @@ public class TrangChu_GUI extends JFrame{
         }
        submenuPanel.add(btnTrangChu);
         
-        JButton btnTaikhoan;
-        if (Beans.isDesignTime()) {
-            btnTaikhoan = new JButton("Tài Khoản (Design)");
-        } else {
-            btnTaikhoan = createSubmenuButton("Tài Khoản");
-            // btnTaikhoan.addActionListener(e -> { /* Code xử lý */ });
-        }
+       btnTaikhoan = createSubmenuButton("Tài Khoản");
+       btnTaikhoan.addActionListener(e -> {
+           // Kiểm tra quyền hạn trước khi hiển thị
+           if (currentUser != null && "Quản lý".equalsIgnoreCase(currentUser.getQuyenHan())) {
+
+               // 👇👇👇 LOAD DỮ LIỆU TRỰC TIẾP VÀO BẢNG 👇👇👇
+               try {
+                   DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
+                   model.setRowCount(0); // Xóa dữ liệu cũ
+                   taiKhoan_DAO dao = new taiKhoan_DAO();
+                   List<TaiKhoan> list = dao.getAllTaiKhoan();
+                   if (list.isEmpty()) {
+                        System.out.println("DAO: Không có tài khoản nào."); // Debug
+                   }
+                   for (TaiKhoan tk : list) {
+                        model.addRow(new Object[]{
+                           tk.getMaTK(),
+                           tk.getTenTK(),
+                           tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()
+                       });
+                   }
+                    System.out.println("Đã load " + model.getRowCount() + " tài khoản vào bảng."); // Debug
+               } catch (Exception ex) {
+                   ex.printStackTrace();
+                   JOptionPane.showMessageDialog(TrangChu_GUI.this.QuanLyHieuThuocTay,
+                    "Lỗi khi tải dữ liệu tài khoản:\n" + ex.getMessage(), "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+               }
+               // 👆👆👆 HẾT PHẦN LOAD DỮ LIỆU 👆👆👆
+
+               // Hiển thị panel
+              CardLayout cl = (CardLayout) TrangChu_GUI.this.maincontent.getLayout();
+              cl.show(TrangChu_GUI.this.maincontent, "quanLyTaiKhoan");
+
+           } else {
+               JOptionPane.showMessageDialog(TrangChu_GUI.this.QuanLyHieuThuocTay,
+                "Chỉ có Quản lý mới được truy cập chức năng này!", "Truy cập bị từ chối", JOptionPane.WARNING_MESSAGE);
+           }
+       });
         submenuPanel.add(btnTaikhoan);
         submenuPanel.add(Box.createRigidArea(new Dimension(0, 3)));
 

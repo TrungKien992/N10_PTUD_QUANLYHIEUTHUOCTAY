@@ -11,7 +11,7 @@ CREATE TABLE TaiKhoan (
     maTK VARCHAR(20) PRIMARY KEY,
     tenTK NVARCHAR(50) NOT NULL,
     matKhau VARCHAR(100) NOT NULL,
-    quyenHan NVARCHAR(50) NOT NULL
+    quyenHan NVARCHAR(50) 
 );
 GO
 

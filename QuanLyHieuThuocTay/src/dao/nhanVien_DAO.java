@@ -228,6 +228,32 @@ public class nhanVien_DAO {
 
         return duongDanAnh;
     }
+    public String getTenNhanVienByMaTK(String maTK) {
+        String tenNV = null;
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        // Giả sử bảng NhanVien có cột maTK là khóa ngoại tham chiếu đến TaiKhoan
+        String sql = "SELECT tenNV FROM NhanVien WHERE maTK = ?";
+        try {
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, maTK);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                tenNV = rs.getString("tenNV");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+             try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return tenNV;
+    }
 
 
 }

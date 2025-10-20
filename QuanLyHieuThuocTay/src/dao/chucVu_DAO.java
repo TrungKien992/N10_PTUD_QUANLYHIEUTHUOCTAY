@@ -45,4 +45,36 @@ public class chucVu_DAO {
         }
         return dsChucVu;
     }
+    
+ // Trong class chucVu_DAO
+
+    /**
+     * Tìm kiếm và trả về đối tượng ChucVu dựa vào tên chức vụ.
+     * @param tenCV Tên chức vụ cần tìm (ví dụ: "Quản lý").
+     * @return Đối tượng ChucVu tương ứng hoặc null nếu không tìm thấy.
+     */
+    public ChucVu getChucVuByTen(String tenCV) {
+        ChucVu cv = null;
+        String sql = "SELECT maChucVu, tenChucVu, moTa FROM ChucVu WHERE tenChucVu = ?";
+        // Dùng try-with-resources
+        try (Connection con = ConnectDB.getConnection(); // Lấy connection mới
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, tenCV); // Đặt tham số tên chức vụ
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) { // Nếu tìm thấy
+                    cv = new ChucVu(
+                        rs.getString("maChucVu"),
+                        rs.getString("tenChucVu"),
+                        rs.getString("moTa")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // In lỗi ra console
+        }
+        return cv; // Trả về ChucVu hoặc null
+    }
+
 }
