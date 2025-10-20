@@ -41,6 +41,10 @@ public class nhanVien_DAO {
 
     // === Thêm nhân viên ===
     public boolean insertNhanVien(NhanVien nv) {
+        if (nv.getMaNV() == null || nv.getMaNV().isEmpty()) {
+            nv.setMaNV(generateNewMaNV()); // 👈 tự động sinh mã nếu chưa có
+        }
+
         String sql = "INSERT INTO NhanVien(maNV, tenNV, ngaySinh, gioiTinh, chucVu, sdt, diaChi, anh, maTK) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection();
@@ -55,6 +59,7 @@ public class nhanVien_DAO {
             ps.setString(7, nv.getDiaChi());
             ps.setString(8, nv.getAnh());
             ps.setString(9, nv.getTaiKhoan().getMaTK());
+            System.out.println(">> maTK chèn vào NhanVien: " + nv.getTaiKhoan().getMaTK());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -62,6 +67,7 @@ public class nhanVien_DAO {
         }
         return false;
     }
+
 
     // === Cập nhật nhân viên ===
     public boolean updateNhanVien(NhanVien nv) {
@@ -192,4 +198,36 @@ public class nhanVien_DAO {
         }
         return prefix + "001"; // nếu bảng đang rỗng
     }
+ // === HÀM LẤY ĐƯỜNG DẪN ẢNH THEO MÃ NHÂN VIÊN ===
+    public String layDuongDanAnhTheoMa(String maNV) {
+        String duongDanAnh = null;
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = ConnectDB.getConnection(); // dùng cách gọi thống nhất
+            String sql = "SELECT anh FROM NhanVien WHERE maNV = ?";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, maNV);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                duongDanAnh = rs.getString("anh"); // ✅ đúng với tên cột trong DB
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return duongDanAnh;
+    }
+
+
 }
