@@ -19,20 +19,20 @@ public class nhaCungCap_DAO {
     public List<NhaCungCap> getAllNhaCungCap() {
         List<NhaCungCap> dsNCC = new ArrayList<>();
         // Giả định bảng NhaCungCap đã được cập nhật đầy đủ các cột
-        String sql = "SELECT * FROM NhaCungCap"; 
+        String sql = "SELECT * FROM NhaCungCap";
         try (Connection con = ConnectDB.getConnection();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             while (rs.next()) {
                 NhaCungCap ncc = new NhaCungCap(
-                    rs.getString("maNhaCungCap"),
-                    rs.getString("tenNhaCungCap"),
-                    rs.getString("soDienThoai"),
-                    rs.getString("email"),
-                    rs.getString("diaChi"),
-                    rs.getBoolean("trangThai"),
-                    rs.getString("ghiChu")
+                        rs.getString("maNhaCungCap"),
+                        rs.getString("tenNhaCungCap"),
+                        rs.getString("soDienThoai"),
+                        rs.getString("email"),
+                        rs.getString("diaChi"),
+                        rs.getBoolean("trangThai"),
+                        rs.getString("ghiChu")
                 );
                 dsNCC.add(ncc);
             }
@@ -41,7 +41,7 @@ public class nhaCungCap_DAO {
         }
         return dsNCC;
     }
-    
+
     /**
      * Lấy thông tin nhà cung cấp theo mã
      */
@@ -49,18 +49,18 @@ public class nhaCungCap_DAO {
         String sql = "SELECT * FROM NhaCungCap WHERE maNhaCungCap = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            
+
             ps.setString(1, maNCC);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new NhaCungCap(
-                        rs.getString("maNhaCungCap"),
-                        rs.getString("tenNhaCungCap"),
-                        rs.getString("soDienThoai"),
-                        rs.getString("email"),
-                        rs.getString("diaChi"),
-                        rs.getBoolean("trangThai"),
-                        rs.getString("ghiChu")
+                            rs.getString("maNhaCungCap"),
+                            rs.getString("tenNhaCungCap"),
+                            rs.getString("soDienThoai"),
+                            rs.getString("email"),
+                            rs.getString("diaChi"),
+                            rs.getBoolean("trangThai"),
+                            rs.getString("ghiChu")
                     );
                 }
             }
@@ -69,7 +69,7 @@ public class nhaCungCap_DAO {
         }
         return null;
     }
-    
+
     /**
      * Lấy thông tin nhà cung cấp theo tên
      */
@@ -77,18 +77,18 @@ public class nhaCungCap_DAO {
         String sql = "SELECT * FROM NhaCungCap WHERE tenNhaCungCap = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            
+
             ps.setString(1, tenNCC);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new NhaCungCap(
-                        rs.getString("maNhaCungCap"),
-                        rs.getString("tenNhaCungCap"),
-                        rs.getString("soDienThoai"),
-                        rs.getString("email"),
-                        rs.getString("diaChi"),
-                        rs.getBoolean("trangThai"),
-                        rs.getString("ghiChu")
+                            rs.getString("maNhaCungCap"),
+                            rs.getString("tenNhaCungCap"),
+                            rs.getString("soDienThoai"),
+                            rs.getString("email"),
+                            rs.getString("diaChi"),
+                            rs.getBoolean("trangThai"),
+                            rs.getString("ghiChu")
                     );
                 }
             }
@@ -97,7 +97,7 @@ public class nhaCungCap_DAO {
         }
         return null;
     }
-    
+
 
     /**
      * Thêm một nhà cung cấp mới
@@ -106,7 +106,7 @@ public class nhaCungCap_DAO {
         String sql = "INSERT INTO NhaCungCap(maNhaCungCap, tenNhaCungCap, soDienThoai, email, diaChi, trangThai, ghiChu) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            
+
             ps.setString(1, ncc.getMaNhaCungCap());
             ps.setString(2, ncc.getTenNhaCungCap());
             ps.setString(3, ncc.getSoDienThoai());
@@ -114,8 +114,8 @@ public class nhaCungCap_DAO {
             ps.setString(5, ncc.getDiaChi());
             ps.setBoolean(6, ncc.isTrangThai());
             ps.setString(7, ncc.getGhiChu());
-        
-            
+
+
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -127,17 +127,23 @@ public class nhaCungCap_DAO {
      * Cập nhật thông tin nhà cung cấp
      */
     public boolean updateNhaCungCap(NhaCungCap ncc) {
-        String sql = "UPDATE NhaCungCap SET tenNhaCungCap = ?, soDienThoai = ?, email = ?, diaChi = ?, trangThai = ?,ghiChu = ? WHERE maNhaCungCap = ?";
+    	// Câu lệnh SQL yêu cầu 7 tham số: 6 cho SET và 1 cho WHERE
+        String sql = "UPDATE NhaCungCap SET tenNhaCungCap = ?, soDienThoai = ?, email = ?, diaChi = ?, trangThai = ?, ghiChu = ? WHERE maNhaCungCap = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            
+
             ps.setString(1, ncc.getTenNhaCungCap());
             ps.setString(2, ncc.getSoDienThoai());
             ps.setString(3, ncc.getEmail());
             ps.setString(4, ncc.getDiaChi());
             ps.setBoolean(5, ncc.isTrangThai());
-            ps.setString(6, ncc.getMaNhaCungCap());
-            ps.setString(7, ncc.getGhiChu());
+            
+            // --- PHẦN ĐÃ SỬA ---
+            // Tham số thứ 6 là 'ghiChu'
+            ps.setString(6, ncc.getGhiChu());
+            // Tham số thứ 7 là 'maNhaCungCap' cho mệnh đề WHERE
+            ps.setString(7, ncc.getMaNhaCungCap());
+            // --- HẾT PHẦN SỬA ---
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -145,7 +151,7 @@ public class nhaCungCap_DAO {
         }
         return false;
     }
-    
+
     /**
      * Tạo mã nhà cung cấp mới tự động
      */
@@ -159,6 +165,7 @@ public class nhaCungCap_DAO {
                 String lastID = rs.getString("maNhaCungCap");
                 int number = Integer.parseInt(lastID.replace(prefix, ""));
                 number++;
+                // Sử dụng %03d nếu bạn muốn có 3 chữ số (ví dụ: NCC001), %02d cho 2 chữ số (NCC01)
                 return String.format("%s%02d", prefix, number);
             }
         } catch (SQLException e) {
