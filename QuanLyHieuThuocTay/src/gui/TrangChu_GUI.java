@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import controller.KhachHang_Controller;
 import controller.NhaCungCap_Controller;
+import controller.PhieuDatHang_Controller;
 import controller.ThemKH_Controller;
 import controller.Thuoc_Controller;
 
@@ -233,6 +234,7 @@ public class TrangChu_GUI extends JFrame{
     private static final Color COLOR_SIDEBAR_BUTTON_HOVER = new Color(0, 153, 153); // Màu hover
     private static final Color COLOR_SIDEBAR_BUTTON_SELECTED = new Color(0, 170, 170); // Màu khi nút được chọn
     private static final Color COLOR_SIDEBAR_TEXT = Color.WHITE;
+	private static final Color COLOR_ACCENT_GREEN = null;
     public JTextField txtDC_TNCC;
     public JTextField txtDiaChi_CNNCC;
     public JTextArea txtGhiChu_CNNCC;
@@ -251,6 +253,18 @@ public class TrangChu_GUI extends JFrame{
 	public JTextArea txtGhiChu_TKNCC;
 	public JComboBox<String> cboTrangThai_TKNCC;
 	public JButton btnLamMoi_TKNCC;
+	public JTextField txtTongTien_TKNCC;
+	public JComboBox<String> cboLoaiTongTien_TKNCC;
+	public JDateChooser dateChooserDenNgay_TKNCC;
+	public JDateChooser dateChooserTuNgay_TKNCC;
+	public JComboBox<String> cboTrangThai_TKNCC_PDH;
+	public JComboBox<String> cboNCC_TKNCC;
+	public JTextField txtMaPhieu_TKNCC;
+	public JTable table_DSPDDH;
+	public JButton btnTaoMoiPhieu;
+	public JButton btnXemSuaPhieu;
+	public JButton btnHuyPhieu;
+	public JButton btnLamMoiBoLoc_PDH;
 	
 	public static void main(String[] args) {
 	    try {
@@ -299,6 +313,7 @@ public class TrangChu_GUI extends JFrame{
               return; // Dừng việc khởi tạo TrangChu_GUI
          }
         initialize();
+        PhieuDatHang_Controller phieuDatHangController = new PhieuDatHang_Controller(this);
     }
 
     // (Optional) Constructor nhận thông tin đăng nhập
@@ -4659,54 +4674,309 @@ public class TrangChu_GUI extends JFrame{
 
         // ===== KẾT THÚC KHỐI CODE TÌM KIẾM NHÀ CUNG CẤP =====
         
+//        JPanel panel_QLPhieuDatHangNCC = new JPanel();
+//        maincontent.add(panel_QLPhieuDatHangNCC, "quanLyPhieuThuNCC");
+//        panel_QLPhieuDatHangNCC.setLayout(new BorderLayout(0, 0));
+//        
+//        JPanel panel_TKPhieuNhapHang = new JPanel();
+//        panel_QLPhieuDatHangNCC.add(panel_TKPhieuNhapHang, BorderLayout.NORTH);
+//        
+//        JLabel lblTimKiemNCC = new JLabel("Tìm kiếm:");
+//        lblTimKiemNCC.setFont(new Font("Times New Roman", Font.BOLD, 20));
+//        panel_TKPhieuNhapHang.add(lblTimKiemNCC);
+//        
+//        txtTimKiem = new JTextField();
+//        txtTimKiem.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+//        panel_TKPhieuNhapHang.add(txtTimKiem);
+//        txtTimKiem.setColumns(10);
+//        
+//        JButton btnTim = new JButton("Tìm");
+//        btnTim.setFont(new Font("Times New Roman", Font.BOLD, 20));
+//        panel_TKPhieuNhapHang.add(btnTim);
+//        
+//        JScrollPane scrollPane_PhieuNhapHangNCC = new JScrollPane();
+//        panel_QLPhieuDatHangNCC.add(scrollPane_PhieuNhapHangNCC, BorderLayout.CENTER);
+//        
+//        table = new JTable();
+//        table.setModel(new DefaultTableModel(
+//        	new Object[][] {
+//        		{null, null, null, null, null, null},
+//        	},
+//        	new String[] {
+//        		"M\u00E3 phi\u1EBFu ", "M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "Ng\u00E0y \u0111\u1EB7t", "T\u1ED5ng ti\u1EC1n ", "Tr\u1EA1ng th\u00E1i"
+//        	}
+//        ));
+//        scrollPane_PhieuNhapHangNCC.setViewportView(table);
+//        
+//        JPanel panel_btnPhieuNhapHangNCC = new JPanel();
+//        panel_QLPhieuDatHangNCC.add(panel_btnPhieuNhapHangNCC, BorderLayout.SOUTH);
+//        
+//        JButton btnTaoMoiPhieu = new JButton("Tạo mới");
+//        btnTaoMoiPhieu.setFont(new Font("Times New Roman", Font.BOLD, 20));
+//        panel_btnPhieuNhapHangNCC.add(btnTaoMoiPhieu);
+//        
+//        JButton btnXemSuaPhieu = new JButton("Xem/Sửa");
+//        btnXemSuaPhieu.setFont(new Font("Times New Roman", Font.BOLD, 20));
+//        panel_btnPhieuNhapHangNCC.add(btnXemSuaPhieu);
+//        
+//        JButton btnXoaPhieu = new JButton("Xóa");
+//        btnXoaPhieu.setFont(new Font("Times New Roman", Font.BOLD, 20));
+//        panel_btnPhieuNhapHangNCC.add(btnXoaPhieu);
+        
+     /// ===== BẮT ĐẦU KHỐI CODE panel_QLPhieuDatHangNCC (Code Sửa Lỗi) =====
         JPanel panel_QLPhieuDatHangNCC = new JPanel();
-        maincontent.add(panel_QLPhieuDatHangNCC, "quanLyPhieuThuNCC");
+        maincontent.add(panel_QLPhieuDatHangNCC, "quanLyPhieuDatHangNCC"); 
         panel_QLPhieuDatHangNCC.setLayout(new BorderLayout(0, 0));
-        
-        JPanel panel = new JPanel();
-        panel_QLPhieuDatHangNCC.add(panel, BorderLayout.NORTH);
-        
-        JLabel lblTimKiemNCC = new JLabel("Tìm kiếm:");
-        lblTimKiemNCC.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel.add(lblTimKiemNCC);
-        
-        txtTimKiem = new JTextField();
-        txtTimKiem.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        panel.add(txtTimKiem);
-        txtTimKiem.setColumns(10);
-        
-        JButton btnTim = new JButton("Tìm");
-        btnTim.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel.add(btnTim);
-        
-        JScrollPane scrollPane = new JScrollPane();
-        panel_QLPhieuDatHangNCC.add(scrollPane, BorderLayout.CENTER);
-        
-        table = new JTable();
-        table.setModel(new DefaultTableModel(
-        	new Object[][] {
-        		{null, null, null, null, null, null},
-        	},
-        	new String[] {
-        		"M\u00E3 phi\u1EBFu ", "M\u00E3 nh\u00E0 cung c\u1EA5p", "T\u00EAn nh\u00E0 cung c\u1EA5p", "Ng\u00E0y \u0111\u1EB7t", "T\u1ED5ng ti\u1EC1n ", "Tr\u1EA1ng th\u00E1i"
-        	}
+        panel_QLPhieuDatHangNCC.setBackground(COLOR_BACKGROUND_PRIMARY); 
+
+        JLabel lblTitle_QLPDH = new JLabel("QUẢN LÝ PHIẾU ĐẶT HÀNG NHÀ CUNG CẤP");
+        lblTitle_QLPDH.setFont(FONT_TITLE_MAIN);
+        lblTitle_QLPDH.setForeground(COLOR_PRIMARY_BLUE);
+        lblTitle_QLPDH.setHorizontalAlignment(SwingConstants.CENTER);
+        panel_QLPhieuDatHangNCC.add(lblTitle_QLPDH, BorderLayout.NORTH); 
+
+        // --- PANEL BỘ LỌC TÌM KIẾM ---
+        JPanel panel_BoLocPhieuDatHang = new JPanel();
+        panel_BoLocPhieuDatHang.setBackground(COLOR_CARD_BACKGROUND);
+        panel_BoLocPhieuDatHang.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(COLOR_BORDER_LIGHT, 1, true),
+            "Bộ Lọc Tìm Kiếm Phiếu Đặt Hàng", TitledBorder.LEADING, TitledBorder.TOP,
+            FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
         ));
-        scrollPane.setViewportView(table);
+
+        // Bọc panel bộ lọc trong 1 panel khác để tạo khoảng cách
+        JPanel northPanelWrapper = new JPanel();
+        northPanelWrapper.setLayout(new BoxLayout(northPanelWrapper, BoxLayout.Y_AXIS));
+        northPanelWrapper.setBackground(COLOR_BACKGROUND_PRIMARY);
+        northPanelWrapper.add(Box.createVerticalStrut(10)); 
+        northPanelWrapper.add(panel_BoLocPhieuDatHang);
+        northPanelWrapper.add(Box.createVerticalStrut(10)); 
+        panel_QLPhieuDatHangNCC.add(northPanelWrapper, BorderLayout.NORTH);
+
+        // Sử dụng GridBagLayout
+        GridBagLayout gbl_panel_BoLocPhieuDatHang = new GridBagLayout();
+        gbl_panel_BoLocPhieuDatHang.columnWidths = new int[]{0, 0, 0, 0, 0};
+        gbl_panel_BoLocPhieuDatHang.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+        gbl_panel_BoLocPhieuDatHang.columnWeights = new double[]{0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
+        gbl_panel_BoLocPhieuDatHang.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        panel_BoLocPhieuDatHang.setLayout(gbl_panel_BoLocPhieuDatHang);
+
+
+        int yPos = 0; // Vị trí hàng hiện tại
+
+        // Hàng 1: Mã phiếu
+        JLabel lblMaPhieu = new JLabel("Mã phiếu:");
+        lblMaPhieu.setFont(FONT_LABEL_BOLD); lblMaPhieu.setForeground(COLOR_TEXT_DARK);
+        GridBagConstraints gbc_lblMaPhieu = new GridBagConstraints(); // Object riêng
+        gbc_lblMaPhieu.insets = new Insets(8, 10, 8, 10);
+        gbc_lblMaPhieu.fill = GridBagConstraints.HORIZONTAL;
+        gbc_lblMaPhieu.anchor = GridBagConstraints.EAST;
+        gbc_lblMaPhieu.gridx = 0;
+        gbc_lblMaPhieu.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(lblMaPhieu, gbc_lblMaPhieu);
+
+        txtMaPhieu_TKNCC = new JTextField();
+        txtMaPhieu_TKNCC.setFont(FONT_TEXT_FIELD);
+        GridBagConstraints gbc_txtMaPhieu_TKNCC = new GridBagConstraints(); // Object riêng
+        gbc_txtMaPhieu_TKNCC.insets = new Insets(8, 10, 8, 10);
+        gbc_txtMaPhieu_TKNCC.fill = GridBagConstraints.HORIZONTAL;
+        gbc_txtMaPhieu_TKNCC.gridx = 1;
+        gbc_txtMaPhieu_TKNCC.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(txtMaPhieu_TKNCC, gbc_txtMaPhieu_TKNCC);
+
+        // Hàng 1: Nhà cung cấp
+        JLabel lblNhaCungCap = new JLabel("Nhà cung cấp:");
+        lblNhaCungCap.setFont(FONT_LABEL_BOLD); lblNhaCungCap.setForeground(COLOR_TEXT_DARK);
+        GridBagConstraints gbc_lblNhaCungCap = new GridBagConstraints(); // Object riêng
+        gbc_lblNhaCungCap.anchor = GridBagConstraints.EAST;
+        gbc_lblNhaCungCap.insets = new Insets(8, 10, 8, 10);
+        gbc_lblNhaCungCap.gridx = 2;
+        gbc_lblNhaCungCap.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(lblNhaCungCap, gbc_lblNhaCungCap);
+
+        cboNCC_TKNCC = new JComboBox<String>();
+        cboNCC_TKNCC.setFont(FONT_TEXT_FIELD);
+        cboNCC_TKNCC.addItem("Tất cả"); 
+        GridBagConstraints gbc_cboNCC_TKNCC = new GridBagConstraints(); // Object riêng
+        gbc_cboNCC_TKNCC.insets = new Insets(8, 10, 8, 10);
+        gbc_cboNCC_TKNCC.fill = GridBagConstraints.HORIZONTAL;
+        gbc_cboNCC_TKNCC.gridx = 3;
+        gbc_cboNCC_TKNCC.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(cboNCC_TKNCC, gbc_cboNCC_TKNCC);
+
+        yPos++; // Sang hàng 2
+
+        // Hàng 2: Trạng thái
+        JLabel lblTrangThaiPDH = new JLabel("Trạng thái:");
+        lblTrangThaiPDH.setFont(FONT_LABEL_BOLD); lblTrangThaiPDH.setForeground(COLOR_TEXT_DARK);
+        GridBagConstraints gbc_lblTrangThaiPDH = new GridBagConstraints(); // Object riêng
+        gbc_lblTrangThaiPDH.anchor = GridBagConstraints.EAST;
+        gbc_lblTrangThaiPDH.insets = new Insets(8, 10, 8, 10);
+        gbc_lblTrangThaiPDH.gridx = 0;
+        gbc_lblTrangThaiPDH.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(lblTrangThaiPDH, gbc_lblTrangThaiPDH);
+
+        cboTrangThai_TKNCC_PDH = new JComboBox<String>();
+        cboTrangThai_TKNCC_PDH.setFont(FONT_TEXT_FIELD);
+        cboTrangThai_TKNCC_PDH.setModel(new DefaultComboBoxModel<>(new String[] {"Tất cả", "Đã đặt hàng", "Đã nhập kho", "Đã hủy"}));
+        GridBagConstraints gbc_cboTrangThai_TKNCC_PDH = new GridBagConstraints(); // Object riêng
+        gbc_cboTrangThai_TKNCC_PDH.insets = new Insets(8, 10, 8, 10);
+        gbc_cboTrangThai_TKNCC_PDH.fill = GridBagConstraints.HORIZONTAL;
+        gbc_cboTrangThai_TKNCC_PDH.gridx = 1;
+        gbc_cboTrangThai_TKNCC_PDH.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(cboTrangThai_TKNCC_PDH, gbc_cboTrangThai_TKNCC_PDH);
+
+        // Hàng 2: Từ ngày
+        JLabel lblTuNgay = new JLabel("Từ ngày:");
+        lblTuNgay.setFont(FONT_LABEL_BOLD); lblTuNgay.setForeground(COLOR_TEXT_DARK);
+        GridBagConstraints gbc_lblTuNgay = new GridBagConstraints(); // Object riêng
+        gbc_lblTuNgay.anchor = GridBagConstraints.EAST;
+        gbc_lblTuNgay.insets = new Insets(8, 10, 8, 10);
+        gbc_lblTuNgay.gridx = 2;
+        gbc_lblTuNgay.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(lblTuNgay, gbc_lblTuNgay);
+
+        dateChooserTuNgay_TKNCC = new JDateChooser();
+        dateChooserTuNgay_TKNCC.setFont(FONT_TEXT_FIELD);
+        dateChooserTuNgay_TKNCC.setDateFormatString("dd/MM/yyyy");
+        GridBagConstraints gbc_dateChooserTuNgay_TKNCC = new GridBagConstraints(); // Object riêng
+        gbc_dateChooserTuNgay_TKNCC.insets = new Insets(8, 10, 8, 10);
+        gbc_dateChooserTuNgay_TKNCC.fill = GridBagConstraints.HORIZONTAL;
+        gbc_dateChooserTuNgay_TKNCC.gridx = 3;
+        gbc_dateChooserTuNgay_TKNCC.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(dateChooserTuNgay_TKNCC, gbc_dateChooserTuNgay_TKNCC);
+
+        yPos++; // Sang hàng 3
+
+        // Hàng 3: Đến ngày
+        JLabel lblDenNgay = new JLabel("Đến ngày:");
+        lblDenNgay.setFont(FONT_LABEL_BOLD); lblDenNgay.setForeground(COLOR_TEXT_DARK);
+        GridBagConstraints gbc_lblDenNgay = new GridBagConstraints(); // Object riêng
+        gbc_lblDenNgay.anchor = GridBagConstraints.EAST;
+        gbc_lblDenNgay.insets = new Insets(8, 10, 8, 10);
+        gbc_lblDenNgay.gridx = 2;
+        gbc_lblDenNgay.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(lblDenNgay, gbc_lblDenNgay);
+
+        dateChooserDenNgay_TKNCC = new JDateChooser();
+        dateChooserDenNgay_TKNCC.setFont(FONT_TEXT_FIELD);
+        dateChooserDenNgay_TKNCC.setDateFormatString("dd/MM/yyyy");
+        GridBagConstraints gbc_dateChooserDenNgay_TKNCC = new GridBagConstraints(); // Object riêng
+        gbc_dateChooserDenNgay_TKNCC.insets = new Insets(8, 10, 8, 10);
+        gbc_dateChooserDenNgay_TKNCC.fill = GridBagConstraints.HORIZONTAL;
+        gbc_dateChooserDenNgay_TKNCC.gridx = 3;
+        gbc_dateChooserDenNgay_TKNCC.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(dateChooserDenNgay_TKNCC, gbc_dateChooserDenNgay_TKNCC);
+
+        yPos++; // Sang hàng 4
+
+        // Hàng 4: Tổng tiền 
+        JLabel lblTongTien_TKNCC = new JLabel("Tổng tiền:");
+        lblTongTien_TKNCC.setFont(FONT_LABEL_BOLD); lblTongTien_TKNCC.setForeground(COLOR_TEXT_DARK);
+        GridBagConstraints gbc_lblTongTien_TKNCC = new GridBagConstraints(); // Object riêng
+        gbc_lblTongTien_TKNCC.anchor = GridBagConstraints.EAST;
+        gbc_lblTongTien_TKNCC.insets = new Insets(8, 10, 8, 10);
+        gbc_lblTongTien_TKNCC.gridx = 0;
+        gbc_lblTongTien_TKNCC.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(lblTongTien_TKNCC, gbc_lblTongTien_TKNCC);
+
+        cboLoaiTongTien_TKNCC = new JComboBox<String>();
+        cboLoaiTongTien_TKNCC.setFont(FONT_TEXT_FIELD);
+        cboLoaiTongTien_TKNCC.setModel(new DefaultComboBoxModel<>(new String[] {"Bằng", "Lớn hơn", "Nhỏ hơn"}));
+        GridBagConstraints gbc_cboLoaiTongTien_TKNCC = new GridBagConstraints(); // Object riêng
+        gbc_cboLoaiTongTien_TKNCC.insets = new Insets(8, 10, 8, 10);
+        gbc_cboLoaiTongTien_TKNCC.fill = GridBagConstraints.HORIZONTAL;
+        gbc_cboLoaiTongTien_TKNCC.gridx = 1;
+        gbc_cboLoaiTongTien_TKNCC.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(cboLoaiTongTien_TKNCC, gbc_cboLoaiTongTien_TKNCC);
+
+        txtTongTien_TKNCC = new JTextField();
+        txtTongTien_TKNCC.setFont(FONT_TEXT_FIELD);
+        GridBagConstraints gbc_txtTongTien_TKNCC = new GridBagConstraints(); // Object riêng
+        gbc_txtTongTien_TKNCC.gridwidth = 2; // Kéo dài
+        gbc_txtTongTien_TKNCC.insets = new Insets(8, 10, 8, 10);
+        gbc_txtTongTien_TKNCC.fill = GridBagConstraints.HORIZONTAL;
+        gbc_txtTongTien_TKNCC.gridx = 2;
+        gbc_txtTongTien_TKNCC.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(txtTongTien_TKNCC, gbc_txtTongTien_TKNCC);
+
+        yPos++; // Sang hàng 5
+
+        // Hàng 5: Nút "Làm mới bộ lọc"
+        btnLamMoiBoLoc_PDH = new JButton("Làm mới bộ lọc");
+        btnLamMoiBoLoc_PDH.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnLamMoiBoLoc_PDH, COLOR_TEXT_MUTED); 
+        GridBagConstraints gbc_btnLamMoiBoLoc_PDH = new GridBagConstraints(); // Object riêng
+        gbc_btnLamMoiBoLoc_PDH.anchor = GridBagConstraints.EAST;
+        gbc_btnLamMoiBoLoc_PDH.insets = new Insets(8, 10, 8, 10);
+        gbc_btnLamMoiBoLoc_PDH.gridx = 3;
+        gbc_btnLamMoiBoLoc_PDH.gridy = yPos;
+        panel_BoLocPhieuDatHang.add(btnLamMoiBoLoc_PDH, gbc_btnLamMoiBoLoc_PDH);
+
+
+        // --- BẢNG HIỂN THỊ DANH SÁCH PHIẾU ĐẶT HÀNG ---
+        JScrollPane scrollPane_PhieuDatHangNCC = new JScrollPane();
+        scrollPane_PhieuDatHangNCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        panel_QLPhieuDatHangNCC.add(scrollPane_PhieuDatHangNCC, BorderLayout.CENTER);
+
+        table_DSPDDH = new JTable() {
+             @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                    c.setForeground(this.getForeground());
+                } else {
+                    c.setBackground(COLOR_PRIMARY_BLUE);
+                }
+                return c;
+            }
+        };
+        applyCommonTableStyling(table_DSPDDH); 
+        table_DSPDDH.setModel(new DefaultTableModel(
+            new Object[][] {
+                {null, null, null, null, null, null},
+            },
+            new String[] {
+                "Mã phiếu", "Mã nhà cung cấp", "Tên nhà cung cấp", "Ngày đặt", "Tổng tiền", "Trạng thái"
+            }
+        ) {
+            boolean[] columnEditables = new boolean[] {
+                false, false, false, false, false, false 
+            };
+            public boolean isCellEditable(int row, int column) {
+                return columnEditables[column];
+            }
+        });
+        scrollPane_PhieuDatHangNCC.setViewportView(table_DSPDDH);
+
+
+        // --- PANEL NÚT CHỨC NĂNG ---
+        JPanel panel_btnPhieuDatHangNCC = new JPanel();
+        panel_btnPhieuDatHangNCC.setBackground(COLOR_BACKGROUND_PRIMARY);
+        panel_btnPhieuDatHangNCC.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); 
+        panel_QLPhieuDatHangNCC.add(panel_btnPhieuDatHangNCC, BorderLayout.SOUTH);
+
+        btnTaoMoiPhieu = new JButton("Tạo mới");
+        btnTaoMoiPhieu.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnTaoMoiPhieu, COLOR_ACCENT_GREEN); 
+        panel_btnPhieuDatHangNCC.add(btnTaoMoiPhieu);
+
+        btnXemSuaPhieu = new JButton("Xem/Sửa");
+        btnXemSuaPhieu.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnXemSuaPhieu, COLOR_PRIMARY_BLUE); 
+        panel_btnPhieuDatHangNCC.add(btnXemSuaPhieu);
+
+        btnHuyPhieu = new JButton("Hủy phiếu"); 
+        btnHuyPhieu.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnHuyPhieu, COLOR_DANGER_RED); 
+        panel_btnPhieuDatHangNCC.add(btnHuyPhieu);
+
+        // === HẾT KHỐI CODE panel_QLPhieuDatHangNCC ===
         
-        JPanel panel_1 = new JPanel();
-        panel_QLPhieuDatHangNCC.add(panel_1, BorderLayout.SOUTH);
         
-        JButton btnNewButton = new JButton("Tạo mới");
-        btnNewButton.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel_1.add(btnNewButton);
         
-        JButton btnNewButton_1 = new JButton("Xem/Sửa");
-        btnNewButton_1.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel_1.add(btnNewButton_1);
         
-        JButton btnNewButton_2 = new JButton("Xóa");
-        btnNewButton_2.setFont(new Font("Times New Roman", Font.BOLD, 20));
-        panel_1.add(btnNewButton_2);
         
      // ===== PANEL QUẢN LÝ TÀI KHOẢN (ADMIN) =====
         JPanel pn_QuanLyTaiKhoan = new JPanel();
@@ -5322,10 +5592,10 @@ public class TrangChu_GUI extends JFrame{
             btnQuanLyPhieuThu = new JButton("QL Phiếu Thu (Design)"); 
         } else {
             // (Bạn có thể đổi "Quản Lý Phiếu Thu" thành tên bạn muốn)
-            btnQuanLyPhieuThu = createSubmenuButton("Quản Lý Phiếu Thu"); 
+            btnQuanLyPhieuThu = createSubmenuButton("Phiếu đặt hàng"); 
             btnQuanLyPhieuThu.addActionListener(e -> { 
                 CardLayout cl = (CardLayout) maincontent.getLayout();
-                cl.show(maincontent, "quanLyPhieuThuNCC"); // Tên card bạn cung cấp
+                cl.show(maincontent, "quanLyPhieuDatHangNCC"); // Tên card bạn cung cấp
             });
         }
         submenuPanel.add(btnQuanLyPhieuThu);

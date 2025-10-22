@@ -128,6 +128,45 @@ CREATE TABLE ChiTietHoaDon (
 );
 GO
 
+
+GO
+-- BẢNG PHIẾU ĐẶT HÀNG
+CREATE TABLE PhieuDatHang (
+    MaPhieu VARCHAR(20) PRIMARY KEY,       -- Mã phiếu (Ví dụ: PDH001)
+    MaNCC VARCHAR(20) NOT NULL,          -- Khóa ngoại đến NhaCungCap
+    MaNhanVien VARCHAR(20) NOT NULL,     -- Khóa ngoại đến NhanVien (người lập phiếu)
+    NgayDat DATE NOT NULL DEFAULT GETDATE(), -- Ngày tạo phiếu (mặc định là ngày hiện tại)
+    TongTien FLOAT NOT NULL DEFAULT 0 CHECK (TongTien >= 0), -- Tổng tiền của phiếu (nên tính từ chi tiết)
+    TrangThai NVARCHAR(50) NOT NULL DEFAULT N'Đã đặt hàng', -- Trạng thái (Ví dụ: 'Đã đặt hàng', 'Đã nhập kho', 'Đã hủy')
+    GhiChu NVARCHAR(255),                  -- Ghi chú thêm cho phiếu
+
+    -- Khai báo khóa ngoại
+    FOREIGN KEY (MaNCC) REFERENCES NhaCungCap(maNhaCungCap),
+    FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNV)
+);
+GO
+
+GO
+-- BẢNG CHI TIẾT PHIẾU ĐẶT HÀNG
+CREATE TABLE ChiTietPhieuDatHang (
+    MaPhieu VARCHAR(20),                   -- Khóa ngoại đến PhieuDatHang
+    MaThuoc VARCHAR(20),                   -- Khóa ngoại đến Thuoc
+    SoLuong INT NOT NULL CHECK (SoLuong > 0), -- Số lượng thuốc đặt
+    DonGia FLOAT NOT NULL CHECK (DonGia >= 0), -- Đơn giá tại thời điểm đặt (có thể khác giá nhập/bán hiện tại)
+    ThanhTien AS (SoLuong * DonGia),         -- Cột tính toán tự động (SQL Server)
+
+    -- Khóa chính gồm Mã phiếu và Mã thuốc (đảm bảo mỗi thuốc chỉ xuất hiện 1 lần trong 1 phiếu)
+    PRIMARY KEY (MaPhieu, MaThuoc), 
+
+    -- Khai báo khóa ngoại
+    FOREIGN KEY (MaPhieu) REFERENCES PhieuDatHang(MaPhieu) ON DELETE CASCADE, -- Nếu xóa phiếu thì xóa luôn chi tiết
+    FOREIGN KEY (MaThuoc) REFERENCES Thuoc(MaThuoc)
+);
+GO
+GO
+
+GO
+
 --------------------------------------------------
 -- CHÈN DỮ LIỆU MẪU
 --------------------------------------------------
@@ -207,4 +246,61 @@ GO
 INSERT INTO ChiTietHoaDon(maHD, maThuoc, soLuong) VALUES
 ('HD001', 'T01', 20),
 ('HD001', 'T05', 10);
+GO
+
+
+
+
+-- PHIEU DAT HANG
+-- Phiếu 1: Do NV003 (Nhân viên kho) đặt hàng từ NCC01 (DHG), trạng thái 'Đã đặt hàng'
+INSERT INTO PhieuDatHang (MaPhieu, MaNCC, MaNhanVien, NgayDat, TrangThai, GhiChu) VALUES
+('PDH001', 'NCC01', 'NV003', '2025-10-20', N'Đã đặt hàng', N'Yêu cầu giao hàng sớm');
+GO
+
+-- Phiếu 2: Do NV001 (Quản lý) đặt hàng từ NCC02 (Traphaco), trạng thái 'Đã nhập kho'
+INSERT INTO PhieuDatHang (MaPhieu, MaNCC, MaNhanVien, NgayDat, TrangThai, GhiChu) VALUES
+('PDH002', 'NCC02', 'NV001', '2025-10-15', N'Đã nhập kho', NULL);
+GO
+
+-- Phiếu 3: Do NV003 đặt từ NCC01 nhưng đã hủy
+INSERT INTO PhieuDatHang (MaPhieu, MaNCC, MaNhanVien, NgayDat, TrangThai, GhiChu) VALUES
+('PDH003', 'NCC01', 'NV003', '2025-10-22', N'Đã hủy', N'Hủy do đặt nhầm số lượng');
+GO
+
+
+-- CHI TIET PHIEU DAT HANG
+
+-- Chi tiết cho PDH001 (Từ NCC01)
+INSERT INTO ChiTietPhieuDatHang (MaPhieu, MaThuoc, SoLuong, DonGia) VALUES
+('PDH001', 'T01', 50, 1000), -- Paracetamol 500mg, giá nhập 1000
+('PDH001', 'T02', 100, 1800), -- Panadol Extra, giá nhập 1800
+('PDH001', 'T05', 200, 800);  -- Vitamin C 500mg, giá nhập 800
+GO
+
+-- Chi tiết cho PDH002 (Từ NCC02)
+INSERT INTO ChiTietPhieuDatHang (MaPhieu, MaThuoc, SoLuong, DonGia) VALUES
+('PDH002', 'T03', 100, 1500), -- Amoxicillin 500mg, giá nhập 1500
+('PDH002', 'T04', 30, 6000),  -- Augmentin 625mg, giá nhập 6000
+('PDH002', 'T07', 50, 1000);  -- Aspirin 81mg, giá nhập 1000
+GO
+
+-- Chi tiết cho PDH003 (Đã hủy, vẫn nên có chi tiết để biết đã đặt gì)
+INSERT INTO ChiTietPhieuDatHang (MaPhieu, MaThuoc, SoLuong, DonGia) VALUES
+('PDH003', 'T01', 500, 1000); -- Đặt nhầm 500 viên Paracetamol
+GO
+
+
+-- CẬP NHẬT TỔNG TIỀN CHO CÁC PHIẾU (SAU KHI ĐÃ INSERT CHI TIẾT)
+-- Cách này thủ công, trong ứng dụng bạn nên tính tổng khi lưu phiếu
+
+-- Tính tổng cho PDH001: (50*1000) + (100*1800) + (200*800) = 50000 + 180000 + 160000 = 390000
+UPDATE PhieuDatHang SET TongTien = 390000 WHERE MaPhieu = 'PDH001';
+GO
+
+-- Tính tổng cho PDH002: (100*1500) + (30*6000) + (50*1000) = 150000 + 180000 + 50000 = 380000
+UPDATE PhieuDatHang SET TongTien = 380000 WHERE MaPhieu = 'PDH002';
+GO
+
+-- Tính tổng cho PDH003: (500*1000) = 500000
+UPDATE PhieuDatHang SET TongTien = 500000 WHERE MaPhieu = 'PDH003';
 GO
