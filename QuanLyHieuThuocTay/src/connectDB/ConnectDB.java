@@ -7,8 +7,8 @@ import java.sql.SQLException;
 public class ConnectDB {
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=QLThuoc;encrypt=false;trustServerCertificate=true;";
     private static final String USER = "sa";
-//    private static final String PASSWORD = "sapassword";
-    private static final String PASSWORD = "310105";
+    private static final String PASSWORD = "sapassword";
+//    private static final String PASSWORD = "310105";
 
     /**
      * Phương thức này sẽ mở và trả về MỘT KẾT NỐI MỚI mỗi khi được gọi.

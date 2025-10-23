@@ -52,8 +52,6 @@ CREATE TABLE KhuyenMai (
     giaTri FLOAT NOT NULL,
     ngayBatDau DATE NOT NULL,
     ngayKetThuc DATE NOT NULL,
-    dieuKienApDung NVARCHAR(255),
-    phamViApDung NVARCHAR(255),
     soLuongToiDa INT,
     trangThai INT DEFAULT 1 CHECK (trangThai IN (0,1)) -- 1: Đang diễn ra, 0: Đã kết thúc
 );
@@ -162,8 +160,6 @@ CREATE TABLE ChiTietPhieuDatHang (
     FOREIGN KEY (MaPhieu) REFERENCES PhieuDatHang(MaPhieu) ON DELETE CASCADE, -- Nếu xóa phiếu thì xóa luôn chi tiết
     FOREIGN KEY (MaThuoc) REFERENCES Thuoc(MaThuoc)
 );
-GO
-GO
 
 GO
 
@@ -199,9 +195,12 @@ INSERT INTO KhachHang (maKH, tenKH, diaChi, sdt) VALUES
 GO
 
 -- KHUYEN MAI
-INSERT INTO KhuyenMai (maKM, tenChuongTrinh, giaTri, ngayBatDau, ngayKetThuc, trangThai) VALUES
-('KM01', N'Giảm giá 10% mừng khai trương', 10, '2025-10-01', '2025-10-31', 1),
-('KM02', N'Mua 2 tặng 1 cho nhóm Vitamin', 0, '2025-09-01', '2025-12-31', 1);
+INSERT INTO KhuyenMai (maKM, tenChuongTrinh, giaTri, ngayBatDau, ngayKetThuc, soLuongToiDa, trangThai)
+VALUES
+('KM001', N'Giảm giá Black Friday', 15.0, '2025-11-20', '2025-11-30', 100, 1),
+('KM002', N'Chào mừng Lễ 2/9', 10.0, '2025-09-01', '2025-09-03', 50, 0),
+('KM003', N'Giảm giá cuối tuần (Tháng 10)', 5.0, '2025-10-20', '2025-10-27', NULL, 1),
+('KM004', N'Tri ân khách hàng', 20.0, '2025-12-01', '2025-12-20', 200, 1);
 GO
 
 -- THUE
