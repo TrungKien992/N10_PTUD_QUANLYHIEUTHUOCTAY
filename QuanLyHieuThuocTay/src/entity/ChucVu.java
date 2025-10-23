@@ -39,5 +39,16 @@ public class ChucVu {
 		return tenChucVu;
 	}
 	
-	
+	@Override
+	public boolean equals(Object obj) {
+	    if (this == obj) return true;
+	    if (obj == null || getClass() != obj.getClass()) return false;
+	    ChucVu other = (ChucVu) obj;
+	    return maChucVu != null && maChucVu.equals(other.maChucVu);
+	}
+
+	@Override
+	public int hashCode() {
+	    return maChucVu != null ? maChucVu.hashCode() : 0;
+	}
 }
