@@ -43,13 +43,11 @@ public class PhieuDatHang_Controller {
         this.thuocDAO = new thuoc_DAO();
         this.nhanVienDAO = new nhanVien_DAO();
 
-        // Giả sử lấy thông tin nhân viên đăng nhập ở đây
         // Tạm thời lấy NV001
         this.nhanVienHienTai = nhanVienDAO.getNhanVienTheoMa("NV001");
         if (this.nhanVienHienTai == null) {
              System.err.println("Lỗi: Không tìm thấy nhân viên mặc định NV001!");
-             // Có thể hiển thị lỗi hoặc dùng NV tạm
-             this.nhanVienHienTai = new NhanVien(); // Tạo NV rỗng để tránh NullPointerException
+             this.nhanVienHienTai = new NhanVien(); 
              this.nhanVienHienTai.setMaNV("UNKNOWN");
         }
 
@@ -91,7 +89,12 @@ public class PhieuDatHang_Controller {
 
         chiTietTamThoi.clear();
         phieuHienTai = new PhieuDatHang();
-        phieuHienTai.setMaPhieu(phieuDatHangDAO.generateNewMaPhieu());
+        
+        // --- ĐÃ SỬA ---
+        // Đổi tên hàm: generateNewMaPhieu -> taoMaPhieuMoi
+        phieuHienTai.setMaPhieu(phieuDatHangDAO.taoMaPhieuMoi());
+        // --- HẾT SỬA ---
+        
         phieuHienTai.setNgayDat(LocalDate.now());
         phieuHienTai.setTrangThai("Đã đặt hàng");
         phieuHienTai.setNhanVien(nhanVienHienTai);
@@ -109,9 +112,16 @@ public class PhieuDatHang_Controller {
         }
         String maPhieu = trangChuGUI.table_DSPDDH.getValueAt(selectedRow, 0).toString();
 
-        phieuHienTai = phieuDatHangDAO.getPhieuDatHangTheoMa(maPhieu);
+        // --- ĐÃ SỬA ---
+        // Đổi tên hàm: getPhieuDatHangTheoMa -> layPhieuDatHangTheoMa
+        phieuHienTai = phieuDatHangDAO.layPhieuDatHangTheoMa(maPhieu);
+        // --- HẾT SỬA ---
+        
         if (phieuHienTai != null) {
-             chiTietTamThoi = phieuDatHangDAO.getChiTietTheoMaPhieu(maPhieu);
+            // --- ĐÃ SỬA ---
+            // Đổi tên hàm: getChiTietTheoMaPhieu -> layChiTietTheoMaPhieu
+            chiTietTamThoi = phieuDatHangDAO.layChiTietTheoMaPhieu(maPhieu);
+            // --- HẾT SỬA ---
         } else {
              JOptionPane.showMessageDialog(trangChuGUI, "Không tìm thấy dữ liệu cho mã phiếu: " + maPhieu, "Lỗi", JOptionPane.ERROR_MESSAGE);
              return;
@@ -120,11 +130,20 @@ public class PhieuDatHang_Controller {
         DialogChiTietPhieuDatHangNCC dialog = new DialogChiTietPhieuDatHangNCC(trangChuGUI);
         loadDuLieuChoDialogSua(dialog);
         registerDialogEvents(dialog);
+        
+        // Nâng cao: Vô hiệu hóa nút Lưu nếu phiếu đã bị hủy
+        if (phieuHienTai.getTrangThai().equalsIgnoreCase("Đã hủy")) {
+            dialog.btnLuu.setEnabled(false);
+            dialog.btnThemThuocVaoBang.setEnabled(false);
+            dialog.btnXoaThuocKhoiBang.setEnabled(false);
+            dialog.setTitle("Chi tiết Phiếu Đặt Hàng (Đã hủy - Chỉ xem)");
+        }
+        
         dialog.setVisible(true);
     }
 
     // === HÀM LOAD DỮ LIỆU CHO DIALOG ===
-
+    // (Không có thay đổi ở các hàm này)
     private void loadDuLieuChoDialogMoi(DialogChiTietPhieuDatHangNCC dialog) {
         dialog.txtMaPhieu.setText(phieuHienTai.getMaPhieu());
         dialog.dateChooserNgayDat.setDate(java.sql.Date.valueOf(phieuHienTai.getNgayDat()));
@@ -161,11 +180,13 @@ public class PhieuDatHang_Controller {
 
     private void loadNhaCungCapComboBoxChoDialog(DialogChiTietPhieuDatHangNCC dialog) {
          try {
-            List<NhaCungCap> dsNCC = nhaCungCapDAO.getAllNhaCungCap();
-            dialog.cboNhaCungCap.removeAllItems();
-            for (NhaCungCap ncc : dsNCC) {
-                dialog.cboNhaCungCap.addItem(ncc.getTenNhaCungCap());
-            }
+             // Giả sử nhaCungCapDAO.getAllNhaCungCap() đã được đổi tên (nếu có)
+             // Tạm giữ tên này vì bạn chưa gửi file nhaCungCap_DAO
+             List<NhaCungCap> dsNCC = nhaCungCapDAO.getAllNhaCungCap(); 
+             dialog.cboNhaCungCap.removeAllItems();
+             for (NhaCungCap ncc : dsNCC) {
+                 dialog.cboNhaCungCap.addItem(ncc.getTenNhaCungCap());
+             }
          } catch (Exception e) {
              e.printStackTrace();
              JOptionPane.showMessageDialog(dialog, "Lỗi tải danh sách Nhà Cung Cấp!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -174,11 +195,13 @@ public class PhieuDatHang_Controller {
 
     private void loadThuocComboBoxChoDialog(DialogChiTietPhieuDatHangNCC dialog) {
          try {
-            List<Thuoc> dsThuoc = thuocDAO.getAllThuoc(); // Giả sử lấy thuốc đang kinh doanh
-            dialog.cboChonThuoc.removeAllItems();
-             for (Thuoc t : dsThuoc) {
-                 dialog.cboChonThuoc.addItem(t.getTenThuoc() + " (" + t.getMaThuoc() + ")");
-             }
+             // Giả sử thuocDAO.getAllThuoc() đã được đổi tên (nếu có)
+             // Tạm giữ tên này vì bạn chưa gửi file thuoc_DAO
+             List<Thuoc> dsThuoc = thuocDAO.getAllThuoc(); 
+             dialog.cboChonThuoc.removeAllItems();
+              for (Thuoc t : dsThuoc) {
+                  dialog.cboChonThuoc.addItem(t.getTenThuoc() + " (" + t.getMaThuoc() + ")");
+              }
          } catch (Exception e) {
              e.printStackTrace();
              JOptionPane.showMessageDialog(dialog, "Lỗi tải danh sách Thuốc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -186,6 +209,7 @@ public class PhieuDatHang_Controller {
     }
 
     // === ĐĂNG KÝ SỰ KIỆN CHO CÁC NÚT BÊN TRONG DIALOG ===
+    // (Không có thay đổi)
     private void registerDialogEvents(DialogChiTietPhieuDatHangNCC dialog) {
         dialog.btnThemThuocVaoBang.addActionListener(e -> themThuocVaoBangTam(dialog));
         dialog.btnXoaThuocKhoiBang.addActionListener(e -> xoaThuocKhoiBangTam(dialog));
@@ -194,7 +218,7 @@ public class PhieuDatHang_Controller {
     }
 
     // === XỬ LÝ LOGIC BÊN TRONG DIALOG ===
-
+    // (Không có thay đổi)
     private void themThuocVaoBangTam(DialogChiTietPhieuDatHangNCC dialog) {
         try {
             if (dialog.cboChonThuoc.getSelectedIndex() == -1) {
@@ -206,8 +230,8 @@ public class PhieuDatHang_Controller {
             double donGia;
 
              try {
-                soLuong = Integer.parseInt(dialog.txtSoLuongThuoc.getText().trim());
-                if (soLuong <= 0) throw new NumberFormatException();
+                 soLuong = Integer.parseInt(dialog.txtSoLuongThuoc.getText().trim());
+                 if (soLuong <= 0) throw new NumberFormatException();
              } catch (NumberFormatException ex) {
                  JOptionPane.showMessageDialog(dialog, "Số lượng phải là số nguyên dương!", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
                  dialog.txtSoLuongThuoc.requestFocus();
@@ -224,7 +248,8 @@ public class PhieuDatHang_Controller {
             }
 
             String maThuoc = selectedThuocStr.substring(selectedThuocStr.lastIndexOf("(") + 1, selectedThuocStr.lastIndexOf(")"));
-            Thuoc thuoc = thuocDAO.getThuocTheoMa(maThuoc);
+            // Giả sử thuocDAO.getThuocTheoMa() đã được đổi tên (nếu có)
+            Thuoc thuoc = thuocDAO.getThuocTheoMa(maThuoc); 
 
             if (thuoc == null) {
                  JOptionPane.showMessageDialog(dialog, "Không tìm thấy thông tin thuốc với mã: " + maThuoc, "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -233,16 +258,16 @@ public class PhieuDatHang_Controller {
 
             boolean updated = false;
             for (ChiTietPhieuDatHang ct : chiTietTamThoi) {
-                if (ct.getThuoc().getMaThuoc().equals(maThuoc)) {
-                    ct.setSoLuong(ct.getSoLuong() + soLuong);
-                    ct.setDonGia(donGia); // Cập nhật đơn giá mới
-                    updated = true;
-                    break;
-                }
+                 if (ct.getThuoc().getMaThuoc().equals(maThuoc)) {
+                     ct.setSoLuong(ct.getSoLuong() + soLuong);
+                     ct.setDonGia(donGia); // Cập nhật đơn giá mới
+                     updated = true;
+                     break;
+                 }
             }
             if (!updated) {
-                ChiTietPhieuDatHang chiTietMoi = new ChiTietPhieuDatHang(phieuHienTai, thuoc, soLuong, donGia);
-                chiTietTamThoi.add(chiTietMoi);
+                 ChiTietPhieuDatHang chiTietMoi = new ChiTietPhieuDatHang(phieuHienTai, thuoc, soLuong, donGia);
+                 chiTietTamThoi.add(chiTietMoi);
             }
 
             capNhatBangChiTietDialog(dialog);
@@ -272,14 +297,14 @@ public class PhieuDatHang_Controller {
          double tongTienMoi = 0;
          for (ChiTietPhieuDatHang ct : chiTietTamThoi) {
              if(ct.getThuoc() != null) {
-                model.addRow(new Object[]{
-                    ct.getThuoc().getMaThuoc(),
-                    ct.getThuoc().getTenThuoc(),
-                    ct.getSoLuong(),
-                    currencyFormatter.format(ct.getDonGia()),
-                    currencyFormatter.format(ct.getThanhTien())
-                });
-                tongTienMoi += ct.getThanhTien();
+                 model.addRow(new Object[]{
+                     ct.getThuoc().getMaThuoc(),
+                     ct.getThuoc().getTenThuoc(),
+                     ct.getSoLuong(),
+                     currencyFormatter.format(ct.getDonGia()),
+                     currencyFormatter.format(ct.getThanhTien()) // Entity đã tự tính
+                 });
+                 tongTienMoi += ct.getThanhTien();
              }
          }
          dialog.txtTongTien.setText(currencyFormatter.format(tongTienMoi));
@@ -295,53 +320,59 @@ public class PhieuDatHang_Controller {
 
     private void luuPhieuDatHang(DialogChiTietPhieuDatHangNCC dialog) {
         try {
-             if (dialog.cboNhaCungCap.getSelectedIndex() == -1) {
-                 JOptionPane.showMessageDialog(dialog, "Vui lòng chọn nhà cung cấp!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                 return;
-             }
-            String tenNccChon = dialog.cboNhaCungCap.getSelectedItem().toString();
-            NhaCungCap nccChon = nhaCungCapDAO.getNhaCungCapTheoTen(tenNccChon);
-             if (nccChon == null) {
-                 JOptionPane.showMessageDialog(dialog, "Nhà cung cấp không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                 return;
-             }
-             Date ngayDatUtil = dialog.dateChooserNgayDat.getDate();
-            if (ngayDatUtil == null) {
-                 JOptionPane.showMessageDialog(dialog, "Vui lòng chọn ngày đặt!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                 return;
-            }
-
-            phieuHienTai.setNhaCungCap(nccChon);
-            phieuHienTai.setNgayDat(ngayDatUtil.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-            phieuHienTai.setGhiChu(dialog.txtGhiChu.getText().trim());
-            // Nhân viên đã được gán khi mở dialog
-
-            if (chiTietTamThoi.isEmpty()) {
-                 JOptionPane.showMessageDialog(dialog, "Phiếu đặt hàng phải có ít nhất một chi tiết thuốc!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                 return;
-            }
-            phieuHienTai.setChiTietList(new ArrayList<>(chiTietTamThoi));
-
-            phieuHienTai.setTongTien(tinhTongTienTamThoi());
-
-            boolean success = false;
-            boolean isUpdating = phieuDatHangDAO.getPhieuDatHangTheoMa(phieuHienTai.getMaPhieu()) != null;
-
-             if (isUpdating) {
-                 // success = phieuDatHangDAO.updatePhieuDatHang(phieuHienTai); // Cần hàm update
-                 JOptionPane.showMessageDialog(dialog, "Chức năng cập nhật chưa được cài đặt!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                 success = false;
-             } else {
-                 success = phieuDatHangDAO.themPhieuDatHang(phieuHienTai);
+              if (dialog.cboNhaCungCap.getSelectedIndex() == -1) {
+                  JOptionPane.showMessageDialog(dialog, "Vui lòng chọn nhà cung cấp!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                  return;
+              }
+             String tenNccChon = dialog.cboNhaCungCap.getSelectedItem().toString();
+             // Giả sử nhaCungCapDAO.getNhaCungCapTheoTen() đã được đổi tên (nếu có)
+             NhaCungCap nccChon = nhaCungCapDAO.getNhaCungCapTheoTen(tenNccChon);
+              if (nccChon == null) {
+                  JOptionPane.showMessageDialog(dialog, "Nhà cung cấp không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                  return;
+              }
+              Date ngayDatUtil = dialog.dateChooserNgayDat.getDate();
+             if (ngayDatUtil == null) {
+                  JOptionPane.showMessageDialog(dialog, "Vui lòng chọn ngày đặt!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                  return;
              }
 
-            if (success) {
+             phieuHienTai.setNhaCungCap(nccChon);
+             phieuHienTai.setNgayDat(ngayDatUtil.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+             phieuHienTai.setGhiChu(dialog.txtGhiChu.getText().trim());
+             // Nhân viên đã được gán
+
+             if (chiTietTamThoi.isEmpty()) {
+                  JOptionPane.showMessageDialog(dialog, "Phiếu đặt hàng phải có ít nhất một chi tiết thuốc!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                  return;
+             }
+             phieuHienTai.setChiTietList(new ArrayList<>(chiTietTamThoi));
+
+             phieuHienTai.setTongTien(tinhTongTienTamThoi());
+
+             boolean success = false;
+             
+             // --- ĐÃ SỬA ---
+             // Đổi tên hàm: getPhieuDatHangTheoMa -> layPhieuDatHangTheoMa
+             boolean isUpdating = phieuDatHangDAO.layPhieuDatHangTheoMa(phieuHienTai.getMaPhieu()) != null;
+
+              if (isUpdating) {
+                  // --- ĐÃ SỬA ---
+                  // Đã kích hoạt chức năng Cập nhật và đổi tên hàm
+                  success = phieuDatHangDAO.capNhatPhieuDatHang(phieuHienTai); 
+              } else {
+                  // Hàm themPhieuDatHang đã có tên tiếng Việt
+                  success = phieuDatHangDAO.themPhieuDatHang(phieuHienTai);
+              }
+
+             if (success) {
                  JOptionPane.showMessageDialog(dialog, (isUpdating ? "Cập nhật" : "Lưu") + " phiếu đặt hàng thành công!");
                  dialog.dispose();
-                 loadDataToPhieuDatHangTable();
-            } else if (!isUpdating) { // Chỉ báo lỗi nếu THÊM MỚI thất bại
-                 JOptionPane.showMessageDialog(dialog, "Lưu phiếu đặt hàng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
+                 loadDataToPhieuDatHangTable(); // Tải lại bảng chính
+             } else { // --- ĐÃ SỬA --- (Bắt lỗi cho cả Thêm và Cập nhật)
+                 JOptionPane.showMessageDialog(dialog, (isUpdating ? "Cập nhật" : "Lưu") + " phiếu đặt hàng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+             }
+             // --- HẾT SỬA ---
 
         } catch (Exception ex) {
              ex.printStackTrace();
@@ -358,6 +389,13 @@ public class PhieuDatHang_Controller {
         }
         String maPhieu = trangChuGUI.table_DSPDDH.getValueAt(selectedRow, 0).toString();
         String tenNCC = trangChuGUI.table_DSPDDH.getValueAt(selectedRow, 2).toString();
+        String trangThai = trangChuGUI.table_DSPDDH.getValueAt(selectedRow, 5).toString();
+
+        // Kiểm tra xem phiếu đã bị hủy chưa
+        if (trangThai.equalsIgnoreCase("Đã hủy")) {
+            JOptionPane.showMessageDialog(trangChuGUI, "Phiếu này đã bị hủy trước đó.", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
 
         int confirm = JOptionPane.showConfirmDialog(trangChuGUI,
             "Bạn có chắc muốn hủy phiếu '" + maPhieu + "' của nhà cung cấp '" + tenNCC + "' không?",
@@ -365,10 +403,11 @@ public class PhieuDatHang_Controller {
             JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
+             // Hàm huyPhieuDatHang đã có tên tiếng Việt
              boolean result = phieuDatHangDAO.huyPhieuDatHang(maPhieu);
              if (result) {
-                JOptionPane.showMessageDialog(trangChuGUI, "Hủy phiếu '" + maPhieu + "' thành công.");
-                loadDataToPhieuDatHangTable();
+                 JOptionPane.showMessageDialog(trangChuGUI, "Hủy phiếu '" + maPhieu + "' thành công.");
+                 loadDataToPhieuDatHangTable();
              } else {
                  JOptionPane.showMessageDialog(trangChuGUI, "Hủy phiếu thất bại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
              }
@@ -385,28 +424,44 @@ public class PhieuDatHang_Controller {
         trangChuGUI.txtTongTien_TKNCC.setText("");
         loadDataToPhieuDatHangTable();
     }
-
+    
     private void loadDataToPhieuDatHangTable() {
-        DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_DSPDDH.getModel();
-        model.setRowCount(0);
-        List<PhieuDatHang> dsPhieu = phieuDatHangDAO.getAllPhieuDatHang();
+        try { 
+            DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_DSPDDH.getModel();
+            model.setRowCount(0);
+            
+            // --- ĐÃ SỬA ---
+            // Đổi tên hàm: getAllPhieuDatHang -> layTatCaPhieuDatHang
+            List<PhieuDatHang> dsPhieu = phieuDatHangDAO.layTatCaPhieuDatHang(); 
+            // --- HẾT SỬA ---
 
-        for (PhieuDatHang pdh : dsPhieu) {
-            model.addRow(new Object[]{
-                pdh.getMaPhieu(),
-                (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getMaNhaCungCap() : "",
-                (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getTenNhaCungCap() : "",
-                (pdh.getNgayDat() != null) ? pdh.getNgayDat().toString() : "", // Có thể cần định dạng ngày dd/MM/yyyy
-                currencyFormatter.format(pdh.getTongTien()),
-                pdh.getTrangThai()
-            });
+            for (PhieuDatHang pdh : dsPhieu) {
+                model.addRow(new Object[]{
+                    pdh.getMaPhieu(),
+                    (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getMaNhaCungCap() : "",
+                    (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getTenNhaCungCap() : "",
+                    (pdh.getNgayDat() != null) ? pdh.getNgayDat().toString() : "", // Có thể cần định dạng ngày dd/MM/yyyy
+                    currencyFormatter.format(pdh.getTongTien()),
+                    pdh.getTrangThai()
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(trangChuGUI, 
+                "Lỗi nghiêm trọng khi tải dữ liệu Phiếu Đặt Hàng từ CSDL.\nChi tiết: " + e.getMessage(), 
+                "Lỗi CSDL", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void filterPhieuDatHangTable() {
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_DSPDDH.getModel();
         model.setRowCount(0);
-        List<PhieuDatHang> dsPhieu = phieuDatHangDAO.getAllPhieuDatHang();
+        
+        // --- ĐÃ SỬA ---
+        // Đổi tên hàm: getAllPhieuDatHang -> layTatCaPhieuDatHang
+        List<PhieuDatHang> dsPhieu = phieuDatHangDAO.layTatCaPhieuDatHang();
+        // --- HẾT SỬA ---
 
         String maPhieuFilter = trangChuGUI.txtMaPhieu_TKNCC.getText().trim().toLowerCase();
         String tenNccFilter = trangChuGUI.cboNCC_TKNCC.getSelectedItem().toString();
@@ -421,7 +476,7 @@ public class PhieuDatHang_Controller {
         Double tongTienFilter = null;
         try {
             if (!tongTienStr.isEmpty()) {
-                tongTienFilter = Double.parseDouble(tongTienStr.replace(",", "").replace(" VNĐ", "")); // Bỏ định dạng tiền
+                tongTienFilter = Double.parseDouble(tongTienStr.replace(",", "").replace(" VNĐ", "")); 
             }
         } catch (NumberFormatException e) { /* Bỏ qua */ }
 
@@ -457,19 +512,20 @@ public class PhieuDatHang_Controller {
 
             if (match) {
                  model.addRow(new Object[]{
-                    pdh.getMaPhieu(),
-                    (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getMaNhaCungCap() : "",
-                    (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getTenNhaCungCap() : "",
-                    (pdh.getNgayDat() != null) ? pdh.getNgayDat().toString() : "",
-                    currencyFormatter.format(pdh.getTongTien()),
-                    pdh.getTrangThai()
-                });
+                     pdh.getMaPhieu(),
+                     (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getMaNhaCungCap() : "",
+                     (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getTenNhaCungCap() : "",
+                     (pdh.getNgayDat() != null) ? pdh.getNgayDat().toString() : "",
+                     currencyFormatter.format(pdh.getTongTien()),
+                     pdh.getTrangThai()
+                 });
             }
         }
     }
 
     private void loadNccToFilterComboBox() {
         try {
+             // Giả sử nhaCungCapDAO.getAllNhaCungCap() đã được đổi tên (nếu có)
              List<NhaCungCap> dsNCC = nhaCungCapDAO.getAllNhaCungCap();
              trangChuGUI.cboNCC_TKNCC.removeAllItems();
              trangChuGUI.cboNCC_TKNCC.addItem("Tất cả");
