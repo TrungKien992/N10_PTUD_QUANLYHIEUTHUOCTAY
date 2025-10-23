@@ -6,13 +6,11 @@ import java.util.Objects;
 public class KhuyenMai {
     private String maKM;
     private String tenChuongTrinh;
-    private double giaTri; // Tỷ lệ % hoặc giá trị tiền mặt giảm giá
+    private double giaTri; // %
     private LocalDate ngayBatDau;
     private LocalDate ngayKetThuc;
-    private String dieuKienApDung;
-    private String phamViApDung;
     private int soLuongToiDa;
-    private boolean trangThai; // true cho 1 (Đang diễn ra), false cho 0 (Đã kết thúc)
+    private int trangThai; // SỬA THÀNH INT (1: Đang diễn ra, 0: Đã kết thúc)
 
     public KhuyenMai() {
     }
@@ -21,15 +19,13 @@ public class KhuyenMai {
         this.maKM = maKM;
     }
 
-    public KhuyenMai(String maKM, String tenChuongTrinh, double giaTri, LocalDate ngayBatDau, LocalDate ngayKetThuc,
-            String dieuKienApDung, String phamViApDung, int soLuongToiDa, boolean trangThai) {
+    // SỬA LẠI CONSTRUCTOR: Bỏ dieuKienApDung/phamViApDung, dùng int trangThai
+    public KhuyenMai(String maKM, String tenChuongTrinh, double giaTri, LocalDate ngayBatDau, LocalDate ngayKetThuc, int soLuongToiDa, int trangThai) {
         this.maKM = maKM;
         this.tenChuongTrinh = tenChuongTrinh;
         this.giaTri = giaTri;
         this.ngayBatDau = ngayBatDau;
         this.ngayKetThuc = ngayKetThuc;
-        this.dieuKienApDung = dieuKienApDung;
-        this.phamViApDung = phamViApDung;
         this.soLuongToiDa = soLuongToiDa;
         this.trangThai = trangThai;
     }
@@ -74,23 +70,7 @@ public class KhuyenMai {
     public void setNgayKetThuc(LocalDate ngayKetThuc) {
         this.ngayKetThuc = ngayKetThuc;
     }
-
-    public String getDieuKienApDung() {
-        return dieuKienApDung;
-    }
-
-    public void setDieuKienApDung(String dieuKienApDung) {
-        this.dieuKienApDung = dieuKienApDung;
-    }
-
-    public String getPhamViApDung() {
-        return phamViApDung;
-    }
-
-    public void setPhamViApDung(String phamViApDung) {
-        this.phamViApDung = phamViApDung;
-    }
-
+    
     public int getSoLuongToiDa() {
         return soLuongToiDa;
     }
@@ -99,14 +79,16 @@ public class KhuyenMai {
         this.soLuongToiDa = soLuongToiDa;
     }
 
-    public boolean isTrangThai() {
+    // SỬA LẠI GETTER/SETTER CHO TRẠNG THÁI
+    public int getTrangThai() {
         return trangThai;
     }
 
-    public void setTrangThai(boolean trangThai) {
+    public void setTrangThai(int trangThai) {
         this.trangThai = trangThai;
     }
-
+    
+    // (Giữ nguyên hashCode, equals, toString)
     @Override
     public int hashCode() {
         return Objects.hash(maKM);
@@ -114,12 +96,8 @@ public class KhuyenMai {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
         KhuyenMai other = (KhuyenMai) obj;
         return Objects.equals(maKM, other.maKM);
     }

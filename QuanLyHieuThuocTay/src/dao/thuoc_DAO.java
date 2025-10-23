@@ -202,5 +202,78 @@ public class thuoc_DAO {
         }
         return maKe;
     }
+    
+ // === Cập nhật số lượng thuốc sau khi bán (Thêm vào thuoc_DAO.java) ===
+    public boolean updateSoLuongSauKhiBan(String maThuoc, int soLuongBan) {
+        // Lấy số lượng tồn kho hiện tại
+        Thuoc thuoc = getThuocTheoMa(maThuoc);
+        if (thuoc == null) {
+            System.err.println("Lỗi: Không tìm thấy thuốc " + maThuoc + " để cập nhật số lượng.");
+            return false;
+        }
+        
+        int soLuongMoi = thuoc.getSoLuong() - soLuongBan;
+        if (soLuongMoi < 0) {
+            System.err.println("Lỗi: Số lượng bán vượt quá tồn kho (Logic Controller bị sai).");
+            return false; // Không cho phép số lượng âm
+        }
+
+        String sql = "UPDATE Thuoc SET soLuong = ? WHERE maThuoc = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, soLuongMoi);
+            ps.setString(2, maThuoc);
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // === BỔ SUNG HÀM LẤY TÊN THUỐC (REQ 1) ===
+    public List<String> getAllTenThuoc() {
+         List<String> dsTen = new ArrayList<>();
+        String sql = "SELECT DISTINCT tenThuoc FROM Thuoc ORDER BY tenThuoc";
+         try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                dsTen.add(rs.getString("tenThuoc"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return dsTen;
+    }
+    
+// (Thêm vào thuoc_DAO.java)
+    
+    public List<Thuoc> searchThuoc(String maThuoc, String tenThuoc, String loaiKe) {
+        List<Thuoc> dsThuoc = new ArrayList<>();
+        // Sửa: Thêm ISNULL và JOINs
+        String sql = "SELECT t.*, k.viTri, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
+                     "LEFT JOIN KeThuoc k ON t.maKe = k.maKe " +
+                     "LEFT JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
+                     "WHERE t.maThuoc LIKE ? " +
+                     "AND t.tenThuoc LIKE ? " +
+                     "AND (k.loaiKe LIKE ? OR k.loaiKe IS NULL)"; // Cho phép kệ null
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, "%" + maThuoc + "%");
+            ps.setString(2, "%" + tenThuoc + "%");
+            ps.setString(3, "%" + loaiKe + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    dsThuoc.add(mapRowToThuoc(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dsThuoc;
+    }
 
 }

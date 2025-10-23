@@ -148,4 +148,33 @@ public class khachHang_DAO {
         }
         return prefix + "0000001"; // Nếu bảng đang rỗng
     }
+ // === BỔ SUNG HÀM TÌM KIẾM KHÁCH HÀNG (REQ 2) ===
+    public List<KhachHang> searchKhachHang(String maKH, String tenKH, String sdt, String diaChi) {
+        List<KhachHang> dsKH = new ArrayList<>();
+        String sql = "SELECT * FROM KhachHang WHERE maKH LIKE ? AND tenKH LIKE ? AND sdt LIKE ? AND diaChi LIKE ?";
+        
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, "%" + maKH + "%");
+            ps.setString(2, "%" + tenKH + "%");
+            ps.setString(3, "%" + sdt + "%");
+            ps.setString(4, "%" + diaChi + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    KhachHang kh = new KhachHang(
+                        rs.getString("maKH"),
+                        rs.getString("tenKH"),
+                        rs.getString("diaChi"),
+                        rs.getString("sdt")
+                    );
+                    dsKH.add(kh);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dsKH;
+    }
 }

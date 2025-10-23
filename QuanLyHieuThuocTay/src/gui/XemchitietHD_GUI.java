@@ -1,18 +1,31 @@
 package gui;
 
 import java.awt.EventQueue;
-import javax.swing.*; // Import * cho tiện
-import javax.swing.border.Border; // Import Border
+import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*; // Import * cho tiện
-import java.awt.event.*; // Import * cho tiện
+import java.awt.*;
+import java.awt.event.*;
+import java.text.DecimalFormat; // Import
+import java.text.SimpleDateFormat; // Import
+import java.time.ZoneId; // Import
+import java.util.ArrayList; // Import
+import java.util.Date; // Import
+
+// Import DAO và Entity cần thiết
+import dao.chiTietHoaDon_DAO;
+import dao.hoaDon_DAO;
+import entity.ChiTietHoaDon;
+import entity.HoaDon;
 
 public class XemchitietHD_GUI extends JDialog {
 	private JTable table;
 
+	// (Các hằng số màu/font và hàm helper styleButton, applyCommonTableStyling giữ nguyên)
+	// ... (Copy/Paste hằng số màu + 2 hàm style từ file cũ) ...
 	// ========== THÊM HẰNG SỐ MÀU/FONT VÀ HÀM TRỢ GIÚP ==========
 	private static final Color COLOR_BACKGROUND_PRIMARY = new Color(240, 242, 245);
 	private static final Color COLOR_CARD_BACKGROUND = Color.WHITE;
@@ -56,51 +69,53 @@ public class XemchitietHD_GUI extends JDialog {
 	}
 	// ==========================================================
 
+	// Khai báo các JLabel để hiển thị dữ liệu
+	private JLabel lblHd, lblNguynTrungKin, lblNguynNgc, lblNgyLp_1;
+	private JLabel lblNgyLp_2_3, lblNgyLp_2_4, lblNgyLp_2_2, lblNgyLp_2, lblNgyLp_2_1;
+    private JLabel lblHienKhuyenMai; // Thêm label khuyến mãi
+
 	public XemchitietHD_GUI(JFrame parent) {
 		super(parent, "Chi Tiết Hóa Đơn", true);
-		// Xóa setFont ở đây
+		initialize();
 		setLocationRelativeTo(parent);
-		// Đặt size và layout ở initialize
-		initialize(); // Gọi initialize ở cuối constructor
 	}
 
 	private void initialize() {
 		setBounds(100, 100, 1000, 930);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		getContentPane().setBackground(COLOR_BACKGROUND_PRIMARY); // Nền dialog
-		getContentPane().setLayout(null); // Giữ null layout
+		getContentPane().setBackground(COLOR_BACKGROUND_PRIMARY);
+		getContentPane().setLayout(null);
 
 		// --- Thông tin cửa hàng ---
 		JLabel lblNewLabel = new JLabel("Tên Đơn Vị :");
-		lblNewLabel.setFont(FONT_LABEL_BOLD); // Font
-		lblNewLabel.setForeground(COLOR_TEXT_DARK); // Màu chữ
+		lblNewLabel.setFont(FONT_LABEL_BOLD);
+		lblNewLabel.setForeground(COLOR_TEXT_DARK);
 		lblNewLabel.setBounds(20, 11, 114, 30);
 		getContentPane().add(lblNewLabel);
-
-		JLabel lblHiuThucTy = new JLabel("Hiệu Thuốc Tây Khánh Hưng");
-		lblHiuThucTy.setFont(FONT_LABEL_BOLD); // Font
-		lblHiuThucTy.setForeground(COLOR_PRIMARY_BLUE); // Màu nhấn
-		lblHiuThucTy.setBounds(144, 11, 300, 30); // Tăng width
+		// ... (Các label thông tin cửa hàng) ...
+        JLabel lblHiuThucTy = new JLabel("Hiệu Thuốc Tây Khánh Hưng");
+		lblHiuThucTy.setFont(FONT_LABEL_BOLD);
+		lblHiuThucTy.setForeground(COLOR_PRIMARY_BLUE);
+		lblHiuThucTy.setBounds(144, 11, 300, 30);
 		getContentPane().add(lblHiuThucTy);
-
 		JLabel lblaCh = new JLabel("Địa Chỉ :");
 		lblaCh.setFont(FONT_LABEL_BOLD);
 		lblaCh.setForeground(COLOR_TEXT_DARK);
 		lblaCh.setBounds(20, 52, 114, 30);
 		getContentPane().add(lblaCh);
-
-		JLabel lblAbc = new JLabel("123 Đường ABC, Quận XYZ, TP.HCM"); // Ví dụ
-		lblAbc.setFont(FONT_TEXT_FIELD); // Font thường
-		lblAbc.setForeground(COLOR_TEXT_MUTED); // Màu nhạt
+		JLabel lblAbc = new JLabel("123 Đường ABC, Quận XYZ, TP.HCM");
+		lblAbc.setFont(FONT_TEXT_FIELD);
+		lblAbc.setForeground(COLOR_TEXT_MUTED);
 		lblAbc.setBounds(144, 52, 830, 30);
 		getContentPane().add(lblAbc);
 
+
 		// --- Tiêu đề hóa đơn ---
 		JLabel lblNewLabel_1 = new JLabel("Hóa Đơn Bán Hàng");
-		lblNewLabel_1.setFont(FONT_TITLE_SECTION); // Font tiêu đề section
+		lblNewLabel_1.setFont(FONT_TITLE_SECTION);
 		lblNewLabel_1.setForeground(COLOR_TEXT_DARK);
-		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa
-		lblNewLabel_1.setBounds(0, 90, 984, 47); // Căn giữa theo width
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_1.setBounds(0, 90, 984, 47);
 		getContentPane().add(lblNewLabel_1);
 
 		// --- Thông tin hóa đơn ---
@@ -110,10 +125,10 @@ public class XemchitietHD_GUI extends JDialog {
 		lblMHan.setBounds(20, 140, 148, 30);
 		getContentPane().add(lblMHan);
 
-		JLabel lblHd = new JLabel("HD000001"); // Dữ liệu mẫu
-		lblHd.setForeground(COLOR_DANGER_RED); // Màu đỏ
-		lblHd.setFont(FONT_LABEL_BOLD); // Font đậm
-		lblHd.setBounds(178, 140, 200, 30); // Tăng width
+		lblHd = new JLabel("..."); // Chỉ khởi tạo
+		lblHd.setForeground(COLOR_DANGER_RED);
+		lblHd.setFont(FONT_LABEL_BOLD);
+		lblHd.setBounds(178, 140, 200, 30);
 		getContentPane().add(lblHd);
 
 		JLabel lblTnNhnVin = new JLabel("Tên Nhân Viên :");
@@ -122,10 +137,10 @@ public class XemchitietHD_GUI extends JDialog {
 		lblTnNhnVin.setBounds(20, 181, 148, 30);
 		getContentPane().add(lblTnNhnVin);
 
-		JLabel lblNguynTrungKin = new JLabel("Nguyễn Trung Kiên"); // Dữ liệu mẫu
-		lblNguynTrungKin.setFont(FONT_TEXT_FIELD); // Font thường
+		lblNguynTrungKin = new JLabel("..."); // Chỉ khởi tạo
+		lblNguynTrungKin.setFont(FONT_TEXT_FIELD);
 		lblNguynTrungKin.setForeground(COLOR_TEXT_DARK);
-		lblNguynTrungKin.setBounds(178, 181, 400, 30); // Tăng width
+		lblNguynTrungKin.setBounds(178, 181, 400, 30);
 		getContentPane().add(lblNguynTrungKin);
 
 		JLabel lblTnKhchHng = new JLabel("Tên Khách Hàng :");
@@ -134,10 +149,10 @@ public class XemchitietHD_GUI extends JDialog {
 		lblTnKhchHng.setBounds(20, 222, 148, 30);
 		getContentPane().add(lblTnKhchHng);
 
-		JLabel lblNguynNgc = new JLabel("Nguyễn Ngô Đức Mạnh"); // Dữ liệu mẫu
+		lblNguynNgc = new JLabel("..."); // Chỉ khởi tạo
 		lblNguynNgc.setFont(FONT_TEXT_FIELD);
 		lblNguynNgc.setForeground(COLOR_TEXT_DARK);
-		lblNguynNgc.setBounds(178, 222, 400, 30); // Tăng width
+		lblNguynNgc.setBounds(178, 222, 400, 30);
 		getContentPane().add(lblNguynNgc);
 
 		JLabel lblNgyLp = new JLabel("Ngày Lập :");
@@ -146,44 +161,42 @@ public class XemchitietHD_GUI extends JDialog {
 		lblNgyLp.setBounds(693, 181, 102, 30);
 		getContentPane().add(lblNgyLp);
 
-		JLabel lblNgyLp_1 = new JLabel("19/10/2025"); // Dữ liệu mẫu
+		lblNgyLp_1 = new JLabel("..."); // Chỉ khởi tạo
 		lblNgyLp_1.setFont(FONT_TEXT_FIELD);
 		lblNgyLp_1.setForeground(COLOR_TEXT_DARK);
-		lblNgyLp_1.setBounds(805, 181, 150, 30); // Tăng width
+		lblNgyLp_1.setBounds(805, 181, 150, 30);
 		getContentPane().add(lblNgyLp_1);
 
 		// --- Bảng chi tiết ---
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền
-		scrollPane.setBounds(10, 270, 964, 430); // Điều chỉnh vị trí/kích thước
+		scrollPane.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+		scrollPane.setBounds(10, 270, 964, 430);
 		getContentPane().add(scrollPane);
 
-		table = new JTable() { // Style bảng
+		table = new JTable() {
 			@Override
 			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 				Component c = super.prepareRenderer(renderer, row, column);
 				if (!isRowSelected(row)) {
 					c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
-					c.setForeground(this.getForeground()); // Dùng this
+					c.setForeground(this.getForeground());
 				} else {
 					c.setBackground(COLOR_PRIMARY_BLUE);
-					// Không set foreground trắng
 				}
 				return c;
 			}
 		};
-		applyCommonTableStyling(table); // Áp dụng style chung
+		applyCommonTableStyling(table);
 		table.setModel(new DefaultTableModel(
-			new Object[][] {}, // Bỏ dòng null
+			new Object[][] {},
 			new String[] {"STT", "Tên Thuốc", "Số Lượng", "Giá Tiền", "Thành Tiền"}
 		));
-		// Căn chỉnh cột nếu cần
 		table.getColumnModel().getColumn(0).setPreferredWidth(50);
 		table.getColumnModel().getColumn(1).setPreferredWidth(300);
 		scrollPane.setViewportView(table);
 
 		// --- Thông tin thanh toán ---
-		int summaryY = 715; // Y bắt đầu của phần tổng kết
+		int summaryY = 715;
 		int summaryLabelX = 20;
 		int summaryValueX = 178;
 		int summaryLabelX2 = 668;
@@ -197,22 +210,22 @@ public class XemchitietHD_GUI extends JDialog {
 		lblTinKhcha.setBounds(summaryLabelX, summaryY, 148, summaryHeight);
 		getContentPane().add(lblTinKhcha);
 
-		JLabel lblNgyLp_2_3 = new JLabel("11.000.000 VND"); // Dữ liệu mẫu
-		lblNgyLp_2_3.setForeground(COLOR_PRIMARY_BLUE); // Màu xanh
-		lblNgyLp_2_3.setFont(FONT_LABEL_BOLD); // Font đậm
-		lblNgyLp_2_3.setBounds(summaryValueX, summaryY, 200, summaryHeight); // Tăng width
+		lblNgyLp_2_3 = new JLabel("0 VND"); // Tiền Khách Đưa
+		lblNgyLp_2_3.setForeground(COLOR_PRIMARY_BLUE);
+		lblNgyLp_2_3.setFont(FONT_LABEL_BOLD);
+		lblNgyLp_2_3.setBounds(summaryValueX, summaryY, 200, summaryHeight);
 		getContentPane().add(lblNgyLp_2_3);
 
 		JLabel lblTinTha = new JLabel("Tiền Thừa :");
 		lblTinTha.setFont(FONT_LABEL_BOLD);
 		lblTinTha.setForeground(COLOR_TEXT_DARK);
-		lblTinTha.setBounds(20, 840, 148, summaryHeight);
+		lblTinTha.setBounds(20, 840, 148, summaryHeight); // Sửa Y
 		getContentPane().add(lblTinTha);
 
-		JLabel lblNgyLp_2_4 = new JLabel("0 VND"); // Dữ liệu mẫu
-		lblNgyLp_2_4.setForeground(COLOR_SUCCESS_GREEN); // Màu xanh lá
+		lblNgyLp_2_4 = new JLabel("0 VND"); // Tiền Thừa
+		lblNgyLp_2_4.setForeground(COLOR_SUCCESS_GREEN);
 		lblNgyLp_2_4.setFont(FONT_LABEL_BOLD);
-		lblNgyLp_2_4.setBounds(178, 840, 200, summaryHeight);
+		lblNgyLp_2_4.setBounds(178, 840, 200, summaryHeight); // Sửa Y
 		getContentPane().add(lblNgyLp_2_4);
 
 		JLabel lblTngThnhTin = new JLabel("Tổng Tiền Hàng :");
@@ -221,7 +234,7 @@ public class XemchitietHD_GUI extends JDialog {
 		lblTngThnhTin.setBounds(summaryLabelX2, summaryY, 155, summaryHeight);
 		getContentPane().add(lblTngThnhTin);
 
-		JLabel lblNgyLp_2_2 = new JLabel("10.000.000 VND"); // Dữ liệu mẫu
+		lblNgyLp_2_2 = new JLabel("0 VND"); // Tổng Tiền Hàng
 		lblNgyLp_2_2.setForeground(COLOR_TEXT_DARK);
 		lblNgyLp_2_2.setFont(FONT_LABEL_BOLD);
 		lblNgyLp_2_2.setBounds(summaryValueX2, summaryY, 141, summaryHeight);
@@ -233,41 +246,115 @@ public class XemchitietHD_GUI extends JDialog {
 		lblThuVat.setBounds(summaryLabelX2, summaryY + summaryHeight + summaryVGap, 155, summaryHeight);
 		getContentPane().add(lblThuVat);
 
-		JLabel lblNgyLp_2 = new JLabel("1.000.000 VND"); // Dữ liệu mẫu
+		lblNgyLp_2 = new JLabel("0 VND"); // Thuế
 		lblNgyLp_2.setForeground(COLOR_TEXT_DARK);
 		lblNgyLp_2.setFont(FONT_LABEL_BOLD);
 		lblNgyLp_2.setBounds(summaryValueX2, summaryY + summaryHeight + summaryVGap, 141, summaryHeight);
 		getContentPane().add(lblNgyLp_2);
 
+		JLabel lblKhuynMi = new JLabel("Khuyến Mãi :");
+		lblKhuynMi.setForeground(COLOR_TEXT_DARK);
+		lblKhuynMi.setFont(FONT_LABEL_BOLD);
+		lblKhuynMi.setBounds(summaryLabelX2, summaryY + 2*(summaryHeight + summaryVGap), 155, summaryHeight); // Sửa vị trí
+		getContentPane().add(lblKhuynMi);
+
+		lblHienKhuyenMai = new JLabel("..."); // Label cho Khuyến mãi
+		lblHienKhuyenMai.setForeground(COLOR_TEXT_DARK);
+		lblHienKhuyenMai.setFont(FONT_LABEL_BOLD);
+		lblHienKhuyenMai.setBounds(summaryValueX2, summaryY + 2*(summaryHeight + summaryVGap), 141, summaryHeight); // Sửa vị trí
+		getContentPane().add(lblHienKhuyenMai);
+
 		JLabel lblTngCng = new JLabel("Tổng Cộng :");
-		lblTngCng.setFont(new Font("Segoe UI", Font.BOLD, 15)); // Font tổng cộng
+		lblTngCng.setFont(FONT_SUMMARY_TOTAL); // Font tổng cộng
 		lblTngCng.setForeground(COLOR_TEXT_DARK);
-		lblTngCng.setBounds(20, 799, 148, summaryHeight); // Xuống dòng
+		lblTngCng.setBounds(summaryLabelX, summaryY + 2*(summaryHeight + summaryVGap) + 10, 148, summaryHeight); // Sửa Y
 		getContentPane().add(lblTngCng);
 
-		JLabel lblNgyLp_2_1 = new JLabel("11.000.000 VND"); // Dữ liệu mẫu
-		lblNgyLp_2_1.setForeground(COLOR_DANGER_RED); // Màu đỏ
-		lblNgyLp_2_1.setFont(new Font("Segoe UI", Font.BOLD, 15)); // Font tổng cộng
-		lblNgyLp_2_1.setBounds(178, 799, 250, summaryHeight); // Xuống dòng
+		lblNgyLp_2_1 = new JLabel("0 VND"); // Tổng Cộng
+		lblNgyLp_2_1.setForeground(COLOR_DANGER_RED);
+		lblNgyLp_2_1.setFont(FONT_SUMMARY_TOTAL); // Font tổng cộng
+		lblNgyLp_2_1.setBounds(summaryValueX, summaryY + 2*(summaryHeight + summaryVGap) + 10, 250, summaryHeight); // Sửa Y
 		getContentPane().add(lblNgyLp_2_1);
 
 		// --- Nút Xuất Hóa Đơn ---
 		JButton btnNewButton = new JButton("Xuất Hóa Đơn");
-		btnNewButton.setFont(FONT_BUTTON_STANDARD); // Font nút
-		styleButton(btnNewButton, COLOR_SUCCESS_GREEN); // Style nút
-		btnNewButton.setBounds(800, 833, 174, 47); // Điều chỉnh vị trí
+		btnNewButton.setFont(FONT_BUTTON_STANDARD);
+		styleButton(btnNewButton, COLOR_SUCCESS_GREEN);
+		btnNewButton.setBounds(800, 833, 174, 47);
 		getContentPane().add(btnNewButton);
-		
-		JLabel lblKhuynMi = new JLabel("Khuyến Mãi :");
-		lblKhuynMi.setForeground(new Color(33, 37, 41));
-		lblKhuynMi.setFont(new Font("Segoe UI", Font.BOLD, 15));
-		lblKhuynMi.setBounds(20, 755, 148, 30);
-		getContentPane().add(lblKhuynMi);
-		
-		JLabel lblNgyLp_2_1_1 = new JLabel("Hien khuyen mai");
-		lblNgyLp_2_1_1.setForeground(new Color(220, 53, 69));
-		lblNgyLp_2_1_1.setFont(new Font("Segoe UI", Font.BOLD, 15));
-		lblNgyLp_2_1_1.setBounds(178, 755, 250, 30);
-		getContentPane().add(lblNgyLp_2_1_1);
 	}
+
+    // === BỔ SUNG HÀM LOAD DATA (REQ 6) ===
+    public void loadData(String maHD) {
+        hoaDon_DAO hdDAO = new hoaDon_DAO();
+        chiTietHoaDon_DAO cthdDAO = new chiTietHoaDon_DAO();
+        DecimalFormat df = new DecimalFormat("#,##0 VND");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        // 1. Lấy thông tin Hóa Đơn chính
+        HoaDon hd = hdDAO.getHoaDonByMa(maHD); 
+        if (hd == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy hóa đơn " + maHD, "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // 2. Hiển thị thông tin Hóa Đơn
+        lblHd.setText(hd.getMaHD());
+        lblNgyLp_1.setText(sdf.format(Date.from(hd.getNgayLap().atStartOfDay(ZoneId.systemDefault()).toInstant())));
+        
+        if (hd.getNhanVien() != null) {
+            lblNguynTrungKin.setText(hd.getNhanVien().getTenNV());
+        } else {
+            lblNguynTrungKin.setText("N/A");
+        }
+        
+        if (hd.getKhachHang() != null) {
+            lblNguynNgc.setText(hd.getKhachHang().getTenKH());
+        } else {
+            lblNguynNgc.setText("Khách vãng lai");
+        }
+
+        // 3. Lấy và hiển thị Chi Tiết Hóa Đơn
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
+        ArrayList<ChiTietHoaDon> dsCTHD = cthdDAO.getChiTietHoaDonTheoMaHD(maHD);
+        
+        double tongTienHang = 0;
+        int stt = 1;
+        for (ChiTietHoaDon ct : dsCTHD) {
+            double thanhTien = ct.tinhThanhTien(); // Dùng hàm tính của Entity
+            model.addRow(new Object[]{
+                stt++,
+                ct.getThuoc().getTenThuoc(),
+                ct.getSoLuong(),
+                df.format(ct.getThuoc().getGiaBan()),
+                df.format(thanhTien)
+            });
+            tongTienHang += thanhTien;
+        }
+
+        // 4. Tính toán và hiển thị Tổng tiền
+        double thue = 0;
+        if(hd.getThue() != null) {
+            thue = tongTienHang * hd.getThue().getTiLe(); // Lấy tỉ lệ thuế
+        }
+
+        double khuyenMaiGiam = 0.0;
+        if (hd.getKhuyenMai() != null) {
+             khuyenMaiGiam = tongTienHang * (hd.getKhuyenMai().getGiaTri() / 100);
+             lblHienKhuyenMai.setText(String.format("-%.0f%% (%s)", hd.getKhuyenMai().getGiaTri(), df.format(khuyenMaiGiam)));
+        } else {
+            lblHienKhuyenMai.setText("Không áp dụng");
+        }
+
+        double tongCong = (tongTienHang - khuyenMaiGiam) + thue;
+
+        lblNgyLp_2_2.setText(df.format(tongTienHang)); // Tổng tiền hàng
+        lblNgyLp_2.setText(df.format(thue)); // Thuế
+        lblNgyLp_2_1.setText(df.format(tongCong)); // Tổng cộng
+
+        // (Phần Tiền khách đưa và Tiền thừa là N/A)
+        lblNgyLp_2_3.setText("N/A"); // Tiền khách đưa
+        lblNgyLp_2_4.setText("N/A"); // Tiền thừa
+    }
 }

@@ -255,5 +255,26 @@ public class nhanVien_DAO {
         return tenNV;
     }
 
-
+ // === Lấy Nhân Viên bằng Mã Tài Khoản (Thêm vào nhanVien_DAO.java) ===
+    public NhanVien getNhanVienByMaTK(String maTK) {
+        String sql = "SELECT nv.*, cv.tenChucVu, tk.tenTK " +
+                     "FROM NhanVien nv " +
+                     "JOIN ChucVu cv ON nv.chucVu = cv.maChucVu " +
+                     "JOIN TaiKhoan tk ON nv.maTK = tk.maTK " +
+                     "WHERE nv.maTK = ?"; // Tìm theo maTK
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, maTK);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapNhanVien(rs); // Dùng hàm mapRowToNhanVien đã có
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
 }
