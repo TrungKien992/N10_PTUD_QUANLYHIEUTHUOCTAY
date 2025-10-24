@@ -3467,12 +3467,47 @@ public class TrangChu_GUI extends JFrame{
                 pnlFilters_TKNV.add(btnLamMoi_TKNV);
 
                 JButton btnXemCT_TKNV = new JButton("Xem chi tiết");
-                 btnXemCT_TKNV.addActionListener(new ActionListener() {
-                	public void actionPerformed(ActionEvent e) {
-                		XemChiTietNV_GUI xemCTNV = new XemChiTietNV_GUI(QuanLyHieuThuocTay); // Hoặc (this)
-                        xemCTNV.setVisible(true);
-                	}
+                btnXemCT_TKNV.addActionListener(e -> {
+                    int row = table_TKNV.getSelectedRow();
+                    if (row == -1) {
+                        JOptionPane.showMessageDialog(null, "Vui lòng chọn nhân viên cần xem chi tiết!");
+                        return;
+                    }
+
+                    // Lấy mã nhân viên từ bảng (cột đầu tiên)
+                    String maNV = table_TKNV.getValueAt(row, 0).toString();
+
+                    // --- Lấy thông tin nhân viên đầy đủ từ DAO ---
+                    nhanVien_DAO nvDAO = new nhanVien_DAO();
+                    NhanVien nv = nvDAO.getNhanVienTheoMa(maNV);
+
+                    if (nv == null) {
+                        JOptionPane.showMessageDialog(null, "Không tìm thấy thông tin nhân viên!");
+                        return;
+                    }
+
+                    // --- Mở dialog xem chi tiết ---
+                    new XemChiTietNV_GUI((JFrame) SwingUtilities.getWindowAncestor(panel_TimKiemNV), nv).setVisible(true);
                 });
+
+
+                btnXemCT_TKNV.setFont(FONT_BUTTON_STANDARD);
+                styleButton(btnXemCT_TKNV, COLOR_PRIMARY_BLUE);
+                btnXemCT_TKNV.setBounds(1240, 230, 140, 40);
+    	        java.net.URL imgXemCT_TKNV = getClass().getResource("/search-icon.png");
+    	        if (imgXemCT_TKNV != null) {
+    	            ImageIcon originalIcon = new ImageIcon(imgXemCT_TKNV);
+    	            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+    	            ImageIcon scaledIcon = new ImageIcon(img);
+    	            btnXemCT_TKNV.setIcon(scaledIcon);
+    	            btnXemCT_TKNV.setHorizontalAlignment(SwingConstants.LEFT);
+    	            btnXemCT_TKNV.setIconTextGap(10);
+    	        } else {
+    	            System.err.println("Lỗi: Không tìm thấy ảnh");
+    	        }
+                pnlFilters_TKNV.add(btnXemCT_TKNV);
+
+
                 btnXemCT_TKNV.setFont(FONT_BUTTON_STANDARD); // Font nút
                 styleButton(btnXemCT_TKNV, COLOR_PRIMARY_BLUE); // Style nút chính
                 btnXemCT_TKNV.setBounds(1240, 230, 140, 40); // Vị trí nút
