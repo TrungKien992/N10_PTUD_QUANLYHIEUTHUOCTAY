@@ -9,6 +9,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.text.DecimalFormat; // Import
 import java.text.SimpleDateFormat; // Import
 import java.time.ZoneId; // Import
@@ -20,6 +21,8 @@ import dao.chiTietHoaDon_DAO;
 import dao.hoaDon_DAO;
 import entity.ChiTietHoaDon;
 import entity.HoaDon;
+// Import trình xuất PDF
+import utils.PdfExporter;
 
 public class XemchitietHD_GUI extends JDialog {
 	private JTable table;
@@ -73,6 +76,11 @@ public class XemchitietHD_GUI extends JDialog {
 	private JLabel lblHd, lblNguynTrungKin, lblNguynNgc, lblNgyLp_1;
 	private JLabel lblNgyLp_2_3, lblNgyLp_2_4, lblNgyLp_2_2, lblNgyLp_2, lblNgyLp_2_1;
     private JLabel lblHienKhuyenMai; // Thêm label khuyến mãi
+
+    // === THÊM BIẾN LƯU DỮ LIỆU HIỆN TẠI (REQ 2) ===
+    private HoaDon hoaDonHienTai;
+    private ArrayList<ChiTietHoaDon> dsCTHDHienTai;
+    // ===========================================
 
 	public XemchitietHD_GUI(JFrame parent) {
 		super(parent, "Chi Tiết Hóa Đơn", true);
@@ -222,6 +230,8 @@ public class XemchitietHD_GUI extends JDialog {
 		lblTinTha.setBounds(20, 840, 148, summaryHeight); // Sửa Y
 		getContentPane().add(lblTinTha);
 
+
+
 		lblNgyLp_2_4 = new JLabel("0 VND"); // Tiền Thừa
 		lblNgyLp_2_4.setForeground(COLOR_SUCCESS_GREEN);
 		lblNgyLp_2_4.setFont(FONT_LABEL_BOLD);
@@ -240,7 +250,7 @@ public class XemchitietHD_GUI extends JDialog {
 		lblNgyLp_2_2.setBounds(summaryValueX2, summaryY, 141, summaryHeight);
 		getContentPane().add(lblNgyLp_2_2);
 
-		JLabel lblThuVat = new JLabel("Thuế (10% VAT) :");
+		JLabel lblThuVat = new JLabel("Thuế (VAT) :"); // SỬA LẠI (SQL là 5% hoặc 10%)
 		lblThuVat.setFont(FONT_LABEL_BOLD);
 		lblThuVat.setForeground(COLOR_TEXT_DARK);
 		lblThuVat.setBounds(summaryLabelX2, summaryY + summaryHeight + summaryVGap, 155, summaryHeight);
@@ -282,9 +292,48 @@ public class XemchitietHD_GUI extends JDialog {
 		styleButton(btnNewButton, COLOR_SUCCESS_GREEN);
 		btnNewButton.setBounds(800, 833, 174, 47);
 		getContentPane().add(btnNewButton);
+
+        // === THÊM ACTIONLISTENER CHO NÚT XUẤT HÓA ĐƠN (REQ 2) ===
+        btnNewButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+                // Kiểm tra dữ liệu (giữ nguyên)
+                if (hoaDonHienTai == null || dsCTHDHienTai == null || dsCTHDHienTai.isEmpty()) { // Thêm kiểm tra isEmpty
+                    JOptionPane.showMessageDialog(XemchitietHD_GUI.this, "Chưa có dữ liệu hóa đơn để xuất.", "Lỗi Dữ Liệu", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                try {
+                    // --- THÊM CODE TẠO THƯ MỤC NẾU CHƯA CÓ ---
+                    File directory = new File("hoa_don_pdf");
+                    if (!directory.exists()) {
+                        if (directory.mkdirs()) {
+                            System.out.println("Đã tạo thư mục: hoa_don_pdf");
+                        } else {
+                            System.err.println("Không thể tạo thư mục hoa_don_pdf!");
+                            // Tùy chọn: Báo lỗi nếu không tạo được thư mục
+                            // JOptionPane.showMessageDialog(XemchitietHD_GUI.this, "Không thể tạo thư mục lưu file PDF.", "Lỗi Tạo Thư Mục", JOptionPane.ERROR_MESSAGE);
+                            // return; // Thoát nếu muốn dừng hẳn
+                        }
+                    }
+                    // --- KẾT THÚC CODE TẠO THƯ MỤC ---
+
+                    // --- TẠO ĐƯỜNG DẪN FILE CỐ ĐỊNH ---
+                    String filePath = "hoa_don_pdf/" + hoaDonHienTai.getMaHD() + ".pdf";
+
+                    // --- GỌI HÀM XUẤT PDF ---
+                    PdfExporter.exportHoaDonToPdf(hoaDonHienTai, dsCTHDHienTai, filePath);
+
+                    // Thông báo thành công sẽ hiển thị từ PdfExporter
+
+                } catch (Exception ex) { // Bắt lỗi chung
+                    JOptionPane.showMessageDialog(XemchitietHD_GUI.this, "Có lỗi xảy ra khi xuất hóa đơn:\n" + ex.getMessage(), "Lỗi Xuất PDF", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace(); // In lỗi ra console để debug
+                }
+            }
+        });
 	}
 
-    // === BỔ SUNG HÀM LOAD DATA (REQ 6) ===
+    // === BỔ SUNG HÀM LOAD DATA (REQ 1 & 2) ===
     public void loadData(String maHD) {
         hoaDon_DAO hdDAO = new hoaDon_DAO();
         chiTietHoaDon_DAO cthdDAO = new chiTietHoaDon_DAO();
@@ -297,9 +346,14 @@ public class XemchitietHD_GUI extends JDialog {
             JOptionPane.showMessageDialog(this, "Không tìm thấy hóa đơn " + maHD, "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        // === LƯU DỮ LIỆU VÀO BIẾN TẠM (REQ 2) ===
+        this.hoaDonHienTai = hd;
+        // ======================================
 
         // 2. Hiển thị thông tin Hóa Đơn
         lblHd.setText(hd.getMaHD());
+        // Sửa lại cách lấy ngày
         lblNgyLp_1.setText(sdf.format(Date.from(hd.getNgayLap().atStartOfDay(ZoneId.systemDefault()).toInstant())));
         
         if (hd.getNhanVien() != null) {
@@ -319,6 +373,10 @@ public class XemchitietHD_GUI extends JDialog {
         model.setRowCount(0);
         ArrayList<ChiTietHoaDon> dsCTHD = cthdDAO.getChiTietHoaDonTheoMaHD(maHD);
         
+        // === LƯU DỮ LIỆU VÀO BIẾN TẠM (REQ 2) ===
+        this.dsCTHDHienTai = dsCTHD;
+        // ======================================
+        
         double tongTienHang = 0;
         int stt = 1;
         for (ChiTietHoaDon ct : dsCTHD) {
@@ -335,9 +393,13 @@ public class XemchitietHD_GUI extends JDialog {
 
         // 4. Tính toán và hiển thị Tổng tiền
         double thue = 0;
+        String thueLabel = "Thuế (VAT):";
         if(hd.getThue() != null) {
             thue = tongTienHang * hd.getThue().getTiLe(); // Lấy tỉ lệ thuế
+            thueLabel = String.format("Thuế (%.0f%% VAT):", hd.getThue().getTiLe() * 100);
         }
+        // Cập nhật nhãn Thuế (nếu Đại Ca muốn)
+        // lblThuVat.setText(thueLabel); // GHI CHÚ: lblThuVat chưa được khai báo ở class scope
 
         double khuyenMaiGiam = 0.0;
         if (hd.getKhuyenMai() != null) {
@@ -353,8 +415,9 @@ public class XemchitietHD_GUI extends JDialog {
         lblNgyLp_2.setText(df.format(thue)); // Thuế
         lblNgyLp_2_1.setText(df.format(tongCong)); // Tổng cộng
 
-        // (Phần Tiền khách đưa và Tiền thừa là N/A)
-        lblNgyLp_2_3.setText("N/A"); // Tiền khách đưa
-        lblNgyLp_2_4.setText("N/A"); // Tiền thừa
+        // === CẬP NHẬT TIỀN KHÁCH ĐƯA (REQ 1) ===
+        // Giả sử HoaDon.java đã có getTienKhachDua() và getTienThua()
+        lblNgyLp_2_3.setText(df.format(hd.getTienKhachDua())); // Tiền khách đưa
+        lblNgyLp_2_4.setText(df.format(hd.getTienThua())); // Tiền thừa
     }
 }

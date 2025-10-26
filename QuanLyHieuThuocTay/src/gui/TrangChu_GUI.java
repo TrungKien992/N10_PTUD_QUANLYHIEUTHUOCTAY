@@ -41,6 +41,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -70,7 +71,6 @@ public class TrangChu_GUI extends JFrame{
     public JPanel maincontent;
     public JTextField text_Nhapmathuoc;
     public JTable table_timkiemthuoc;
-    public JTextField text_Nhapsosdtkh;
     public JTable table_hdtam;
     public JTextField text_Nhaptiennhan;
     public JTextField text_Nhapsoluongthuoc;
@@ -212,6 +212,7 @@ public class TrangChu_GUI extends JFrame{
 	public JLabel lbl_ttfile_hienthitongsothuoc;
 	public JButton btn_ttf_lammoi;
 	public JButton btn_ttf_them;
+	public JCheckBox chk_XuatHoaDon;
 	
     
 
@@ -285,7 +286,6 @@ public class TrangChu_GUI extends JFrame{
 	public JLabel lbl_hienngaylaphoadon;
 	public JButton btn_lammoitkthuoc;
 	public JButton btn_addthuocvaohoadon;
-	public JButton btn_timsdtkh;
 	public JButton btn_suaslthuoc;
 	public JButton btn_xoathuockhoihd;
 	public JButton btn_Huyhoadon;
@@ -325,7 +325,11 @@ public class TrangChu_GUI extends JFrame{
 	public JComboBox<String> cb_lockethuoc;
 	public JTextField txt_Nhapmathuoc;
 	public JComboBox<String> cb_loctenthuoc;
-	
+	public JButton btn_xemphieudatthuoc;
+	public JButton btn_Xemchitiet;
+	public JComboBox<String> cb_Nhapsosdtkh;
+	private JLabel lbl_Ngayreal;
+	private JLabel lbl_Gioreal;
 	
 	
 	
@@ -390,10 +394,11 @@ public class TrangChu_GUI extends JFrame{
      */
     private void initialize() {
         QuanLyHieuThuocTay = new JFrame();
+        QuanLyHieuThuocTay.setFont(new Font("Times New Roman", Font.PLAIN, 5));
         QuanLyHieuThuocTay.setTitle("Hệ Thống Quản Lý Hiệu Thuốc Tây");
         
         ImageIcon icon = new ImageIcon("C:\\Users\\Admin\\eclipse-workspace\\QuanLyHieuThuoc\\image\\z7068801445103_7be0ebb233e8a4eceb10c3aceb500455.jpg");
-        QuanLyHieuThuocTay.setIconImage(icon.getImage());
+        QuanLyHieuThuocTay.setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Admin\\eclipse-workspace\\N10_PTUD_QUANLYHIEUTHUOCTAY\\QuanLyHieuThuocTay\\img\\icon_tieude.png"));
         QuanLyHieuThuocTay.setSize(1935,1040);
         QuanLyHieuThuocTay.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         QuanLyHieuThuocTay.setLocationRelativeTo(null);
@@ -529,15 +534,80 @@ public class TrangChu_GUI extends JFrame{
         QuanLyHieuThuocTay.getContentPane().add(maincontent, BorderLayout.CENTER);
         maincontent.setLayout(new CardLayout(0, 0));
         
+     // === BẮT ĐẦU KHỐI TRANG CHỦ ĐÃ SỬA ===
         JPanel pn_Trangchu = new JPanel();
-        maincontent.add(pn_Trangchu, "trangChu");
+        maincontent.add(pn_Trangchu, "trangChu"); // Đã xóa dòng add trùng lặp
+        pn_Trangchu.setLayout(null);
         
-        JLabel welcomeLabel = new JLabel("CHÀO MỪNG ĐẾN VỚI HỆ THỐNG QUẢN LÝ HIỆU THUỐC");
-        welcomeLabel.setFont(new Font("Times New Roman", Font.BOLD, 30));
-        pn_Trangchu.add(welcomeLabel);
-        maincontent.add(pn_Trangchu, "trangChu");
+        // 1. TẠO PANEL ĐỒNG HỒ (Add trước)
+        // Panel này sẽ chứa ngày và giờ
+        JPanel pn_NgayGio = new JPanel();
+        pn_NgayGio.setBounds(1000, 426, 575, 214); // Tọa độ Đại Ca cung cấp
+        pn_NgayGio.setOpaque(false); // <<< SỬA 1: Làm panel TRONG SUỐT
+        pn_NgayGio.setLayout(null);
+        pn_Trangchu.add(pn_NgayGio); // Add panel đồng hồ vào pn_Trangchu
+        
+        // 2. TẠO CÁC LABEL (Gán vào field đã khai báo ở đầu class)
+        // Đại Ca đã khai báo 'public JLabel lbl_Ngayreal;' (dòng 269) nên ta gán trực tiếp
+        lbl_Ngayreal = new JLabel("dd/MM/yyyy"); 
+        lbl_Ngayreal.setFont(new Font("Tahoma", Font.BOLD, 50));
+        lbl_Ngayreal.setForeground(new Color(77, 135, 133)); // <<< SỬA 2: Đổi màu chữ (nổi trên nền ảnh)
+        lbl_Ngayreal.setBounds(210, 11, 355, 73); 
+        pn_NgayGio.add(lbl_Ngayreal);
+        
+        // Đại Ca đã khai báo 'public JLabel lbl_Gioreal;' (dòng 270)
+        lbl_Gioreal = new JLabel("HH:mm:ss"); 
+        lbl_Gioreal.setFont(new Font("Tahoma", Font.BOLD, 50));
+        lbl_Gioreal.setForeground(new Color(77, 135, 133)); // <<< SỬA 2: Đổi màu chữ
+        lbl_Gioreal.setBounds(210, 108, 355, 73);
+        pn_NgayGio.add(lbl_Gioreal);
+        
+        JLabel lbl_Ngay = new JLabel("Ngày :");
+        lbl_Ngay.setForeground(new Color(77, 135, 133));
+        lbl_Ngay.setFont(new Font("Tahoma", Font.BOLD, 50));
+        lbl_Ngay.setBounds(10, 11, 190, 73);
+        pn_NgayGio.add(lbl_Ngay);
+        
+        JLabel lbl_Gio = new JLabel("Giờ :");
+        lbl_Gio.setForeground(new Color(77, 135, 133));
+        lbl_Gio.setFont(new Font("Tahoma", Font.BOLD, 50));
+        lbl_Gio.setBounds(10, 108, 190, 73);
+        pn_NgayGio.add(lbl_Gio);
+        
+        // 3. TẠO ẢNH NỀN (Add sau)
+        // (Sử dụng tên biến 'lblNewLabel' như trong file gốc của Đại Ca)
+        JLabel lblNewLabel = new JLabel(""); 
+        lblNewLabel.setIcon(new ImageIcon("C:\\Users\\Admin\\eclipse-workspace\\N10_PTUD_QUANLYHIEUTHUOCTAY\\QuanLyHieuThuocTay\\img\\Trangchu.jpg"));
+        lblNewLabel.setBounds(0, 0, 1699, 1001);
+        pn_Trangchu.add(lblNewLabel);
+        
+        // 4. ĐẨY ẢNH NỀN XUỐNG DƯỚI CÙNG (Z-Order)
+        // <<< SỬA 3 (QUAN TRỌNG): Đảm bảo ảnh luôn ở lớp dưới cùng (index cao nhất)
+        // Component add sau cùng sẽ nằm trên cùng (index 0).
+        // Ta đẩy lblNewLabel xuống index cuối cùng (pn_Trangchu.getComponentCount() - 1).
+        pn_Trangchu.setComponentZOrder(lblNewLabel, pn_Trangchu.getComponentCount() - 1);
+        
+        // 5. THÊM ĐỒNG HỒ REAL-TIME
+        Timer timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LocalDateTime now = LocalDateTime.now();
+                // Vì lbl_Ngayreal và lbl_Gioreal là field (biến toàn cục)
+                // nên Timer có thể truy cập hợp lệ.
+                if (lbl_Ngayreal != null) {
+                    lbl_Ngayreal.setText(now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                }
+                if (lbl_Gioreal != null) {
+                    lbl_Gioreal.setText(now.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+                }
+            }
+        });
+        timer.start(); // Bắt đầu chạy đồng hồ
+        
+        // 6. HIỂN THỊ CARD
         CardLayout cl = (CardLayout) maincontent.getLayout();
         cl.show(maincontent, "trangChu");
+        // === KẾT THÚC KHỐI TRANG CHỦ ĐÃ SỬA ===
         
         JPanel pn_Themhoadon = new JPanel();
         maincontent.add(pn_Themhoadon, "themHoaDon");
@@ -640,7 +710,7 @@ public class TrangChu_GUI extends JFrame{
         table_timkiemthuoc.getColumnModel().getColumn(2).setPreferredWidth(200);
         scP_timkiemthuoc.setViewportView(table_timkiemthuoc);
 
-        JButton btn_Xemchitiet = new JButton("Xem Chi Tiết");
+        btn_Xemchitiet = new JButton("Xem Chi Tiết");
         btn_Xemchitiet.setBounds(195, 910, 180, 47);
         btn_Xemchitiet.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
         styleButton(btn_Xemchitiet, COLOR_PRIMARY_BLUE); // ĐÃ SỬA
@@ -658,11 +728,10 @@ public class TrangChu_GUI extends JFrame{
         lbl_Laphoadon.setBounds(10, 11, 296, 59);
         pn_Themhoadon_east.add(lbl_Laphoadon);
 
-        JButton btn_xemphieudatthuoc = new JButton("Phiếu Đặt Thuốc");
+        btn_xemphieudatthuoc = new JButton("Phiếu Đặt Thuốc");
         btn_xemphieudatthuoc.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 DsPhieuDatThuoc_GUI DanhsachphieudatthuocDialog =new DsPhieuDatThuoc_GUI(QuanLyHieuThuocTay);
-                DanhsachphieudatthuocDialog.setVisible(true);
             }
         });
         btn_xemphieudatthuoc.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
@@ -674,7 +743,6 @@ public class TrangChu_GUI extends JFrame{
         btn_Themkhachhangmoi.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ThemKH_GUI themKhDialog = new ThemKH_GUI(QuanLyHieuThuocTay);
-                themKhDialog.setVisible(true);
             }
         });
         btn_Themkhachhangmoi.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
@@ -734,18 +802,6 @@ public class TrangChu_GUI extends JFrame{
         lbl_Khachhang.setFont(FONT_LABEL_BOLD); // ĐÃ SỬA
         lbl_Khachhang.setBounds(579, 140, 114, 25);
         pn_Hoadonbanle.add(lbl_Khachhang);
-
-        text_Nhapsosdtkh = new JTextField();
-        text_Nhapsosdtkh.setBounds(702, 84, 197, 43);
-        text_Nhapsosdtkh.setFont(FONT_TEXT_FIELD); // ĐÃ SỬA
-        pn_Hoadonbanle.add(text_Nhapsosdtkh);
-        text_Nhapsosdtkh.setColumns(10);
-
-        btn_timsdtkh = new JButton("Tìm");
-        btn_timsdtkh.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
-        styleButton(btn_timsdtkh, COLOR_PRIMARY_BLUE); // ĐÃ SỬA
-        btn_timsdtkh.setBounds(905, 82, 65, 45);
-        pn_Hoadonbanle.add(btn_timsdtkh);
 
         btn_suaslthuoc = new JButton("Sửa Số Lượng");
         btn_suaslthuoc.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
@@ -870,6 +926,12 @@ public class TrangChu_GUI extends JFrame{
         cb_Chonkhuyenmai.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         cb_Chonkhuyenmai.setBounds(158, 669, 359, 28);
         pn_Hoadonbanle.add(cb_Chonkhuyenmai);
+        
+        cb_Nhapsosdtkh = new JComboBox<String>();
+        cb_Nhapsosdtkh.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        cb_Nhapsosdtkh.setEditable(true);
+        cb_Nhapsosdtkh.setBounds(666, 91, 304, 28);
+        pn_Hoadonbanle.add(cb_Nhapsosdtkh);
 
         btn_Huyhoadon = new JButton("Hủy Hóa Đơn");
         btn_Huyhoadon.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
@@ -883,11 +945,13 @@ public class TrangChu_GUI extends JFrame{
         btn_Themthuocvaophieudat.setBounds(247, 914, 290, 43);
         pn_Themhoadon_east.add(btn_Themthuocvaophieudat);
 
-        JButton btn_Xuathoadon = new JButton("Xuất Hóa Đơn");
-        btn_Xuathoadon.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
-        styleButton(btn_Xuathoadon, COLOR_PRIMARY_BLUE); // ĐÃ SỬA
-        btn_Xuathoadon.setBounds(590, 914, 177, 43);
-        pn_Themhoadon_east.add(btn_Xuathoadon);
+        chk_XuatHoaDon = new JCheckBox("Xuất Hóa Đơn");
+        chk_XuatHoaDon.setFont(FONT_LABEL_BOLD); 
+        chk_XuatHoaDon.setForeground(COLOR_PRIMARY_BLUE); 
+        chk_XuatHoaDon.setBackground(COLOR_BACKGROUND_PRIMARY); 
+        chk_XuatHoaDon.setFocusPainted(false);
+        chk_XuatHoaDon.setBounds(590, 914, 177, 43); 
+        pn_Themhoadon_east.add(chk_XuatHoaDon);
 
         btn_Thanhtoanhoadon = new JButton("Thanh Toán");
         btn_Thanhtoanhoadon.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA
@@ -1026,7 +1090,6 @@ public class TrangChu_GUI extends JFrame{
         btn_tkhd_xemchitiet.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		XemchitietHD_GUI XemchitietHD =new XemchitietHD_GUI(QuanLyHieuThuocTay); // Hoặc (this)
-                XemchitietHD.setVisible(true);
         	}
         });
         btn_tkhd_xemchitiet.setFont(FONT_BUTTON_STANDARD); // ĐÃ SỬA

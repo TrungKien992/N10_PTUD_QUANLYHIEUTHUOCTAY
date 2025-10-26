@@ -20,8 +20,12 @@ import java.awt.event.*; // Import *
 public class DsPhieuDatThuoc_GUI extends JDialog{
 	private JTextField textField;
 	private JTable table;
-
-	// ========== THÊM HẰNG SỐ MÀU/FONT VÀ HÀM TRỢ GIÚP ==========
+	
+	private JButton btnThanhToan;
+    private JButton btnXoa;
+    private JButton btnXoaTatCa;
+    private JButton btnTimKiem;
+    
 	private static final Color COLOR_BACKGROUND_PRIMARY = new Color(240, 242, 245);
 	private static final Color COLOR_CARD_BACKGROUND = Color.WHITE;
 	private static final Color COLOR_PRIMARY_BLUE = new Color(0, 123, 255);
@@ -108,11 +112,11 @@ public class DsPhieuDatThuoc_GUI extends JDialog{
 		panel_1.add(textField);
 		textField.setColumns(10);
 
-		JButton btnNewButton_1 = new JButton("Tìm");
-		btnNewButton_1.setFont(FONT_BUTTON_STANDARD); // Font
-		styleButton(btnNewButton_1, COLOR_PRIMARY_BLUE); // Style
-		btnNewButton_1.setBounds(485, 15, 89, 30); // Vị trí
-		panel_1.add(btnNewButton_1);
+		btnTimKiem = new JButton("Tìm");
+		btnTimKiem.setFont(FONT_BUTTON_STANDARD); // Font
+		styleButton(btnTimKiem, COLOR_PRIMARY_BLUE); // Style
+		btnTimKiem.setBounds(485, 15, 89, 30); // Vị trí
+		panel_1.add(btnTimKiem);
 
 		// --- Bảng danh sách ---
 		JScrollPane scrollPane = new JScrollPane();
@@ -135,9 +139,9 @@ public class DsPhieuDatThuoc_GUI extends JDialog{
 		};
 		applyCommonTableStyling(table); // Style chung
 		table.setModel(new DefaultTableModel(
-			new Object[][] {}, // Bỏ dòng null
-			new String[] {"Mã Khách Hàng", "Tên Khách Hàng", "Số Điện Thoại"}
-		));
+			    new Object[][] {},
+			    new String[] {"Mã Phiếu Chờ", "Mã Khách Hàng", "Tên Khách Hàng", "Số Điện Thoại"} // Thêm cột Mã Phiếu Chờ
+			));
 		scrollPane.setViewportView(table);
 
 		// --- Nút chức năng ---
@@ -146,22 +150,45 @@ public class DsPhieuDatThuoc_GUI extends JDialog{
 		int buttonH_dspdt = 45; // Height nút
 		int buttonGap_dspdt = 20;
 
-		JButton btnXaTtC = new JButton("Xóa Tất Cả");
-		btnXaTtC.setFont(FONT_BUTTON_STANDARD); // Font
-		styleButton(btnXaTtC, COLOR_DANGER_RED); // Style nút xóa
-		btnXaTtC.setBounds(332, buttonY_dspdt, buttonW_dspdt, buttonH_dspdt);
-		panel_1.add(btnXaTtC);
+		btnXoaTatCa = new JButton("Xóa Tất Cả");
+		btnXoaTatCa.setFont(FONT_BUTTON_STANDARD); // Font
+		styleButton(btnXoaTatCa, COLOR_DANGER_RED); // Style nút xóa
+		btnXoaTatCa.setBounds(332, buttonY_dspdt, buttonW_dspdt, buttonH_dspdt);
+		panel_1.add(btnXoaTatCa);
 
-		JButton btnNewButton = new JButton("Xóa");
-		btnNewButton.setFont(FONT_BUTTON_STANDARD); // Font
-		styleButton(btnNewButton, COLOR_DANGER_RED); // Style nút xóa
-		btnNewButton.setBounds(516, buttonY_dspdt, buttonW_dspdt, buttonH_dspdt);
-		panel_1.add(btnNewButton);
+		btnXoa = new JButton("Xóa");
+		btnXoa.setFont(FONT_BUTTON_STANDARD); // Font
+		styleButton(btnXoa, COLOR_DANGER_RED); // Style nút xóa
+		btnXoa.setBounds(516, buttonY_dspdt, buttonW_dspdt, buttonH_dspdt);
+		panel_1.add(btnXoa);
 
-		JButton btnThm = new JButton("Thanh Toán");
-		btnThm.setFont(FONT_BUTTON_STANDARD); // Font
-		styleButton(btnThm, COLOR_SUCCESS_GREEN); // Style nút chính
-		btnThm.setBounds(700, buttonY_dspdt, buttonW_dspdt, buttonH_dspdt);
-		panel_1.add(btnThm);
+		btnThanhToan = new JButton("Thanh Toán");
+		btnThanhToan.setFont(FONT_BUTTON_STANDARD); // Font
+		styleButton(btnThanhToan, COLOR_SUCCESS_GREEN); // Style nút chính
+		btnThanhToan.setBounds(700, buttonY_dspdt, buttonW_dspdt, buttonH_dspdt);
+		panel_1.add(btnThanhToan);
 	}
+    public JTable getTable() {
+        return table;
+    }
+
+    public JTextField getTextFieldSearch() {
+        return textField;
+    }
+
+    public JButton getBtnThanhToan() {
+        return btnThanhToan;
+    }
+
+    public JButton getBtnXoa() {
+        return btnXoa;
+    }
+
+    public JButton getBtnXoaTatCa() {
+        return btnXoaTatCa;
+    }
+
+    public JButton getBtnTimKiem() {
+        return btnTimKiem;
+    }
 }

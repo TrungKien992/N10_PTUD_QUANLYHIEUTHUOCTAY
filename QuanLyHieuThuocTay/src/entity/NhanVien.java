@@ -4,6 +4,10 @@ import java.time.LocalDate;
 
 public class NhanVien {
 	private String maNV;
+	public NhanVien(String maNV) {
+		super();
+		this.maNV = maNV;
+	}
 	private String tenNV;
 	private LocalDate ngaySinh;
 	private String gioiTinh;

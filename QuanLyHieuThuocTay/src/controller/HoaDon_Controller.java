@@ -1,5 +1,6 @@
 package controller;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -9,19 +10,27 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
+import java.text.ParseException; // THÊM MỚI
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.swing.DefaultComboBoxModel; // Import
+import javax.swing.DefaultComboBoxModel; 
+import javax.swing.JButton; // THÊM MỚI
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import java.io.File; // THÊM MỚI
+import java.io.IOException;
+import java.nio.file.Files; // THÊM MỚI
+import java.nio.file.Paths; // THÊM MỚI
+
+import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import dao.chiTietHoaDon_DAO;
 import dao.hoaDon_DAO;
@@ -30,19 +39,28 @@ import dao.khachHang_DAO;
 import dao.nhanVien_DAO;
 import dao.thue_DAO;
 import dao.thuoc_DAO;
-import dao.khuyenMai_DAO; // Import
+import dao.khuyenMai_DAO; 
+// THÊM MỚI 2 DAO
+import dao.PhieuChoThanhToan_DAO;
+import dao.ChiTietPhieuCho_DAO;
+
 import entity.ChiTietHoaDon;
 import entity.HoaDon;
 import entity.KeThuoc;
 import entity.KhachHang;
-import entity.KhuyenMai; // Import
+import entity.KhuyenMai; 
 import entity.NhanVien;
 import entity.Thue;
 import entity.Thuoc;
-import gui.DsPhieuDatThuoc_GUI; // Import
-import gui.ThemKH_GUI; // Import
+// THÊM MỚI 2 ENTITY
+import entity.PhieuChoThanhToan;
+import entity.ChiTietPhieuCho;
+import gui.ChiTietThuoc_GUI;
+import gui.DsPhieuDatThuoc_GUI; 
+import gui.ThemKH_GUI; 
 import gui.TrangChu_GUI;
 import gui.XemchitietHD_GUI;
+import utils.PdfExporter;
 
 public class HoaDon_Controller {
 	private keThuoc_DAO keThuocDAO;
@@ -54,6 +72,11 @@ public class HoaDon_Controller {
     private nhanVien_DAO nhanVienDAO;
     private thue_DAO thueDAO;
     private khuyenMai_DAO khuyenMaiDAO; 
+    
+    // THÊM MỚI 2 DAO
+    private PhieuChoThanhToan_DAO phieuChoDAO;
+    private ChiTietPhieuCho_DAO ctPhieuChoDAO;
+
 
     private KhachHang currentKhachHang = null;
     private NhanVien currentNhanVien = null;
@@ -70,6 +93,11 @@ public class HoaDon_Controller {
         nhanVienDAO = new nhanVien_DAO();
         thueDAO = new thue_DAO();
         khuyenMaiDAO = new khuyenMai_DAO(); 
+        
+        // THÊM MỚI
+        phieuChoDAO = new PhieuChoThanhToan_DAO();
+        ctPhieuChoDAO = new ChiTietPhieuCho_DAO();
+
 
         if (view.currentUser != null) {
             this.currentNhanVien = nhanVienDAO.getNhanVienByMaTK(view.currentUser.getMaTK());
@@ -80,17 +108,15 @@ public class HoaDon_Controller {
              this.currentNhanVien.setTenNV(view.currentUserName != null ? view.currentUserName : "Admin");
         }
 
-        loadKhuyenMaiToComboBox(); // (Req 7)
+        loadKhuyenMaiToComboBox(); 
         clearHoaDonForm();
         loadThuocFilters_ThemHD();
         addThemHoaDonListeners();
         addTimKiemHoaDonListeners();
         loadTatCaHoaDon();
+        loadCustomerPhonesToComboBox();
     }
 
- // (Thêm vào HoaDon_Controller.java)
-
-    // (REQ 1) Thêm hàm load CBB
     private void loadThuocFilters_ThemHD() {
         // 1. Load Kệ Thuốc
         DefaultComboBoxModel<String> keModel = new DefaultComboBoxModel<>();
@@ -114,7 +140,6 @@ public class HoaDon_Controller {
         filterTimKiemThuocTable();
     }
         
-    // (REQ 1) Thêm hàm lọc
     private void filterTimKiemThuocTable() {
         String maThuoc = view.txt_Nhapmathuoc.getText().trim();
         
@@ -124,7 +149,6 @@ public class HoaDon_Controller {
         String loaiKe = (view.cb_lockethuoc.getSelectedItem() == null || "Tất cả".equals(view.cb_lockethuoc.getSelectedItem())) 
                             ? "" : view.cb_lockethuoc.getSelectedItem().toString();
 
-        // Gọi hàm search mới trong thuoc_DAO
         List<Thuoc> dsThuoc = thuocDAO.searchThuoc(maThuoc, tenThuoc, loaiKe);
         
         DefaultTableModel model = (DefaultTableModel) view.table_timkiemthuoc.getModel();
@@ -141,7 +165,6 @@ public class HoaDon_Controller {
         }
     }
 
-	// === Tải ComboBox Khuyến Mãi (REQ 7) ===
     public void loadKhuyenMaiToComboBox() {
         DefaultComboBoxModel<KhuyenMai> model = new DefaultComboBoxModel<>();
         
@@ -163,9 +186,9 @@ public class HoaDon_Controller {
     // == PHẦN 1: LOGIC CHO PANEL THÊM HÓA ĐƠN (pn_Themhoadon) ==
     // =================================================================
 
- // (Thay thế hàm này trong HoaDon_Controller.java)
+    // (CHỈNH SỬA hàm này)
     private void addThemHoaDonListeners() {
-        // (REQ 1) Nút Làm Mới (Tìm Thuốc) - Sửa lại
+        // (REQ 1) Nút Làm Mới (Tìm Thuốc)
         view.btn_lammoitkthuoc.addActionListener(e -> {
             view.txt_Nhapmathuoc.setText("");
             view.cb_lockethuoc.setSelectedIndex(0);
@@ -173,7 +196,7 @@ public class HoaDon_Controller {
             filterTimKiemThuocTable(); // Gọi hàm lọc
         });
 
-        // (REQ 1) Thêm Listener cho ComboBox
+        // (REQ 1) Listener cho ComboBox
         ItemListener filterListener = e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 filterTimKiemThuocTable();
@@ -182,7 +205,7 @@ public class HoaDon_Controller {
         view.cb_lockethuoc.addItemListener(filterListener);
         view.cb_loctenthuoc.addItemListener(filterListener);
         
-        // (REQ 1) Thêm Listener cho Text Field Mã Thuốc
+        // (REQ 1) Listener cho Text Field Mã Thuốc
         view.txt_Nhapmathuoc.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { filterTimKiemThuocTable(); }
             @Override public void removeUpdate(DocumentEvent e) { filterTimKiemThuocTable(); }
@@ -191,8 +214,19 @@ public class HoaDon_Controller {
 
         // --- Giữ nguyên các listener khác ---
         view.btn_addthuocvaohoadon.addActionListener(e -> addThuocToCart());
-        view.btn_timsdtkh.addActionListener(e -> findKhachHangBySDT());
-        view.text_Nhapsosdtkh.addActionListener(e -> findKhachHangBySDT());
+        view.cb_Nhapsosdtkh.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                // Chỉ gọi tìm kiếm khi một item được CHỌN (SELECTED) từ danh sách gợi ý
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    // Kiểm tra xem item được chọn có phải là String không (tránh lỗi)
+                    if (e.getItem() instanceof String) {
+                        // Gọi hàm tìm kiếm để cập nhật tên khách hàng
+                        findKhachHangBySDT();
+                    }
+                }
+            }
+        });
         view.btn_suaslthuoc.addActionListener(e -> suaSoLuongCart());
         view.btn_xoathuockhoihd.addActionListener(e -> xoaThuocFromCart());
         view.btn_Huyhoadon.addActionListener(e -> clearHoaDonForm());
@@ -210,12 +244,16 @@ public class HoaDon_Controller {
             themKhDialog.setVisible(true);
         });
         
-        view.btn_Themthuocvaophieudat.addActionListener(e -> {
-            DsPhieuDatThuoc_GUI dialog = new DsPhieuDatThuoc_GUI(view.QuanLyHieuThuocTay);
-            dialog.setVisible(true);
+        // --- CHỈNH SỬA LISTENER CHO NÚT "PHIẾU ĐẶT THUỐC" ---
+        view.btn_xemphieudatthuoc.addActionListener(e -> { 
+            moDialogDanhSachCho(); // Gọi hàm mới
         });
         
-        // (REQ 2 - Cập nhật KM)
+        // --- THÊM MỚI LISTENER CHO NÚT "THÊM VÀO PHIẾU ĐẶT THUỐC" ---
+        view.btn_Themthuocvaophieudat.addActionListener(e -> {
+            luuPhieuChoThanhToan(); // Gọi hàm mới
+        });
+        
         view.cb_Chonkhuyenmai.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -224,13 +262,37 @@ public class HoaDon_Controller {
                 }
             }
         });
+     // === BẮT ĐẦU CODE MỚI CHO NÚT XEM CHI TIẾT THUỐC ===
+        view.btn_Xemchitiet.addActionListener(e -> {
+            int selectedRow = view.table_timkiemthuoc.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay,
+                        "Vui lòng chọn một thuốc từ bảng tìm kiếm để xem chi tiết!",
+                        "Chưa chọn thuốc", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String maThuoc = view.table_timkiemthuoc.getValueAt(selectedRow, 0).toString();
+            
+            // Dùng thuocDAO đã có để lấy thông tin thuốc
+            Thuoc thuoc = thuocDAO.getThuocTheoMa(maThuoc); 
+
+            if (thuoc == null) {
+                JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay,
+                        "Không tìm thấy thông tin chi tiết cho mã thuốc: " + maThuoc,
+                        "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Tạo và hiển thị Dialog chi tiết
+            ChiTietThuoc_GUI chiTietDialog = new ChiTietThuoc_GUI(view.QuanLyHieuThuocTay); // Truyền JFrame cha
+            chiTietDialog.loadThuoc(thuoc); // Gọi hàm load dữ liệu
+            chiTietDialog.setVisible(true); // Hiển thị dialog
+        });
+        // === KẾT THÚC CODE MỚI CHO NÚT XEM CHI TIẾT THUỐC ===
     }
 
-    private void loadDataTimKiemThuoc() {
-        filterTimKiemThuocTable();
-   }
-
-    // === Sửa lỗi Null Row (REQ 3 - Lỗi cuối) ===
+    // (CHỈNH SỬA hàm này)
     private void addThuocToCart() {
         int selectedRow = view.table_timkiemthuoc.getSelectedRow();
         if (selectedRow == -1) {
@@ -260,7 +322,7 @@ public class HoaDon_Controller {
 
         DefaultTableModel cartModel = (DefaultTableModel) view.table_hdtam.getModel();
 
-        // 1. Kiểm tra thuốc đã có trong giỏ chưa (kiểm tra null an toàn)
+        // 1. Kiểm tra thuốc đã có trong giỏ chưa
         for (int i = 0; i < cartModel.getRowCount(); i++) {
             Object maThuocTrongGio = cartModel.getValueAt(i, 0);
             
@@ -279,31 +341,20 @@ public class HoaDon_Controller {
             }
         }
 
-        // 2. Nếu chưa có, kiểm tra xem có dòng null placeholder không
-        if (cartModel.getRowCount() == 1 && cartModel.getValueAt(0, 0) == null) {
-            // Có dòng null, GHI ĐÈ dòng này
-            cartModel.setValueAt(thuoc.getMaThuoc(), 0, 0);
-            cartModel.setValueAt(thuoc.getTenThuoc(), 0, 1);
-            cartModel.setValueAt(soLuongNhap, 0, 2);
-            cartModel.setValueAt(thuoc.getGiaBan(), 0, 3);
-            cartModel.setValueAt(soLuongNhap * thuoc.getGiaBan(), 0, 4);
-        } else {
-            // Không có dòng null, THÊM MỚI
-            Object[] rowData = {
-                thuoc.getMaThuoc(),
-                thuoc.getTenThuoc(),
-                soLuongNhap,
-                thuoc.getGiaBan(),
-                soLuongNhap * thuoc.getGiaBan()
-            };
-            cartModel.addRow(rowData);
-        }
+        // 2. Nếu chưa có, THÊM MỚI (Đã bỏ dòng null placeholder)
+        Object[] rowData = {
+            thuoc.getMaThuoc(),
+            thuoc.getTenThuoc(),
+            soLuongNhap,
+            thuoc.getGiaBan(),
+            soLuongNhap * thuoc.getGiaBan()
+        };
+        cartModel.addRow(rowData);
         updateTongTien();
         view.text_Nhapsoluongthuoc.setText("");
     }
 
     private void suaSoLuongCart() {
-        // ... (Giữ nguyên code suaSoLuongCart) ...
          int selectedRow = view.table_hdtam.getSelectedRow();
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng chọn một thuốc trong hóa đơn để sửa!");
@@ -335,8 +386,8 @@ public class HoaDon_Controller {
         }
     }
 
+    // (CHỈNH SỬA hàm này)
     private void xoaThuocFromCart() {
-        // ... (Giữ nguyên code xoaThuocFromCart) ...
         int selectedRow = view.table_hdtam.getSelectedRow();
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng chọn một thuốc trong hóa đơn để xóa!");
@@ -345,16 +396,22 @@ public class HoaDon_Controller {
         DefaultTableModel model = (DefaultTableModel) view.table_hdtam.getModel();
         model.removeRow(selectedRow);
         
-        // Nếu xóa hết, thêm lại dòng null
-        if (model.getRowCount() == 0) {
-             model.addRow(new Object[]{null, null, null, null, null});
-        }
+        // Đã bỏ phần thêm lại dòng null
         updateTongTien();
     }
 
-    // === Sửa findKhachHangBySDT (REQ 2) ===
     private void findKhachHangBySDT() {
-        String sdt = view.text_Nhapsosdtkh.getText().trim();
+        Component editorComponent = view.cb_Nhapsosdtkh.getEditor().getEditorComponent(); 
+
+        String sdt = "";
+        if (editorComponent instanceof JTextField) {
+            sdt = ((JTextField) editorComponent).getText().trim();
+        } else {
+            Object selected = view.cb_Nhapsosdtkh.getSelectedItem(); 
+            if (selected != null) {
+                sdt = selected.toString().trim();
+            }
+        }
         if (sdt.isEmpty()) {
             view.lbl_Hientenkh.setText("Khách vãng lai");
             this.currentKhachHang = null;
@@ -364,44 +421,56 @@ public class HoaDon_Controller {
         if (kh != null) {
             view.lbl_Hientenkh.setText(kh.getTenKH());
             this.currentKhachHang = kh;
-        } else {
-            // (Req 2): Hiển thị tên khách hàng CÓ SỐ PHÙ HỢP
-            // Sửa: Tìm kiếm theo LIKE
-            List<KhachHang> dsKH = khachHangDAO.searchKhachHang("", "", sdt, "");
-            if (dsKH.size() == 1) {
-                // Nếu chỉ có 1 kết quả, chọn luôn
+        } else { 
+            List<KhachHang> dsKH = khachHangDAO.searchKhachHang("", "", sdt, ""); 
+            if (dsKH.size() == 1) { 
                 kh = dsKH.get(0);
                 view.lbl_Hientenkh.setText(kh.getTenKH());
-                view.text_Nhapsosdtkh.setText(kh.getSoDienThoai()); // Cập nhật SĐT đúng
+                 if (editorComponent instanceof JTextField) {
+                     ((JTextField) editorComponent).setText(kh.getSoDienThoai());
+                 } else {
+                     view.cb_Nhapsosdtkh.setSelectedItem(kh.getSoDienThoai()); 
+                 }
                 this.currentKhachHang = kh;
-            } else if (dsKH.size() > 1) {
-                // Nếu có nhiều, có thể hiện JDialog chọn
-                JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Tìm thấy nhiều SĐT khớp, vui lòng nhập chính xác hơn.");
+            } else if (dsKH.size() > 1) { 
+               
                 view.lbl_Hientenkh.setText("Khách vãng lai");
                 this.currentKhachHang = null;
-            } else {
-                JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Không tìm thấy khách hàng! Có thể thêm khách hàng mới.");
-                view.lbl_Hientenkh.setText("Khách vãng lai");
+            } else { 
+                view.lbl_Hientenkh.setText("Khách vãng lai"); 
                 this.currentKhachHang = null;
             }
         }
     }
+    
+    // THÊM MỚI: Hàm tiện ích để parse tiền từ String (VD: "100,000 VND" -> 100000.0)
+    private double parseCurrency(String amountString) {
+        try {
+            // Loại bỏ chữ " VND" và dấu phẩy, dấu chấm
+            String cleanString = amountString.replace("VND", "").replace(",", "").replace(".", "").trim();
+            if (cleanString.isEmpty()) {
+                return 0.0;
+            }
+            return Double.parseDouble(cleanString);
+        } catch (NumberFormatException e) {
+            System.err.println("Lỗi parse tiền tệ: " + amountString);
+            return 0.0;
+        }
+    }
 
-    // === Sửa updateTongTien (Xử lý tiền tệ) ===
+
     private void updateTongTien() {
         DefaultTableModel model = (DefaultTableModel) view.table_hdtam.getModel();
         double tongTienHang = 0;
         for (int i = 0; i < model.getRowCount(); i++) {
-            if(model.getValueAt(i, 4) != null) { // Kiểm tra null
+            if(model.getValueAt(i, 4) != null) { 
                  tongTienHang += (double) model.getValueAt(i, 4);
             }
         }
         
-        // Giả sử lấy thuế 10%
         Thue thueObj = thueDAO.getThueByMa("TH02");
-        double tiLeThue = (thueObj != null) ? thueObj.getTiLe() : 0.10; // Mặc định 10%
+        double tiLeThue = (thueObj != null) ? thueObj.getTiLe() : 0.10;
         
-        // Lấy khuyến mãi
         KhuyenMai selectedKM = (KhuyenMai) view.cb_Chonkhuyenmai.getSelectedItem();
         double tiLeKM = 0.0;
         if(selectedKM != null && selectedKM.getMaKM() != null) {
@@ -414,7 +483,7 @@ public class HoaDon_Controller {
         double tongCong = tongSauKM + thue;
 
         view.lbl_Hientienhang.setText(df.format(tongTienHang));
-        view.lbl_Hienthue.setText(df.format(thue)); // Hiển thị tiền thuế
+        view.lbl_Hienthue.setText(df.format(thue)); 
         view.lbl_Hientongcong.setText(df.format(tongCong));
         
         updateTienThua();
@@ -422,14 +491,12 @@ public class HoaDon_Controller {
 
     private void updateTienThua() {
          try {
-            // Lấy text từ JFormattedTextField hoặc JLabel, loại bỏ " VND" và dấu chấm
-            String tongCongStr = view.lbl_Hientongcong.getText().replaceAll("[^\\d]", "");
-            if (tongCongStr.isEmpty()) tongCongStr = "0";
+            // CHỈNH SỬA: Dùng hàm parseCurrency
+            double tongCong = parseCurrency(view.lbl_Hientongcong.getText());
             
             String tienNhanStr = view.text_Nhaptiennhan.getText().replaceAll("[^\\d]", "");
             if (tienNhanStr.isEmpty()) tienNhanStr = "0";
-
-            double tongCong = Double.parseDouble(tongCongStr);
+            
             double tienNhan = Double.parseDouble(tienNhanStr);
             
             if (tienNhan >= tongCong) {
@@ -443,30 +510,36 @@ public class HoaDon_Controller {
         }
     }
     
+    // (CHỈNH SỬA hàm này)
     private void clearHoaDonForm() {
         view.lbl_hienmahd.setText(hoaDonDAO.generateNewMaHD());
         view.lbl_hienngaylaphoadon.setText(sdf.format(new Date()));
         if(currentNhanVien != null) {
              view.lbl_Hientennv.setText(currentNhanVien.getTenNV());
         }
-        view.text_Nhapsosdtkh.setText("");
+        Component editorComponent = view.cb_Nhapsosdtkh.getEditor().getEditorComponent(); // Thay cb_Nhapsosdtkh
+        if (editorComponent instanceof JTextField) {
+            ((JTextField) editorComponent).setText("");
+        } else {
+            view.cb_Nhapsosdtkh.setSelectedItem(null); // Thay cb_Nhapsosdtkh
+        }
         view.lbl_Hientenkh.setText("Khách vãng lai");
         this.currentKhachHang = null;
         DefaultTableModel model = (DefaultTableModel) view.table_hdtam.getModel();
-        model.setRowCount(0);
-        model.addRow(new Object[]{null, null, null, null, null}); 
+        model.setRowCount(0); // Xóa sạch bảng
+        // Đã bỏ dòng add new Object[]
+        
         view.lbl_Hientienhang.setText("0 VND");
         view.lbl_Hienthue.setText("0 VND");
         view.lbl_Hientongcong.setText("0 VND");
         view.text_Nhaptiennhan.setText("");
         view.lbl_Hientienthua.setText("0 VND");
-        view.cb_Chonkhuyenmai.setSelectedIndex(0); // Về "Không áp dụng"
+        view.cb_Chonkhuyenmai.setSelectedIndex(0); 
     }
     
-    // === Sửa thanhToanHoaDon (Req 5) ===
     private void thanhToanHoaDon() {
         DefaultTableModel model = (DefaultTableModel) view.table_hdtam.getModel();
-        if (model.getRowCount() == 0 || model.getValueAt(0, 0) == null) {
+        if (model.getRowCount() == 0) {
              JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Hóa đơn đang trống, không thể thanh toán!", "Lỗi", JOptionPane.WARNING_MESSAGE);
              return;
         }
@@ -474,43 +547,67 @@ public class HoaDon_Controller {
         String maHD = view.lbl_hienmahd.getText();
         LocalDate ngayLap = LocalDate.now();
         KhuyenMai selectedKM = (KhuyenMai) view.cb_Chonkhuyenmai.getSelectedItem();
-        Thue thue = thueDAO.getThueByMa("TH02"); // Giả sử VAT 10%
+        Thue thue = thueDAO.getThueByMa("TH02"); // Mặc định thuế 10%
 
-        double tongCong, tienNhan;
+        double tongCong, tienNhan, tienThua; // Thêm biến tiền thừa
         try {
-            String tongCongStr = view.lbl_Hientongcong.getText().replaceAll("[^\\d]", "");
-            tongCong = Double.parseDouble(tongCongStr);
+            tongCong = parseCurrency(view.lbl_Hientongcong.getText());
+
             String tienNhanStr = view.text_Nhaptiennhan.getText().replaceAll("[^\\d]", "");
+             // Kiểm tra tiền nhận có rỗng không
+            if (tienNhanStr.isEmpty()) {
+                 JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng nhập số tiền khách đưa!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                 view.text_Nhaptiennhan.requestFocus(); // Focus vào ô nhập tiền
+                 return;
+            }
             tienNhan = Double.parseDouble(tienNhanStr);
-            
+
             if (tienNhan < tongCong) {
                  JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Chưa nhận đủ tiền!", "Lỗi", JOptionPane.WARNING_MESSAGE);
                  return;
             }
+            // Tính tiền thừa
+            tienThua = tienNhan - tongCong;
+
         } catch (Exception e) {
              JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Số tiền nhập không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
              return;
         }
-        
+
+        // Tạo đối tượng HoaDon
         HoaDon hd = new HoaDon(maHD, ngayLap, this.currentNhanVien, this.currentKhachHang, thue);
         if(selectedKM != null && selectedKM.getMaKM() != null) {
             hd.setKhuyenMai(selectedKM);
         }
+        // === THÊM MỚI: Set tiền khách đưa và tiền thừa (Yêu cầu 1) ===
+        hd.setTienKhachDua(tienNhan);
+        hd.setTienThua(tienThua);
+        // ==========================================================
 
-        List<ChiTietHoaDon> dsCTHD = new ArrayList<>();
+        // Tạo danh sách ChiTietHoaDon
+        ArrayList<ChiTietHoaDon> dsCTHD = new ArrayList<>(); // Dùng ArrayList để xuất PDF
         for (int i = 0; i < model.getRowCount(); i++) {
             String maThuoc = model.getValueAt(i, 0).toString();
             int soLuong = (int) model.getValueAt(i, 2);
             Thuoc thuoc = thuocDAO.getThuocTheoMa(maThuoc);
+            // Quan trọng: Lấy lại thông tin Thuốc đầy đủ để PDF có tên thuốc
+            if (thuoc == null) {
+                 JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Lỗi: Không tìm thấy thông tin thuốc " + maThuoc, "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                 return; // Dừng nếu có lỗi
+            }
             ChiTietHoaDon ct = new ChiTietHoaDon(hd, thuoc, soLuong);
             dsCTHD.add(ct);
         }
+        // Gán dsCTHD vào hóa đơn chính (để tiện cho PDF)
+        hd.setDanhSachChiTiet(dsCTHD); // Có thể dùng List thay ArrayList nếu cần
 
         try {
+            // Lưu hóa đơn chính (đã bao gồm tiền khách đưa, tiền thừa)
             if (!hoaDonDAO.themHoaDon(hd)) {
                 throw new Exception("Lỗi khi lưu hóa đơn chính!");
             }
-            
+
+            // Lưu các chi tiết và cập nhật tồn kho
             for (ChiTietHoaDon ct : dsCTHD) {
                 if (!chiTietHoaDonDAO.themChiTietHoaDon(ct)) {
                      throw new Exception("Lỗi khi lưu chi tiết thuốc " + ct.getThuoc().getMaThuoc());
@@ -521,24 +618,288 @@ public class HoaDon_Controller {
             }
 
             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Thanh toán thành công! Mã Hóa Đơn: " + maHD);
-            
+
+            // === THÊM MỚI: Kiểm tra checkbox và xuất PDF (Yêu cầu 3) ===
+            if (view.chk_XuatHoaDon.isSelected()) {
+                // Tạo thư mục nếu chưa tồn tại
+                try {
+                    Files.createDirectories(Paths.get("hoa_don_pdf")); 
+                } catch (IOException ioException) {
+                    System.err.println("Không thể tạo thư mục lưu PDF: " + ioException.getMessage());
+                }
+
+                String filePath = "hoa_don_pdf/" + hd.getMaHD() + ".pdf"; 
+                PdfExporter.exportHoaDonToPdf(hd, dsCTHD, filePath);
+            }
+
             clearHoaDonForm();
-            loadDataTimKiemThuoc();
-            loadTatCaHoaDon(); // (REQ 5) - Cập nhật bảng tìm kiếm
+            filterTimKiemThuocTable(); // Cập nhật bảng tìm thuốc (số lượng tồn)
+            loadTatCaHoaDon(); // Cập nhật bảng tìm hóa đơn
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Thanh toán thất bại: \n" + e.getMessage(), "Lỗi Database", JOptionPane.ERROR_MESSAGE);
+            // Cân nhắc rollback transaction nếu có lỗi xảy ra ở đây
         }
     }
+    
+    // =================================================================
+    // == PHẦN 1.5: LOGIC CHO PHIẾU CHỜ THANH TOÁN (THÊM MỚI) ==
+    // =================================================================
+	/**
+     * THÊM MỚI: Lấy thông tin từ form, lưu vào 2 bảng PhieuChoThanhToan và ChiTietPhieuCho
+     */
+    private void luuPhieuChoThanhToan() {
+        // 1. Kiểm tra điều kiện
+        DefaultTableModel model = (DefaultTableModel) view.table_hdtam.getModel();
+        if (model.getRowCount() == 0) {
+             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Hóa đơn đang trống, không thể lưu phiếu!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+             return;
+        }
+     // Lấy editor component của JComboBox
+        Component editorComponent_luu = view.cb_Nhapsosdtkh.getEditor().getEditorComponent(); // Thay cb_Nhapsosdtkh
+        String sdt = "";
+        if (editorComponent_luu instanceof JTextField) {
+            sdt = ((JTextField) editorComponent_luu).getText().trim();
+        } else {
+            Object selected = view.cb_Nhapsosdtkh.getSelectedItem(); // Thay cb_Nhapsosdtkh
+            if (selected != null) {
+                sdt = selected.toString().trim();
+            }
+        }
+        // ... (phần còn lại của hàm)
+        
+        // 2. Lấy thông tin từ Form
+        String maPhieuCho = phieuChoDAO.generateNewMaPhieuCho();
+        String tenKH = view.lbl_Hientenkh.getText();
+        LocalDate ngayLap = LocalDate.now();
+        double tongTienHang = parseCurrency(view.lbl_Hientienhang.getText());
+        double thueVAT = parseCurrency(view.lbl_Hienthue.getText());
+        double tongCong = parseCurrency(view.lbl_Hientongcong.getText());
+        
+        // 3. Tạo đối tượng PhieuChoThanhToan
+        PhieuChoThanhToan phieuCho = new PhieuChoThanhToan(
+            maPhieuCho,
+            this.currentKhachHang, // Có thể null nếu là khách vãng lai
+            tenKH,
+            sdt,
+            this.currentNhanVien,
+            ngayLap,
+            tongTienHang,
+            thueVAT,
+            tongCong
+        );
+
+        // 4. Tạo danh sách ChiTietPhieuCho
+        List<ChiTietPhieuCho> dsChiTiet = new ArrayList<>();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String maThuoc = model.getValueAt(i, 0).toString();
+            int soLuong = (int) model.getValueAt(i, 2);
+            double donGia = (double) model.getValueAt(i, 3);
+            
+            Thuoc thuoc = new Thuoc(maThuoc); // Chỉ cần mã thuốc
+            ChiTietPhieuCho ctpc = new ChiTietPhieuCho(phieuCho, thuoc, soLuong, donGia);
+            dsChiTiet.add(ctpc);
+        }
+
+        // 5. Lưu vào Database (Transaction)
+        try {
+            // Thêm phiếu chờ cha
+            if (!phieuChoDAO.themPhieuCho(phieuCho)) {
+                throw new Exception("Lỗi khi lưu thông tin phiếu chờ!");
+            }
+            
+            // Thêm các chi tiết
+            for (ChiTietPhieuCho ct : dsChiTiet) {
+                if (!ctPhieuChoDAO.themChiTietPhieuCho(ct)) {
+                    throw new Exception("Lỗi khi lưu chi tiết thuốc " + ct.getThuoc().getMaThuoc());
+                }
+            }
+
+            JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Đã thêm vào danh sách chờ thành công!\nMã phiếu chờ: " + maPhieuCho);
+            
+            // 6. Xóa trắng form
+            clearHoaDonForm();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Lưu phiếu chờ thất bại: \n" + e.getMessage(), "Lỗi Database", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * THÊM MỚI: Mở Dialog DsPhieuDatThuoc_GUI và gán sự kiện cho nó
+     */
+    private void moDialogDanhSachCho() {
+        DsPhieuDatThuoc_GUI dialog = new DsPhieuDatThuoc_GUI(view.QuanLyHieuThuocTay);
+        
+        // Lấy component qua getter (An toàn hơn)
+        JTable table = dialog.getTable();
+        JButton btnThanhToan = dialog.getBtnThanhToan();
+        JButton btnXoa = dialog.getBtnXoa();
+        JButton btnXoaTatCa = dialog.getBtnXoaTatCa();
+        JTextField txtTimKiem = dialog.getTextFieldSearch();
+        JButton btnTimKiem = dialog.getBtnTimKiem();
+        
+        // 1. Load dữ liệu ban đầu
+        loadDanhSachChoLenBang(table);
+
+        // 2. Gán sự kiện cho nút "Thanh Toán" (Tải lại)
+        btnThanhToan.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(dialog, "Vui lòng chọn một phiếu để tải lại!");
+                return;
+            }
+            // Lấy Mã Phiếu Chờ từ cột 0
+            String maPhieuCho = table.getValueAt(selectedRow, 0).toString();
+            
+            // Tải phiếu chờ lên form chính
+            taiPhieuChoLenForm(maPhieuCho);
+            
+            // Đóng dialog
+            dialog.dispose();
+        });
+        
+        // 3. Gán sự kiện cho nút "Xóa"
+        btnXoa.addActionListener(e -> {
+             int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(dialog, "Vui lòng chọn một phiếu để xóa!");
+                return;
+            }
+            
+            String maPhieuCho = table.getValueAt(selectedRow, 0).toString();
+            String tenKH = table.getValueAt(selectedRow, 2).toString();
+            
+            int confirm = JOptionPane.showConfirmDialog(dialog, 
+                "Đại Ca Mạnh có chắc muốn xóa phiếu chờ:\n" + maPhieuCho + "\nCủa khách: " + tenKH + "?", 
+                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+                
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (phieuChoDAO.xoaPhieuCho(maPhieuCho)) {
+                    JOptionPane.showMessageDialog(dialog, "Xóa thành công phiếu " + maPhieuCho + "!");
+                    loadDanhSachChoLenBang(table); // Load lại bảng
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Xóa thất bại!");
+                }
+            }
+        });
+        
+        // 4. Gán sự kiện cho nút "Xóa Tất Cả"
+        btnXoaTatCa.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(dialog, "Đại Ca Mạnh có chắc muốn xóa TẤT CẢ phiếu chờ không?\nHành động này không thể hoàn tác.", "XÁC NHẬN HỦY DIỆT", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                 if (phieuChoDAO.xoaTatCaPhieuCho()) {
+                    JOptionPane.showMessageDialog(dialog, "Đã xóa tất cả phiếu chờ!");
+                    loadDanhSachChoLenBang(table); // Load lại bảng
+                 } else {
+                    JOptionPane.showMessageDialog(dialog, "Xóa thất bại!");
+                 }
+            }
+        });
+        
+        // 5. Gán sự kiện cho Tìm kiếm (lọc theo SĐT)
+        ActionListener timKiemAction = e -> {
+            String sdtTim = txtTimKiem.getText().trim().toLowerCase();
+            loadDanhSachChoLenBang(table, sdtTim);
+        };
+        btnTimKiem.addActionListener(timKiemAction);
+        txtTimKiem.addActionListener(timKiemAction); // Cho phép nhấn Enter để tìm
+
+        dialog.setVisible(true);
+    }
+    
+    /**
+     * THÊM MỚI: Tải danh sách chờ (đã lọc) lên bảng trong Dialog
+     */
+    private void loadDanhSachChoLenBang(JTable table, String sdtFilter) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
+        List<PhieuChoThanhToan> dsCho = phieuChoDAO.getDanhSachCho();
+        
+        for (PhieuChoThanhToan pc : dsCho) {
+            String maKH = (pc.getKhachHang() != null) ? pc.getKhachHang().getMaKH() : "N/A";
+            
+            // Lọc theo SĐT
+            if (sdtFilter == null || pc.getSdtKH().toLowerCase().contains(sdtFilter)) {
+                 model.addRow(new Object[]{
+                    pc.getMaPhieuCho(), // Cột 0: Mã Phiếu Chờ
+                    maKH, // Cột 1: Mã KH
+                    pc.getTenKH(), // Cột 2: Tên KH
+                    pc.getSdtKH() // Cột 3: SĐT
+                });
+            }
+        }
+    }
+    // Overload (tải tất cả)
+    private void loadDanhSachChoLenBang(JTable table) {
+        loadDanhSachChoLenBang(table, null);
+    }
+    
+    /**
+     * THÊM MỚI: Tải 1 phiếu chờ (theo MÃ PHIẾU CHỜ) lên lại màn hình chính và xóa phiếu đó
+     */
+    private void taiPhieuChoLenForm(String maPhieuCho) {
+        // 1. Lấy phiếu chờ theo MÃ
+        PhieuChoThanhToan pc = phieuChoDAO.getPhieuChoTheoMa(maPhieuCho);
+        if (pc == null) {
+            JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Không tìm thấy phiếu chờ: " + maPhieuCho, "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // 2. Lấy chi tiết của phiếu chờ đó
+        List<ChiTietPhieuCho> dsChiTiet = ctPhieuChoDAO.getChiTietTheoMaPhieuCho(pc.getMaPhieuCho());
+        
+        // 3. Xóa trắng form hiện tại
+        clearHoaDonForm();
+        
+        // 4. Đổ dữ liệu phiếu chờ lên form
+        Component editorComponent_tai = view.cb_Nhapsosdtkh.getEditor().getEditorComponent(); // Thay cb_Nhapsosdtkh
+        if (editorComponent_tai instanceof JTextField) {
+            ((JTextField) editorComponent_tai).setText(pc.getSdtKH());
+        } else {
+            view.cb_Nhapsosdtkh.setSelectedItem(pc.getSdtKH()); // Thay cb_Nhapsosdtkh
+        }
+        view.lbl_Hientenkh.setText(pc.getTenKH());
+        if(pc.getKhachHang() != null) {
+            // Tải lại đối tượng KhachHang đầy đủ
+            this.currentKhachHang = khachHangDAO.getKhachHangTheoMa(pc.getKhachHang().getMaKH());
+        } else {
+            this.currentKhachHang = null;
+        }
+        
+        // Đổ tiền 
+        view.lbl_Hientienhang.setText(df.format(pc.getTongTienHang()));
+        view.lbl_Hienthue.setText(df.format(pc.getThueVAT()));
+        view.lbl_Hientongcong.setText(df.format(pc.getTongCong()));
+        
+        // 5. Đổ danh sách thuốc vào table_hdtam
+        DefaultTableModel model = (DefaultTableModel) view.table_hdtam.getModel();
+        model.setRowCount(0); // Xóa sạch
+        
+        for (ChiTietPhieuCho ct : dsChiTiet) {
+            model.addRow(new Object[]{
+                ct.getThuoc().getMaThuoc(),
+                ct.getThuoc().getTenThuoc(),
+                ct.getSoLuong(),
+                ct.getDonGia(),
+                ct.getThanhTien() // Lấy từ hàm getThanhTien()
+            });
+        }
+        
+        // 6. Xóa phiếu chờ này khỏi Database
+        if (!phieuChoDAO.xoaPhieuCho(pc.getMaPhieuCho())) {
+             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Đã tải lại phiếu, nhưng XÓA phiếu chờ thất bại!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
 
     // =================================================================
     // == PHẦN 2: LOGIC CHO PANEL TÌM KIẾM HÓA ĐƠN (pn_tkhd) ==
     // =================================================================
 
-    // === Sửa addTimKiemHoaDonListeners (REQ 6) ===
     private void addTimKiemHoaDonListeners() {
         view.btn_tkhd_lammoi.addActionListener(e -> clearHoaDonFilter());
-        view.btn_tkhd_xemchitiet.addActionListener(e -> xemChiTietHoaDonDaTim()); // (REQ 6)
+        view.btn_tkhd_xemchitiet.addActionListener(e -> xemChiTietHoaDonDaTim()); 
 
         DocumentListener filterListener = new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { timKiemHoaDon(); }
@@ -563,7 +924,6 @@ public class HoaDon_Controller {
         loadTatCaHoaDon();
     }
 
-    // === Sửa loadTatCaHoaDon (Định dạng tiền) ===
     private void loadTatCaHoaDon() {
         DefaultTableModel model = (DefaultTableModel) view.table_tkhd.getModel();
         model.setRowCount(0);
@@ -575,7 +935,6 @@ public class HoaDon_Controller {
         }
     }
 
-    // === Sửa timKiemHoaDon (Định dạng tiền) ===
     private void timKiemHoaDon() {
         String maHD = view.text_tkhd_Mahd.getText().trim();
         String tenKH = view.text_tkhd_TenKH.getText().trim();
@@ -595,7 +954,6 @@ public class HoaDon_Controller {
         }
     }
 
-    // === Hàm xem chi tiết HĐ (REQ 6) ===
     private void xemChiTietHoaDonDaTim() {
         int selectedRow = view.table_tkhd.getSelectedRow();
         if (selectedRow == -1) {
@@ -605,7 +963,24 @@ public class HoaDon_Controller {
         String maHD = view.table_tkhd.getValueAt(selectedRow, 0).toString();
         
         XemchitietHD_GUI dialog = new XemchitietHD_GUI(view.QuanLyHieuThuocTay);
-        dialog.loadData(maHD); // Gọi hàm loadData đã tạo trong XemchitietHD_GUI
+        dialog.loadData(maHD); 
         dialog.setVisible(true);
+    }
+    private void loadCustomerPhonesToComboBox() {
+        List<KhachHang> dsKH = khachHangDAO.getAllKhachHang(); 
+
+        DefaultComboBoxModel<String> phoneModel = new DefaultComboBoxModel<>();
+
+        if (dsKH != null) {
+            for (KhachHang kh : dsKH) {
+                if (kh.getSoDienThoai() != null && !kh.getSoDienThoai().isEmpty()) {
+                    phoneModel.addElement(kh.getSoDienThoai());
+                }
+            }
+        }
+
+        view.cb_Nhapsosdtkh.setModel(phoneModel);
+        view.cb_Nhapsosdtkh.setSelectedItem(null);
+        AutoCompleteDecorator.decorate(view.cb_Nhapsosdtkh);
     }
 }

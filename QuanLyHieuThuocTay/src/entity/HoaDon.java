@@ -12,6 +12,8 @@ public class HoaDon {
     private NhanVien nhanVien;
     private KhachHang khachHang; // Có thể null
     private List<ChiTietHoaDon> danhSachChiTiet; // Để lưu các chi tiết hóa đơn
+    private double tienKhachDua;
+    private double tienThua;
 
     public HoaDon() {
     }
@@ -22,9 +24,11 @@ public class HoaDon {
         this.nhanVien = nhanVien;
         this.khachHang = khachHang;
         this.thue = thue;
+        // Khởi tạo giá trị mặc định
+        this.tienKhachDua = 0.0;
+        this.tienThua = 0.0;
     }
 
-    // Các getters và setters
     public String getMaHD() {
         return maHD;
     }
@@ -72,7 +76,7 @@ public class HoaDon {
     public void setKhachHang(KhachHang khachHang) {
         this.khachHang = khachHang;
     }
-    
+
     public List<ChiTietHoaDon> getDanhSachChiTiet() {
         return danhSachChiTiet;
     }
@@ -80,8 +84,25 @@ public class HoaDon {
     public void setDanhSachChiTiet(List<ChiTietHoaDon> danhSachChiTiet) {
         this.danhSachChiTiet = danhSachChiTiet;
     }
-    
-    // Phương thức tính tổng tiền
+
+    // === THÊM MỚI GETTERS/SETTERS (Yêu cầu 1) ===
+    public double getTienKhachDua() {
+        return tienKhachDua;
+    }
+
+    public void setTienKhachDua(double tienKhachDua) {
+        this.tienKhachDua = tienKhachDua;
+    }
+
+    public double getTienThua() {
+        return tienThua;
+    }
+
+    public void setTienThua(double tienThua) {
+        this.tienThua = tienThua;
+    }
+
+    // Phương thức tính tổng tiền cũ giữ nguyên
     public double tinhTongTien() {
         double tongTien = 0;
         if (danhSachChiTiet != null) {
@@ -89,21 +110,22 @@ public class HoaDon {
                 tongTien += cthd.tinhThanhTien();
             }
         }
-        
+
         // Áp dụng thuế
         if (thue != null) {
             tongTien = tongTien * (1 + thue.getTiLe());
         }
-        
+
         // Áp dụng khuyến mãi
         if (khuyenMai != null) {
             tongTien = tongTien * (1 - khuyenMai.getGiaTri() / 100);
         }
-        
+
         return tongTien;
     }
 
 
+    // hashCode() và equals() giữ nguyên
     @Override
     public int hashCode() {
         return Objects.hash(maHD);
