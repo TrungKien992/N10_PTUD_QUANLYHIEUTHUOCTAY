@@ -195,4 +195,19 @@ public class khuyenMai_DAO {
         }
         return newMaKM;
     }
+    public KhuyenMai getKhuyenMaiTheoMa(String maKM) {
+        String sql = "SELECT * FROM KhuyenMai WHERE maKM = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, maKM);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToKhuyenMai(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

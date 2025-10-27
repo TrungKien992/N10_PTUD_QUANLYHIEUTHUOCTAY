@@ -48,12 +48,6 @@ public class KhachHang_Controller implements ActionListener {
             } 
         });
         
-//        trangChuGUI.table_tkkh.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//            	hienThiThongTinLenTextField_TimKiem();
-//            }
-//        });
         
         // sự kiện tìm kiếm theo mã hoặc tên khách hàng
         trangChuGUI.txtMKH_TK.addKeyListener(new KeyAdapter() {
@@ -138,27 +132,6 @@ public class KhachHang_Controller implements ActionListener {
         }
         
     }
-    
-    /**
-     * hiển thị thông tin khách hàng lên textfield ở tab "Tìm kiếm khách hàng"
-     */
-    private void hienThiThongTinLenTextField_TimKiem() {
-        int row = trangChuGUI.table_tkkh.getSelectedRow();
-        if (row >= 0) {
-            String maKH = trangChuGUI.table_tkkh.getValueAt(row, 0).toString();
-            String tenKH = trangChuGUI.table_tkkh.getValueAt(row, 1).toString();
-            String sdt = trangChuGUI.table_tkkh.getValueAt(row, 2).toString();
-            String diaChi = trangChuGUI.table_tkkh.getValueAt(row, 3).toString();
-
-            trangChuGUI.txt_kh_MaKH.setText(maKH);
-            trangChuGUI.txt_kh_TenKH.setText(tenKH);
-            trangChuGUI.txt_kh_SDT.setText(sdt);
-            trangChuGUI.txt_kh_dc.setText(diaChi);
-
-            // lưu thông tin gốc nếu cần dùng khôi phục
-            khachHangGoc = new KhachHang(maKH, tenKH, diaChi, sdt);
-        }
-    }
 
     /**
      * làm mới form (xóa nội dung textfield)
@@ -167,6 +140,7 @@ public class KhachHang_Controller implements ActionListener {
     	// xóa nội dung tìm kiếm
         trangChuGUI.txtMKH_TK.setText("");
         trangChuGUI.txtTenKH_TK.setText("");
+        hienThiDanhSachKhachHang();
     }
     
     private void lammoitimkiemkhachhang() {
@@ -175,6 +149,7 @@ public class KhachHang_Controller implements ActionListener {
         trangChuGUI.txt_kh_TenKH.setText("");
         trangChuGUI.txt_kh_SDT.setText("");
         trangChuGUI.txt_kh_dc.setText("");
+        hienThiDanhSachKhachHang();
     }
 
     /**
@@ -187,9 +162,10 @@ public class KhachHang_Controller implements ActionListener {
         }
 
         trangChuGUI.txt_cnkh_MaKh.setText(khachHangGoc.getMaKH());
-        trangChuGUI.txt_cnkh_tenkh.setText(khachHangGoc.getTenKH());
-        trangChuGUI.txt_cnkh_SDt.setText(khachHangGoc.getSoDienThoai());
+        trangChuGUI.txt_cnkh_tenkh.setText(khachHangGoc.getTenKH());trangChuGUI.txt_cnkh_SDt.setText(khachHangGoc.getSoDienThoai());
         trangChuGUI.txt_cnkh_dc.setText(khachHangGoc.getDiaChi());
+        
+
 
     }
 
@@ -232,64 +208,59 @@ public class KhachHang_Controller implements ActionListener {
     private void timKiemKhachHang() {
         String maTK = trangChuGUI.txtMKH_TK.getText().trim().toLowerCase();
         String tenTK = trangChuGUI.txtTenKH_TK.getText().trim().toLowerCase();
-        JTable table = trangChuGUI.table_CapNhatKH;
 
-        // bỏ chọn các dòng cũ
-        table.clearSelection();
+        List<KhachHang> dsKH = khDAO.getAllKhachHang();
+        DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_CapNhatKH.getModel();
+        model.setRowCount(0); // xóa toàn bộ bảng
 
-        // nếu cả hai ô đều trống thì dừng
-        if (maTK.isEmpty() && tenTK.isEmpty()) {
-            return;
-        }
+        for (KhachHang kh : dsKH) {
+            String ma = kh.getMaKH().toLowerCase();
+            String ten = kh.getTenKH().toLowerCase();
 
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        ListSelectionModel selectionModel = table.getSelectionModel();
-
-        for (int i = 0; i < model.getRowCount(); i++) {
-            String ma = model.getValueAt(i, 0).toString().toLowerCase();
-            String ten = model.getValueAt(i, 1).toString().toLowerCase();
-
-            // nếu mã hoặc tên chứa từ khóa tìm kiếm thì chọn hàng đó
+            // nếu trùng khớp điều kiện
             if ((maTK.isEmpty() || ma.contains(maTK)) &&
                 (tenTK.isEmpty() || ten.contains(tenTK))) {
-                selectionModel.addSelectionInterval(i, i);
+                Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getSoDienThoai(), kh.getDiaChi() };
+                model.addRow(row);
             }
+        }
+
+        // nếu cả hai ô trống, hiển thị lại toàn bộ danh sách
+        if (maTK.isEmpty() && tenTK.isEmpty()) {
+            hienThiDanhSachKhachHang();
         }
     }
     
     private void timKiemKhachHang_TK() {
         String maTK = trangChuGUI.txt_kh_MaKH.getText().trim().toLowerCase();
         String tenTK = trangChuGUI.txt_kh_TenKH.getText().trim().toLowerCase();
-        String sdt = trangChuGUI.txt_kh_SDT.getText().trim().toLowerCase();
-        String dc = trangChuGUI.txt_kh_dc.getText().trim().toLowerCase();
-        JTable table = trangChuGUI.table_tkkh;
+        String sdtTK = trangChuGUI.txt_kh_SDT.getText().trim().toLowerCase();
+        String dcTK = trangChuGUI.txt_kh_dc.getText().trim().toLowerCase();
 
-        // bỏ chọn các dòng cũ
-        table.clearSelection();
+        List<KhachHang> dsKH = khDAO.getAllKhachHang();
+        DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_tkkh.getModel();
+        model.setRowCount(0); // xóa toàn bộ bảng
 
-        // nếu cả hai ô đều trống thì dừng
-        if (maTK.isEmpty() && tenTK.isEmpty()&& sdt.isEmpty()&& dc.isEmpty()) {
-            return;
-        }
+        for (KhachHang kh : dsKH) {
+            String ma = kh.getMaKH().toLowerCase();
+            String ten = kh.getTenKH().toLowerCase();
+            String sdt = kh.getSoDienThoai().toLowerCase();
+            String diachi = kh.getDiaChi().toLowerCase();
 
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        ListSelectionModel selectionModel = table.getSelectionModel();
-
-        for (int i = 0; i < model.getRowCount(); i++) {
-            String ma = model.getValueAt(i, 0).toString().toLowerCase();
-            String ten = model.getValueAt(i, 1).toString().toLowerCase();
-            String dt = model.getValueAt(i, 2).toString().toLowerCase();
-            String diachi = model.getValueAt(i, 3).toString().toLowerCase();
-
-            // nếu mã hoặc tên chứa từ khóa tìm kiếm thì chọn hàng đó
             if ((maTK.isEmpty() || ma.contains(maTK)) &&
                 (tenTK.isEmpty() || ten.contains(tenTK)) &&
-                (sdt.isEmpty() || dt.contains(sdt)) &&
-                (dc.isEmpty() || diachi.contains(dc))) {
-                selectionModel.addSelectionInterval(i, i);
+                (sdtTK.isEmpty() || sdt.contains(sdtTK)) &&
+                (dcTK.isEmpty() || diachi.contains(dcTK))) {
+                Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getSoDienThoai(), kh.getDiaChi() };
+                model.addRow(row);
             }
         }
+
+        if (maTK.isEmpty() && tenTK.isEmpty() && sdtTK.isEmpty() && dcTK.isEmpty()) {
+            hienThiDanhSachKhachHang();
+        }
     }
+
 
 
     /**
@@ -343,14 +314,10 @@ public class KhachHang_Controller implements ActionListener {
 
         if (o.equals(trangChuGUI.btnLammoi_CNKH)) {
                 lamMoiForm();
-                hienThiDanhSachKhachHang();
-                return;
         } else if (o.equals(trangChuGUI.btn_cnkh_CapNhat)) {
                 capNhatKhachHang();
-                return;
         } else if (o.equals(trangChuGUI.btn_cnkh_Khoiphuc)) {
                 khoiPhucThongTin();
-                return;
         } else if(o.equals(trangChuGUI.btn_kh_Lammoi)) {
         	lammoitimkiemkhachhang();
         }

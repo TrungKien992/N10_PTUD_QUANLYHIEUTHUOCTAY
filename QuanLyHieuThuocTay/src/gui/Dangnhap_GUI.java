@@ -53,7 +53,7 @@ public class Dangnhap_GUI extends JFrame {
      * Create the frame.
      */
     public Dangnhap_GUI() {
-    	setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Admin\\eclipse-workspace\\N10_PTUD_QUANLYHIEUTHUOCTAY\\QuanLyHieuThuocTay\\img\\icon_tieude.png"));
+    	setIconImage(Toolkit.getDefaultToolkit().getImage("img/icon_tieude.png"));
         taiKhoanDAO = new taiKhoan_DAO(); // Khởi tạo DAO
         nhanVienDAO = new nhanVien_DAO(); // Khởi tạo DAO
 
@@ -160,7 +160,7 @@ public class Dangnhap_GUI extends JFrame {
                         txtMatKhau.addActionListener(e -> btnDangNhap.doClick());
         
         JLabel lblNewLabel = new JLabel("");
-        lblNewLabel.setIcon(new ImageIcon("C:\\Users\\Admin\\eclipse-workspace\\N10_PTUD_QUANLYHIEUTHUOCTAY\\QuanLyHieuThuocTay\\img\\img_dangnhap.png"));
+        lblNewLabel.setIcon(new ImageIcon("img/img_dangnhap.png"));
         lblNewLabel.setBounds(0, 0, 979, 881);
         contentPane.add(lblNewLabel);
         txtTenDangNhap.addActionListener(e -> txtMatKhau.requestFocus()); // Chuyển focus khi Enter ở tên DN

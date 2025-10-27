@@ -17,6 +17,9 @@ public class HoaDon {
 
     public HoaDon() {
     }
+    public HoaDon(String maHD) {
+        this.maHD = maHD;
+    }
 
     public HoaDon(String maHD, LocalDate ngayLap, NhanVien nhanVien, KhachHang khachHang, Thue thue) {
         this.maHD = maHD;

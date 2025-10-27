@@ -177,7 +177,7 @@ public class ChiTietThuoc_GUI extends JDialog {
             File file = new File(anhPath);
             if (file.exists() && !file.isDirectory()) {
                 ImageIcon icon = new ImageIcon(anhPath);
-                Image img = icon.getImage().getScaledInstance(lblAnh.getWidth(), lblAnh.getHeight(), Image.SCALE_SMOOTH);
+                Image img = icon.getImage().getScaledInstance(330, 300, Image.SCALE_SMOOTH);
                 lblAnh.setIcon(new ImageIcon(img));
                 lblAnh.setText(null);
             } else {

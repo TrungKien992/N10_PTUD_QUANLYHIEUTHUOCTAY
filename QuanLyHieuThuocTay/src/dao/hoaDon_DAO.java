@@ -14,11 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import connectDB.ConnectDB;
+import entity.ChiTietHoaDon;
 import entity.HoaDon;
 import entity.KhachHang;
 import entity.KhuyenMai;
 import entity.NhanVien;
 import entity.Thue;
+import entity.Thuoc;
 
 public class hoaDon_DAO {
 
@@ -686,6 +688,59 @@ public class hoaDon_DAO {
         }
         return ds;
     }
+     public ArrayList<ChiTietHoaDon> getChiTietHoaDonTheoMa(String maHD) {
+         ArrayList<ChiTietHoaDon> dsChiTiet = new ArrayList<>();
+         String sql = "SELECT * FROM ChiTietHoaDon WHERE maHD = ?";
+         
+         try (Connection con = ConnectDB.getConnection();
+              PreparedStatement stmt = con.prepareStatement(sql)) {
+             
+             stmt.setString(1, maHD);
+             
+             try (ResultSet rs = stmt.executeQuery()) {
+                 while (rs.next()) {
+                     int soLuong = rs.getInt("soLuong");
+                     String maThuoc = rs.getString("maThuoc");
+                     
+                     thuoc_DAO thuoc_dao = new thuoc_DAO();
+                     Thuoc thuoc = thuoc_dao.getThuocTheoMa(maThuoc);
+                     
+                     HoaDon hd = new HoaDon();
+                     hd.setMaHD(maHD);
+                     
+                     ChiTietHoaDon cthd = new ChiTietHoaDon(hd, thuoc, soLuong);
+                     dsChiTiet.add(cthd);
+                 }
+             }
+         } catch (SQLException e) {
+             e.printStackTrace();
+         }
+         return dsChiTiet;
+     }
+     
+     public List<Thuoc> getDSThuocTheoHoaDon(String maHD) {
+         List<Thuoc> ds = new ArrayList<>();
+         String sql = "SELECT t.maThuoc, t.tenThuoc, t.giaBan, ct.soLuong, t.donViTinh " +
+                      "FROM ChiTietHoaDon ct JOIN Thuoc t ON ct.maThuoc = t.maThuoc " +
+                      "WHERE ct.maHD = ?";
+         try (Connection con = ConnectDB.getConnection();
+              PreparedStatement ps = con.prepareStatement(sql)) {
+             ps.setString(1, maHD);
+             ResultSet rs = ps.executeQuery();
+             while (rs.next()) {
+                 Thuoc t = new Thuoc();
+                 t.setMaThuoc(rs.getString("maThuoc"));
+                 t.setTenThuoc(rs.getString("tenThuoc"));
+                 t.setGiaBan(rs.getDouble("giaBan"));
+                 t.setSoLuong(rs.getInt("soLuong"));
+                 t.setDonViTinh(rs.getString("donViTinh"));
+                 ds.add(t);
+             }
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
+         return ds;
+     }
 
 
 } 

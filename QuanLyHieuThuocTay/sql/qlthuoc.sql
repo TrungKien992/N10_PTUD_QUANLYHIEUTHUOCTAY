@@ -1,4 +1,4 @@
-﻿﻿USE master
+﻿USE master
 GO
 
 IF DB_ID('QLThuoc') IS NOT NULL
@@ -226,6 +226,28 @@ CREATE TABLE ChiTietPhieuCho (
 );
 GO
 
+CREATE TABLE PhieuDoiTra (
+    maPDT CHAR(10) PRIMARY KEY,           
+    ngayDoiTra DATE NOT NULL,        
+    lyDo NVARCHAR(255),             
+    loaiPhieu NVARCHAR(20) NOT NULL, 
+    tienHoanLai DECIMAL(18,2) DEFAULT 0,
+    maNV VARCHAR(20) NOT NULL,  
+    maHD VARCHAR(20) NOT NULL,  
+    FOREIGN KEY (maNV) REFERENCES NhanVien(maNV),
+    FOREIGN KEY (maHD) REFERENCES HoaDon(maHD)
+);
+GO
+CREATE TABLE CTPhieuDoiTra (
+    maPDT CHAR(10) NOT NULL,  
+    maThuoc VARCHAR(20) NOT NULL,
+    soLuong INT NOT NULL CHECK (soLuong > 0),
+    PRIMARY KEY (maPDT, maThuoc),
+    FOREIGN KEY (maPDT) REFERENCES PhieuDoiTra(maPDT),
+    FOREIGN KEY (maThuoc) REFERENCES Thuoc(maThuoc)
+);
+GO
+
 --------------------------------------------------
 -- DỮ LIỆU MẪU
 --------------------------------------------------
@@ -333,3 +355,15 @@ UPDATE PhieuDatHang SET TongTien = 390000 WHERE MaPhieu = 'PDH001';
 UPDATE PhieuDatHang SET TongTien = 380000 WHERE MaPhieu = 'PDH002';
 UPDATE PhieuDatHang SET TongTien = 500000 WHERE MaPhieu = 'PDH003';
 GO
+
+INSERT INTO PhieuDoiTra (maPDT, ngayDoiTra, lyDo, loaiPhieu, tienHoanLai, maNV, maHD)
+VALUES ('PDT001', '2025-10-20', N'Thuốc bị ẩm, khách trả lại', N'Trả thuốc', 7500, 'NV002', 'HD001');
+
+INSERT INTO CTPhieuDoiTra (maPDT, maThuoc, soLuong)
+VALUES ('PDT001', 'T01', 5);
+
+INSERT INTO PhieuDoiTra (maPDT, ngayDoiTra, lyDo, loaiPhieu, tienHoanLai, maNV, maHD)
+VALUES ('PDT002', '2025-10-22', N'Khách muốn đổi sang loại Vitamin khác', N'Đổi thuốc', 0, 'NV002', 'HD001');
+
+INSERT INTO CTPhieuDoiTra (maPDT, maThuoc, soLuong)
+VALUES ('PDT002', 'T05', 2);

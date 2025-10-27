@@ -114,6 +114,10 @@ public class HoaDon_Controller {
     private TableRowSorter<DefaultTableModel> sorterNVNgay;
     private TableRowSorter<DefaultTableModel> sorterNVThang;
     private TableRowSorter<DefaultTableModel> sorterNVNam;
+    private DoiTra_Controller doiTraController;
+    public void setDoiTraController(DoiTra_Controller doiTraController) {
+        this.doiTraController = doiTraController;
+    }
 
     public HoaDon_Controller(TrangChu_GUI view) {
         this.view = view;
@@ -667,6 +671,12 @@ public class HoaDon_Controller {
             clearHoaDonForm();
             filterTimKiemThuocTable(); // Cập nhật bảng tìm thuốc (số lượng tồn)
             loadTatCaHoaDon(); // Cập nhật bảng tìm hóa đơn
+            if (doiTraController != null) {
+                doiTraController.lamMoiBangHoaDonTraThuoc();
+            }
+            if (doiTraController != null) {
+                doiTraController.lamMoiBangHoaDonDoiThuoc();
+            }
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Thanh toán thất bại: \n" + e.getMessage(), "Lỗi Database", JOptionPane.ERROR_MESSAGE);
