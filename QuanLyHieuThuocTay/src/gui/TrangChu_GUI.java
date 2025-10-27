@@ -1,16 +1,9 @@
 package gui;
 
-import java.awt.EventQueue;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Font;
-import java.awt.Image;
 import dao.thuoc_DAO;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
-import java.awt.Color;
-
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -57,6 +50,7 @@ import controller.NhaCungCap_Controller;
 import controller.PhieuDatHang_Controller;
 import controller.ThemKH_Controller;
 import controller.ThuocSapHetHan_Controller;
+import controller.ThuocSapHetHang_Controller;
 import controller.Thuoc_Controller;
 import controller.DoiTra_Controller;
 
@@ -258,6 +252,8 @@ public class TrangChu_GUI extends JFrame{
     private static final Color COLOR_SIDEBAR_BUTTON_SELECTED = new Color(0, 170, 170); // Màu khi nút được chọn
     private static final Color COLOR_SIDEBAR_TEXT = Color.WHITE;
 	private static final Color COLOR_ACCENT_GREEN = null;
+	private static final Font FONT_INPUT = null;
+	private static final Font FONT_PLACEHOLDER = null;
     public JTextField txtDC_TNCC;
     public JTextField txtDiaChi_CNNCC;
     public JTextArea txtGhiChu_CNNCC;
@@ -408,6 +404,18 @@ public class TrangChu_GUI extends JFrame{
 	public JButton btn_doithuoc_luu;
 	public JTextField txt_trathuoc_sldoi;
 	public JTextField txt_doithuoc_sldoi;
+	public Thuoc_Controller thuoc_controller;
+	public JButton btn_tshhan_lammoi;
+	public JButton btn_tshhan_loc;
+	public JSpinner spinner_tshhan_nguong;
+	public JLabel lbl_tshhan_nguong;
+	public JTextField text_tshhan_timkiem;
+	public JLabel lbl_tshhan_timkiem;
+	public JButton btn_tshhan_xuatfile;
+	public ThuocSapHetHang_Controller thuocSapHetHang_controller;
+	public JPopupMenu popup_tshhan_table;
+	public JMenuItem item_tshhan_xemchitiet;
+	public JMenuItem item_tshhan_xemncc;
 	
 	
 	
@@ -2435,7 +2443,57 @@ public class TrangChu_GUI extends JFrame{
         // ===== KẾT THÚC KHỐI CODE THUỐC BÁN CHẠY =====
 
 
-        // ===== BẮT ĐẦU KHỐI CODE THUỐC SẮP HẾT HÀNG ĐÃ SỬA =====
+//        // ===== BẮT ĐẦU KHỐI CODE THUỐC SẮP HẾT HÀNG ĐÃ SỬA =====
+//        JPanel pn_thuocsaphethang = new JPanel();
+//        maincontent.add(pn_thuocsaphethang, "Thuocsaphethang");
+//        pn_thuocsaphethang.setLayout(null);
+//        pn_thuocsaphethang.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+//
+//        JLabel lbl_tshhan_tieude = new JLabel("DANH SÁCH THUỐC SẮP HẾT HÀNG"); // Tiêu đề
+//        lbl_tshhan_tieude.setFont(FONT_TITLE_MAIN);
+//        lbl_tshhan_tieude.setForeground(COLOR_DANGER_RED); // Màu đỏ cảnh báo
+//        lbl_tshhan_tieude.setHorizontalAlignment(SwingConstants.CENTER);
+//        lbl_tshhan_tieude.setBounds(0, 11, 1584, 57); // Căn giữa
+//        pn_thuocsaphethang.add(lbl_tshhan_tieude);
+//
+//        JScrollPane scP_tshhan_table = new JScrollPane();
+//        scP_tshhan_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+//        scP_tshhan_table.setBounds(10, 75, 1679, 864); // Điều chỉnh
+//        pn_thuocsaphethang.add(scP_tshhan_table);
+//
+//        // Style bảng table_tshhan
+//        table_tshhan = new JTable() {
+//             @Override
+//            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+//                Component c = super.prepareRenderer(renderer, row, column);
+//                if (!isRowSelected(row)) {
+//                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+//                    c.setForeground(this.getForeground());
+//                } else {
+//                    c.setBackground(COLOR_PRIMARY_BLUE);
+//                }
+//                return c;
+//            }
+//        };
+//        applyCommonTableStyling(table_tshhan);
+//        table_tshhan.setModel(new DefaultTableModel(
+//            	new Object[][] {},
+//            	new String[] { // Chỉ cần hiện các cột cần thiết
+//            		"Mã Thuốc", "Tên Thuốc", "Số Lượng Tồn", "Đơn Vị Tính", "Nhà Cung Cấp", "Tên Kệ Thuốc"
+//            	}
+//            ));
+//        // Điều chỉnh setPreferredWidth nếu cần
+//        // table_tshhan.getColumnModel().getColumn(0).setPreferredWidth(30); ...
+//        scP_tshhan_table.setViewportView(table_tshhan);
+//
+//        JButton btn_tshhan_xuatfile = new JButton("Xuất File");
+//        btn_tshhan_xuatfile.setFont(FONT_BUTTON_STANDARD);
+//        styleButton(btn_tshhan_xuatfile, COLOR_SUCCESS_GREEN);
+//        btn_tshhan_xuatfile.setBounds(1537, 950, 152, 40); // Điều chỉnh
+//        pn_thuocsaphethang.add(btn_tshhan_xuatfile);
+//
+//        // ===== KẾT THÚC KHỐI CODE THUỐC SẮP HẾT HÀNG =====
+        
         JPanel pn_thuocsaphethang = new JPanel();
         maincontent.add(pn_thuocsaphethang, "Thuocsaphethang");
         pn_thuocsaphethang.setLayout(null);
@@ -2448,12 +2506,59 @@ public class TrangChu_GUI extends JFrame{
         lbl_tshhan_tieude.setBounds(0, 11, 1584, 57); // Căn giữa
         pn_thuocsaphethang.add(lbl_tshhan_tieude);
 
+        // --- PANEL ĐIỀU KHIỂN MỚI ---
+        JPanel pn_tshhan_controls = new JPanel();
+        pn_tshhan_controls.setBackground(COLOR_BACKGROUND_PRIMARY);
+        pn_tshhan_controls.setLayout(null);
+        pn_tshhan_controls.setBounds(10, 75, 1564, 50); // Panel nằm giữa tiêu đề và bảng
+        pn_thuocsaphethang.add(pn_tshhan_controls);
+
+        // Component 1: Tìm kiếm
+        lbl_tshhan_timkiem = new JLabel("Tìm kiếm:");
+        lbl_tshhan_timkiem.setFont(FONT_PLACEHOLDER);
+        lbl_tshhan_timkiem.setBounds(10, 15, 70, 25);
+        pn_tshhan_controls.add(lbl_tshhan_timkiem);
+
+        text_tshhan_timkiem = new JTextField();
+        text_tshhan_timkiem.setBounds(80, 10, 250, 30);
+        pn_tshhan_controls.add(text_tshhan_timkiem);
+
+        // Component 2: Đặt ngưỡng
+        lbl_tshhan_nguong = new JLabel("Hiển thị thuốc có số lượng tồn <=");
+        lbl_tshhan_nguong.setFont(FONT_PLACEHOLDER);
+        lbl_tshhan_nguong.setBounds(360, 15, 200, 25);
+        pn_tshhan_controls.add(lbl_tshhan_nguong);
+
+        // Spinner cho phép chọn từ 1 đến 1000, mặc định là 20
+        spinner_tshhan_nguong = new JSpinner();
+        spinner_tshhan_nguong.setModel(new SpinnerNumberModel(20, 1, 1000, 1));
+        spinner_tshhan_nguong.setFont(FONT_INPUT);
+        spinner_tshhan_nguong.setBounds(570, 10, 70, 30);
+        pn_tshhan_controls.add(spinner_tshhan_nguong);
+
+        // Component 3: Nút Lọc
+        btn_tshhan_loc = new JButton("Lọc");
+        btn_tshhan_loc.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_tshhan_loc, COLOR_PRIMARY_BLUE);
+        btn_tshhan_loc.setBounds(650, 10, 100, 30);
+        pn_tshhan_controls.add(btn_tshhan_loc);
+
+        // Component 4: Nút Làm Mới
+        btn_tshhan_lammoi = new JButton("Làm Mới");
+        btn_tshhan_lammoi.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btn_tshhan_lammoi, COLOR_DANGER_RED); // Màu vàng cho làm mới
+        btn_tshhan_lammoi.setBounds(760, 10, 100, 30);
+        pn_tshhan_controls.add(btn_tshhan_lammoi);
+        // --- KẾT THÚC PANEL ĐIỀU KHIỂN ---
+
+
         JScrollPane scP_tshhan_table = new JScrollPane();
         scP_tshhan_table.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
-        scP_tshhan_table.setBounds(10, 75, 1679, 864); // Điều chỉnh
+        // Dịch bảng xuống dưới panel điều khiển và giảm chiều cao
+        scP_tshhan_table.setBounds(10, 130, 1679, 809); 
         pn_thuocsaphethang.add(scP_tshhan_table);
 
-        // Style bảng table_tshhan
+        // Style bảng table_tshhan (Giữ nguyên code của bạn)
         table_tshhan = new JTable() {
              @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -2474,17 +2579,35 @@ public class TrangChu_GUI extends JFrame{
             		"Mã Thuốc", "Tên Thuốc", "Số Lượng Tồn", "Đơn Vị Tính", "Nhà Cung Cấp", "Tên Kệ Thuốc"
             	}
             ));
-        // Điều chỉnh setPreferredWidth nếu cần
-        // table_tshhan.getColumnModel().getColumn(0).setPreferredWidth(30); ...
+        // Cho phép sắp xếp khi nhấn vào tiêu đề cột (Quan trọng)
+        table_tshhan.setAutoCreateRowSorter(true); 
+
         scP_tshhan_table.setViewportView(table_tshhan);
 
-        JButton btn_tshhan_xuatfile = new JButton("Xuất File");
+        // --- THÊM MENU CHUỘT PHẢI ---
+        popup_tshhan_table = new JPopupMenu();
+        item_tshhan_xemchitiet = new JMenuItem("Xem chi tiết thuốc");
+        item_tshhan_xemncc = new JMenuItem("Xem thông tin nhà cung cấp");
+
+        popup_tshhan_table.add(item_tshhan_xemchitiet);
+        popup_tshhan_table.add(item_tshhan_xemncc);
+
+        // Gắn JPopupMenu vào JTable
+        table_tshhan.setComponentPopupMenu(popup_tshhan_table);
+        // --- KẾT THÚC MENU CHUỘT PHẢI ---
+
+
+        btn_tshhan_xuatfile = new JButton("Xuất File");
         btn_tshhan_xuatfile.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_tshhan_xuatfile, COLOR_SUCCESS_GREEN);
-        btn_tshhan_xuatfile.setBounds(1537, 950, 152, 40); // Điều chỉnh
+        // Vị trí y của nút Xuất File vẫn như cũ (nằm dưới bảng)
+        btn_tshhan_xuatfile.setBounds(1537, 950, 152, 40); 
         pn_thuocsaphethang.add(btn_tshhan_xuatfile);
 
-        // ===== KẾT THÚC KHỐI CODE THUỐC SẮP HẾT HÀNG =====
+        // Khởi tạo controller (Giữ nguyên 2 dòng của bạn)
+        thuoc_controller = new Thuoc_Controller(this);
+        thuocSapHetHang_controller = new ThuocSapHetHang_Controller(this); 
+        // ===== KẾT THÚC KHỐI CODE THUỐC SẮP HẾT HÀNG ===== 
         
      // ===== BẮT ĐẦU KHỐI CODE THỐNG KÊ HÓA ĐƠN ĐÃ SỬA =====
         JPanel pn_ThongkeHD = new JPanel();
