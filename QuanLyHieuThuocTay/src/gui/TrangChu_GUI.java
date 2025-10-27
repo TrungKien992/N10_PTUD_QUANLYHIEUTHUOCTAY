@@ -29,6 +29,7 @@ import entity.KhachHang;
 import entity.KhuyenMai;
 import entity.NhanVien;
 import entity.TaiKhoan;
+import entity.Thuoc;
 
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -54,6 +55,7 @@ import controller.KhuyenMai_Controller;
 import controller.NhaCungCap_Controller;
 import controller.PhieuDatHang_Controller;
 import controller.ThemKH_Controller;
+import controller.ThuocSapHetHan_Controller;
 import controller.Thuoc_Controller;
 
 import javax.swing.*;
@@ -62,6 +64,12 @@ import java.awt.event.*;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 
 
@@ -398,7 +406,7 @@ public class TrangChu_GUI extends JFrame{
         QuanLyHieuThuocTay.setTitle("Hệ Thống Quản Lý Hiệu Thuốc Tây");
         
         ImageIcon icon = new ImageIcon("C:\\Users\\Admin\\eclipse-workspace\\QuanLyHieuThuoc\\image\\z7068801445103_7be0ebb233e8a4eceb10c3aceb500455.jpg");
-        QuanLyHieuThuocTay.setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Admin\\eclipse-workspace\\N10_PTUD_QUANLYHIEUTHUOCTAY\\QuanLyHieuThuocTay\\img\\icon_tieude.png"));
+        QuanLyHieuThuocTay.setIconImage(Toolkit.getDefaultToolkit().getImage("img/icon_tieude.png"));
         QuanLyHieuThuocTay.setSize(1935,1040);
         QuanLyHieuThuocTay.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         QuanLyHieuThuocTay.setLocationRelativeTo(null);
@@ -577,7 +585,16 @@ public class TrangChu_GUI extends JFrame{
         // 3. TẠO ẢNH NỀN (Add sau)
         // (Sử dụng tên biến 'lblNewLabel' như trong file gốc của Đại Ca)
         JLabel lblNewLabel = new JLabel(""); 
-        lblNewLabel.setIcon(new ImageIcon("C:\\Users\\Admin\\eclipse-workspace\\N10_PTUD_QUANLYHIEUTHUOCTAY\\QuanLyHieuThuocTay\\img\\Trangchu.jpg"));
+        java.net.URL imgTrangChu = getClass().getResource("/Trangchu.jpg");
+        if (imgTrangChu != null) {
+            ImageIcon originalIcon = new ImageIcon(imgTrangChu);
+
+            // Scale ảnh cho vừa kích thước panel
+            Image scaledImage = originalIcon.getImage().getScaledInstance(1699, 1001, Image.SCALE_SMOOTH);
+            lblNewLabel.setIcon(new ImageIcon(scaledImage));
+        } else {
+            System.err.println("❌ Không tìm thấy ảnh: /img/Trangchu.jpg");
+        }
         lblNewLabel.setBounds(0, 0, 1699, 1001);
         pn_Trangchu.add(lblNewLabel);
         
@@ -2197,11 +2214,100 @@ public class TrangChu_GUI extends JFrame{
         table_tshh.getColumnModel().getColumn(9).setPreferredWidth(300);
         scP_tshh_table.setViewportView(table_tshh);
 
+        JButton btnBieuDo_tshhan = new JButton("Biểu đồ");
+        btnBieuDo_tshhan.setFont(FONT_BUTTON_STANDARD);
+        btnBieuDo_tshhan.setBounds(1230, 877, 152, 40); // đặt bên trái nút Xuất File
+        btnBieuDo_tshhan.addActionListener(e -> {
+            ThuocSapHetHan_Controller controller = new ThuocSapHetHan_Controller();
+            var dataset = controller.taoDatasetBieuDo();
+
+            if (dataset.getColumnCount() == 0) {
+                JOptionPane.showMessageDialog(null, "Không có thuốc sắp hết hạn để vẽ biểu đồ!");
+                return;
+            }
+
+            // Tạo biểu đồ
+            JFreeChart chart = ChartFactory.createBarChart(
+                    "Biểu đồ số ngày còn lại đến khi hết hạn",
+                    "Tên thuốc", "Số ngày còn lại",
+                    dataset,
+                    PlotOrientation.VERTICAL,
+                    true, true, false
+            );
+
+            // Tùy chỉnh màu sắc cho đẹp
+            CategoryPlot plot = chart.getCategoryPlot();
+            plot.setRangeGridlinePaint(Color.GRAY);
+
+            ChartPanel chartPanel = new ChartPanel(chart);
+            chartPanel.setPreferredSize(new Dimension(800, 500));
+
+            // Hiển thị trong dialog riêng
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Biểu đồ thuốc sắp hết hạn");
+            dialog.setModal(true);
+            dialog.getContentPane().add(chartPanel);
+            dialog.pack();
+            dialog.setLocationRelativeTo(null);
+            dialog.setVisible(true);
+        });
+        pn_thuocsaphethan.add(btnBieuDo_tshhan);
+
+        
         JButton btn_tshh_xuatfile = new JButton("Xuất File");
         btn_tshh_xuatfile.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_tshh_xuatfile, COLOR_SUCCESS_GREEN);
         btn_tshh_xuatfile.setBounds(1412, 877, 152, 40); // Điều chỉnh
+        btn_tshh_xuatfile.addActionListener(e -> {
+            ThuocSapHetHan_Controller controller = new ThuocSapHetHan_Controller();
+            List<Thuoc> dsSapHetHan = controller.getDanhSachThuocSapHetHan();
+
+            if (dsSapHetHan.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Không có thuốc sắp hết hạn để xuất!");
+                return;
+            }
+
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Chọn nơi lưu file Excel");
+            chooser.setSelectedFile(new java.io.File("DanhSachThuocSapHetHan.xlsx"));
+            int option = chooser.showSaveDialog(null);
+
+            if (option == JFileChooser.APPROVE_OPTION) {
+                String filePath = chooser.getSelectedFile().getAbsolutePath();
+                controller.exportToExcel(dsSapHetHan, filePath);
+                JOptionPane.showMessageDialog(null, "Xuất file thành công!");
+            }
+        });
+
         pn_thuocsaphethan.add(btn_tshh_xuatfile);
+        
+        
+        
+        pn_thuocsaphethan.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                DefaultTableModel model = (DefaultTableModel) table_tshh.getModel();
+                model.setRowCount(0); // Xóa dữ liệu cũ
+
+                ThuocSapHetHan_Controller controller = new ThuocSapHetHan_Controller();
+                List<Thuoc> dsSapHetHan = controller.getDanhSachThuocSapHetHan();
+
+                for (Thuoc t : dsSapHetHan) {
+                    model.addRow(new Object[]{
+                        t.getMaThuoc(),
+                        t.getTenThuoc(),
+                        t.getSoLuong(),
+                        t.getGiaNhap(),
+                        t.getGiaBan(),
+                        t.getDonViTinh(),
+                        (t.getNhaCungCap() != null ? t.getNhaCungCap().getMaNhaCungCap() : ""),
+                        t.getHanSuDung(),
+                        (t.getKeThuoc() != null ? t.getKeThuoc().getLoaiKe() : ""),
+                        t.getThanhPhan()
+                    });
+                }
+            }
+        });
 
         // ===== KẾT THÚC KHỐI CODE THUỐC SẮP HẾT HẠN =====
 
@@ -6468,7 +6574,37 @@ public class TrangChu_GUI extends JFrame{
             });
         }
     }
-    
+    private void loadDataThuocSapHetHan() {
+        try {
+            ThuocSapHetHan_Controller controller = new ThuocSapHetHan_Controller();
+            List<Thuoc> dsThuoc = controller.getDanhSachThuocSapHetHan();
+
+            DefaultTableModel model = (DefaultTableModel) table_tshh.getModel();
+            model.setRowCount(0); // Xóa dữ liệu cũ
+
+            for (Thuoc t : dsThuoc) {
+                model.addRow(new Object[] {
+                    t.getMaThuoc(),
+                    t.getTenThuoc(),
+                    t.getSoLuong(),
+                    t.getGiaNhap(),
+                    t.getGiaBan(),
+                    t.getDonViTinh(),
+                    t.getNhaCungCap() != null ? t.getNhaCungCap().getTenNhaCungCap() : "—",
+                    t.getHanSuDung(),
+                    t.getKeThuoc() != null ? t.getKeThuoc().getLoaiKe() : "—",
+                    t.getThanhPhan()
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                "Lỗi khi tải dữ liệu thuốc sắp hết hạn!",
+                "Lỗi",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
  // Hàm tạo nút cho submenu con
     private JButton createSubmenuButton(String text) {
         JButton button = new JButton(text);
