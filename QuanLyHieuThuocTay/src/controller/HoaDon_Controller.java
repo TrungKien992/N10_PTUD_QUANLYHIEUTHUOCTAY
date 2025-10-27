@@ -9,6 +9,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.ParseException; // THÊM MỚI
 import java.text.SimpleDateFormat;
@@ -16,15 +18,25 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel; 
 import javax.swing.JButton; // THÊM MỚI
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+
 import java.io.File; // THÊM MỚI
 import java.io.IOException;
 import java.nio.file.Files; // THÊM MỚI
@@ -57,10 +69,27 @@ import entity.PhieuChoThanhToan;
 import entity.ChiTietPhieuCho;
 import gui.ChiTietThuoc_GUI;
 import gui.DsPhieuDatThuoc_GUI; 
-import gui.ThemKH_GUI; 
+import gui.ThemKH_GUI;
+import gui.ThongkeHDNam_GUI;
+import gui.ThongkeHDThang_GUI;
 import gui.TrangChu_GUI;
 import gui.XemchitietHD_GUI;
 import utils.PdfExporter;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.category.DefaultCategoryDataset;
+import java.awt.BorderLayout; // Đảm bảo đã có
+import java.awt.Color;      // Đảm bảo đã có
+import java.awt.Font;       // Đảm bảo đã có
+import java.text.DecimalFormat; // Đảm bảo đã có
+
 
 public class HoaDon_Controller {
 	private keThuoc_DAO keThuocDAO;
@@ -82,6 +111,9 @@ public class HoaDon_Controller {
     private NhanVien currentNhanVien = null;
     private DecimalFormat df = new DecimalFormat("#,##0 VND");
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    private TableRowSorter<DefaultTableModel> sorterNVNgay;
+    private TableRowSorter<DefaultTableModel> sorterNVThang;
+    private TableRowSorter<DefaultTableModel> sorterNVNam;
 
     public HoaDon_Controller(TrangChu_GUI view) {
         this.view = view;
@@ -93,8 +125,6 @@ public class HoaDon_Controller {
         nhanVienDAO = new nhanVien_DAO();
         thueDAO = new thue_DAO();
         khuyenMaiDAO = new khuyenMai_DAO(); 
-        
-        // THÊM MỚI
         phieuChoDAO = new PhieuChoThanhToan_DAO();
         ctPhieuChoDAO = new ChiTietPhieuCho_DAO();
 
@@ -115,6 +145,8 @@ public class HoaDon_Controller {
         addTimKiemHoaDonListeners();
         loadTatCaHoaDon();
         loadCustomerPhonesToComboBox();
+        initializeThongKeComponents();
+        addThongKeListeners();
     }
 
     private void loadThuocFilters_ThemHD() {
@@ -983,4 +1015,636 @@ public class HoaDon_Controller {
         view.cb_Nhapsosdtkh.setSelectedItem(null);
         AutoCompleteDecorator.decorate(view.cb_Nhapsosdtkh);
     }
+    private void initializeThongKeComponents() {
+        // --- Tab Theo Ngày ---
+        view.date_tktn_ngay.setDate(new Date());
+        view.cb_tktn_tktnv_boloc.setModel(new DefaultComboBoxModel<>(new String[] {"Tất cả nhân viên", "Theo nhân viên cụ thể"}));
+        loadNhanVienToTable(view.table_8);
+        setupNhanVienFilter(view.text_tktn_tktnv_boloc_manv, view.text_tktn_tktnv_boloc_tennv, view.table_8);
+        // Sửa: Truyền thẳng JTable
+        setNhanVienFilterControlsVisible(view.pn_tktn_tktnv_boloc_pntk, view.table_8, false); // Tắt filter và xóa bảng NV ban đầu
+
+        // --- Tab Theo Tháng ---
+        view.month_tktt.setMonth(LocalDate.now().getMonthValue() - 1);
+        view.year_tktt.setYear(LocalDate.now().getYear());
+        view.cb_tktt_tknv.setModel(new DefaultComboBoxModel<>(new String[] {"Tất cả nhân viên", "Theo nhân viên cụ thể"}));
+        loadNhanVienToTable(view.table_ttkt);
+        setupNhanVienFilter(view.text_tktt_tk_boloc_manv, view.text_tktt_tk_boloc_tennv, view.table_ttkt);
+        // Sửa: Truyền thẳng JTable
+        setNhanVienFilterControlsVisible(view.pn_tktt_tk_boloc_tknv, view.table_ttkt, false);
+
+        // --- Tab Theo Năm ---
+        view.year_tktn.setYear(LocalDate.now().getYear());
+        view.cb_chonnamtk.setModel(new DefaultComboBoxModel<>(new String[] {"Tất cả nhân viên", "Theo nhân viên cụ thể"}));
+        loadNhanVienToTable(view.table_tktn_hiennv);
+        setupNhanVienFilter(view.text_tktnam_locnv_manv, view.text_tktnam_locnv_tennv, view.table_tktn_hiennv);
+        // Sửa: Truyền thẳng JTable
+        setNhanVienFilterControlsVisible(view.pn_tktnam_locnv, view.table_tktn_hiennv, false);
+
+        // --- Tải dữ liệu thống kê ban đầu ---
+        updateThongKeTheoNgay();
+        updateThongKeTheoThang();
+        updateThongKeTheoNam();
+    }
+
+    /**
+     * THÊM MỚI: Gán các listener cho các thành phần trong panel thống kê.
+     */
+    private void addThongKeListeners() {
+        // --- Tab Theo Ngày ---
+        view.date_tktn_ngay.addPropertyChangeListener("date", (PropertyChangeEvent evt) -> {
+            updateThongKeTheoNgay();
+        });
+        view.table_8.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (view.cb_tktn_tktnv_boloc.getSelectedIndex() == 1) {
+                     updateThongKeTheoNgay();
+                }
+            }
+        });
+        view.cb_tktn_tktnv_boloc.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                boolean enableFilter = (view.cb_tktn_tktnv_boloc.getSelectedIndex() == 1);
+                // Sửa: Truyền thẳng JTable thay vì JScrollPane
+                setNhanVienFilterControlsVisible(view.pn_tktn_tktnv_boloc_pntk, view.table_8, enableFilter);
+                if (!enableFilter) {
+                    clearNhanVienSelection(view.table_8); // Chỉ bỏ chọn, không cần reset filter bảng HD nữa
+                    updateThongKeTheoNgay(); // Tải lại cho tất cả
+                } else {
+                     ((DefaultTableModel) view.table_tktn.getModel()).setRowCount(0);
+                     view.lbl_tktn_hientongsohd.setText("0");
+                     view.lbl_tktn_hientongsotien.setText("0 VND");
+                     view.table_8.clearSelection();
+                }
+            }
+        });
+
+        // --- Tab Theo Tháng ---
+        PropertyChangeListener monthYearListener = (PropertyChangeEvent evt) -> {
+            updateThongKeTheoThang();
+        };
+        view.month_tktt.addPropertyChangeListener("month", monthYearListener);
+        view.year_tktt.addPropertyChangeListener("year", monthYearListener);
+        view.table_ttkt.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                 if (view.cb_tktt_tknv.getSelectedIndex() == 1) {
+                    updateThongKeTheoThang();
+                 }
+            }
+        });
+        view.btn_tktt_xemchitiet.addActionListener(e -> xemChiTietThongKeThang());
+        view.cb_tktt_tknv.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                 boolean enableFilter = (view.cb_tktt_tknv.getSelectedIndex() == 1);
+                 // Sửa: Truyền thẳng JTable
+                 setNhanVienFilterControlsVisible(view.pn_tktt_tk_boloc_tknv, view.table_ttkt, enableFilter);
+                 if (!enableFilter) {
+                    clearNhanVienSelection(view.table_ttkt);
+                    updateThongKeTheoThang();
+                 } else {
+                     ((DefaultTableModel) view.table_hienhd_tktt.getModel()).setRowCount(0);
+                     view.lbl_tktt_hiensohd.setText("0");
+                     view.lbl_tktt_hientongtienhd.setText("0 VND");
+                     view.table_ttkt.clearSelection();
+                 }
+            }
+        });
+
+        // --- Tab Theo Năm ---
+        view.year_tktn.addPropertyChangeListener("year", (PropertyChangeEvent evt) -> {
+            updateThongKeTheoNam();
+        });
+        view.table_tktn_hiennv.addMouseListener(new MouseAdapter() {
+             @Override
+            public void mouseClicked(MouseEvent e) {
+                 if (view.cb_chonnamtk.getSelectedIndex() == 1) {
+                    updateThongKeTheoNam();
+                 }
+            }
+        });
+        view.btn_tktnam_xemchitiet.addActionListener(e -> xemChiTietThongKeNam());
+        view.cb_chonnamtk.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                 boolean enableFilter = (view.cb_chonnamtk.getSelectedIndex() == 1);
+                 // Sửa: Truyền thẳng JTable
+                 setNhanVienFilterControlsVisible(view.pn_tktnam_locnv, view.table_tktn_hiennv, enableFilter);
+                 if (!enableFilter) {
+                    clearNhanVienSelection(view.table_tktn_hiennv);
+                    updateThongKeTheoNam();
+                 } else {
+                     ((DefaultTableModel) view.table_11.getModel()).setRowCount(0);
+                     view.lbl_tktn_hientshd.setText("0");
+                     view.lbl_tktnam_hientongsotien.setText("0 VND");
+                     view.table_tktn_hiennv.clearSelection();
+                 }
+            }
+        });
+
+        // --- Listener nút Xuất File (Placeholder) ---
+        // ... (giữ nguyên) ...
+    }
+
+ // === CÁC HÀM XỬ LÝ CHO TAB "THỐNG KÊ THEO NGÀY" ===
+
+    private void updateThongKeTheoNgay() {
+        Date selectedDate = view.date_tktn_ngay.getDate();
+        if (selectedDate == null) {
+             // Xóa bảng và label nếu không có ngày nào được chọn
+             ((DefaultTableModel) view.table_tktn.getModel()).setRowCount(0);
+             view.lbl_tktn_hientongsohd.setText("0");
+             view.lbl_tktn_hientongsotien.setText("0 VND");
+            return;
+        }
+        LocalDate ngay = selectedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Lấy mã NV chỉ khi combobox đang chọn "Theo nhân viên cụ thể"
+        String maNVSelected = null;
+        if (view.cb_tktn_tktnv_boloc.getSelectedIndex() == 1) { // Sử dụng cb_tktn_tktnv_boloc
+             maNVSelected = getSelectedMaNV(view.table_8);
+             // Nếu chọn "Theo NV" nhưng chưa chọn NV cụ thể thì không hiển thị gì
+             if (maNVSelected == null) {
+                 ((DefaultTableModel) view.table_tktn.getModel()).setRowCount(0);
+                 view.lbl_tktn_hientongsohd.setText("0");
+                 view.lbl_tktn_hientongsotien.setText("0 VND");
+                 return; // Dừng lại
+             }
+        }
+
+        // 1. Cập nhật bảng chi tiết (ĐÃ CÓ LỌC THEO NV TỪ DAO)
+        DefaultTableModel modelNgay = (DefaultTableModel) view.table_tktn.getModel();
+        modelNgay.setRowCount(0);
+        List<Object[]> dsHDNgay = hoaDonDAO.getHoaDonChiTietTrongNgay(ngay, maNVSelected); // Truyền maNVSelected (có thể null)
+        for (Object[] row : dsHDNgay) {
+             // Kiểm tra kiểu dữ liệu trước khi format (phòng trường hợp DAO trả về String)
+             if (row[5] instanceof Number) {
+                 row[5] = df.format(((Number) row[5]).doubleValue());
+             }
+            modelNgay.addRow(row);
+        }
+
+        // 2. Cập nhật tổng kết (ĐÃ CÓ LỌC THEO NV TỪ DAO)
+        Map<String, Object> tongKetNgay = hoaDonDAO.getTongKetTrongNgay(ngay, maNVSelected); // Truyền maNVSelected (có thể null)
+        view.lbl_tktn_hientongsohd.setText(String.valueOf(tongKetNgay.getOrDefault("tongSoHD", 0)));
+        view.lbl_tktn_hientongsotien.setText(df.format(tongKetNgay.getOrDefault("tongTien", 0.0)));
+    }
+
+    // === CÁC HÀM XỬ LÝ CHO TAB "THỐNG KÊ THEO THÁNG" ===
+
+    private void updateThongKeTheoThang() {
+        int thang = view.month_tktt.getMonth() + 1;
+        int nam = view.year_tktt.getYear();
+        view.lbl_hienthangvanam.setText(String.format("Tháng %d/%d", thang, nam));
+
+        String maNVSelected = null;
+        if (view.cb_tktt_tknv.getSelectedIndex() == 1) {
+            maNVSelected = getSelectedMaNV(view.table_ttkt);
+             if (maNVSelected == null) {
+                 // Xóa bảng và biểu đồ nếu chưa chọn NV
+                 ((DefaultTableModel) view.table_hienhd_tktt.getModel()).setRowCount(0);
+                 view.lbl_tktt_hiensohd.setText("0");
+                 view.lbl_tktt_hientongtienhd.setText("0 VND");
+                 veBieuDoThang(new ArrayList<>()); // <<< Vẽ biểu đồ rỗng
+                 return;
+             }
+        }
+
+        // 1. Lấy dữ liệu gốc từ DAO
+        List<Object[]> dsThongKeNgay = hoaDonDAO.getThongKeTheoNgayTrongThang(thang, nam, maNVSelected);
+
+        // *** SỬA Ở ĐÂY: Vẽ biểu đồ TRƯỚC khi format ***
+        // 3. Vẽ biểu đồ (với dữ liệu gốc)
+        veBieuDoThang(dsThongKeNgay);
+
+        // 2. Cập nhật bảng thống kê (format dữ liệu cho bảng)
+        DefaultTableModel modelThang = (DefaultTableModel) view.table_hienhd_tktt.getModel();
+        modelThang.setRowCount(0);
+        for (Object[] row : dsThongKeNgay) {
+             // Kiểm tra kiểu dữ liệu và format tiền NGAY LÚC THÊM VÀO BẢNG
+             if (row[2] instanceof Number) {
+                 row[2] = df.format(((Number) row[2]).doubleValue());
+             }
+            modelThang.addRow(row); // row[2] bây giờ là String đã format
+        }
+
+        // 4. Cập nhật tổng kết
+        Map<String, Object> tongKetThang = hoaDonDAO.getTongKetTrongThang(thang, nam, maNVSelected);
+        view.lbl_tktt_hiensohd.setText(String.valueOf(tongKetThang.getOrDefault("tongSoHD", 0)));
+        view.lbl_tktt_hientongtienhd.setText(df.format(tongKetThang.getOrDefault("tongTien", 0.0)));
+    }
+
+    // === CÁC HÀM XỬ LÝ CHO TAB "THỐNG KÊ THEO NĂM" ===
+
+    private void updateThongKeTheoNam() {
+        int nam = view.year_tktn.getYear();
+        view.lbl_tktn_hiennam.setText(String.valueOf(nam));
+
+        String maNVSelected = null;
+        if (view.cb_chonnamtk.getSelectedIndex() == 1) {
+            maNVSelected = getSelectedMaNV(view.table_tktn_hiennv);
+             if (maNVSelected == null) {
+                 // Xóa bảng và biểu đồ nếu chưa chọn NV
+                 ((DefaultTableModel) view.table_11.getModel()).setRowCount(0);
+                 view.lbl_tktn_hientshd.setText("0");
+                 view.lbl_tktnam_hientongsotien.setText("0 VND");
+                 veBieuDoNam(new ArrayList<>()); // <<< Vẽ biểu đồ rỗng
+                 return;
+             }
+        }
+
+        // 1. Lấy dữ liệu gốc từ DAO
+        List<Object[]> dsThongKeThang = hoaDonDAO.getThongKeTheoThangTrongNam(nam, maNVSelected);
+
+        // *** SỬA Ở ĐÂY: Vẽ biểu đồ TRƯỚC khi format ***
+        // 3. Vẽ biểu đồ (với dữ liệu gốc)
+        veBieuDoNam(dsThongKeThang);
+
+        // 2. Cập nhật bảng thống kê (format dữ liệu cho bảng)
+        DefaultTableModel modelNam = (DefaultTableModel) view.table_11.getModel();
+        modelNam.setRowCount(0);
+        for (Object[] row : dsThongKeThang) {
+            row[0] = "Tháng " + row[0]; // Format tháng
+            // Kiểm tra kiểu dữ liệu và format tiền NGAY LÚC THÊM VÀO BẢNG
+            if (row[2] instanceof Number) {
+                row[2] = df.format(((Number) row[2]).doubleValue());
+            }
+            modelNam.addRow(row); // row[2] bây giờ là String đã format
+        }
+
+        // 4. Cập nhật tổng kết
+        Map<String, Object> tongKetNam = hoaDonDAO.getTongKetTrongNam(nam, maNVSelected);
+        view.lbl_tktn_hientshd.setText(String.valueOf(tongKetNam.getOrDefault("tongSoHD", 0)));
+        view.lbl_tktnam_hientongsotien.setText(df.format(tongKetNam.getOrDefault("tongTien", 0.0)));
+    }
+    
+    private void xemChiTietThongKeThang() {
+        int selectedRow = view.table_hienhd_tktt.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng chọn một ngày trong bảng để xem chi tiết!");
+            return;
+        }
+
+        int ngay = (int) view.table_hienhd_tktt.getValueAt(selectedRow, 0);
+        int thang = view.month_tktt.getMonth() + 1;
+        int nam = view.year_tktt.getYear();
+        LocalDate selectedDate = LocalDate.of(nam, thang, ngay);
+
+        // Lấy mã NV đang được chọn (nếu có)
+        String maNVSelected = getSelectedMaNV(view.table_ttkt);
+
+        ThongkeHDThang_GUI dialog = new ThongkeHDThang_GUI(view.QuanLyHieuThuocTay);
+        // Truyền ngày tháng năm và mã NV vào dialog để load dữ liệu
+        dialog.loadData(selectedDate, maNVSelected); // Cần thêm hàm loadData(LocalDate, String) vào ThongkeHDThang_GUI
+        dialog.setVisible(true);
+    }
+
+    /** THÊM MỚI: Mở dialog xem chi tiết hóa đơn của một tháng trong năm */
+    private void xemChiTietThongKeNam() {
+        int selectedRow = view.table_11.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng chọn một tháng trong bảng để xem chi tiết!");
+            return;
+        }
+
+        // Lấy tháng từ chuỗi "Tháng x"
+        String thangStr = view.table_11.getValueAt(selectedRow, 0).toString().replace("Tháng ", "");
+        int thang = Integer.parseInt(thangStr);
+        int nam = view.year_tktn.getYear();
+
+        // Lấy mã NV đang được chọn (nếu có)
+        String maNVSelected = getSelectedMaNV(view.table_tktn_hiennv);
+
+        ThongkeHDNam_GUI dialog = new ThongkeHDNam_GUI(view.QuanLyHieuThuocTay);
+        // Truyền tháng, năm và mã NV vào dialog để load dữ liệu
+        dialog.loadData(thang, nam, maNVSelected); // Cần thêm hàm loadData(int, int, String) vào ThongkeHDNam_GUI
+        dialog.setVisible(true);
+    }
+
+    // === CÁC HÀM HỖ TRỢ CHO LỌC NHÂN VIÊN TRONG THỐNG KÊ ===
+
+    /** THÊM MỚI: Load danh sách nhân viên vào bảng lọc */
+    private void loadNhanVienToTable(JTable tableNV) {
+        DefaultTableModel modelNV = (DefaultTableModel) tableNV.getModel();
+        modelNV.setRowCount(0);
+        List<NhanVien> dsNV = nhanVienDAO.getAllNhanVien();
+        for (NhanVien nv : dsNV) {
+            modelNV.addRow(new Object[]{nv.getMaNV(), nv.getTenNV()});
+        }
+    }
+
+    /** THÊM MỚI: Thiết lập bộ lọc cho bảng nhân viên (theo mã và tên) */
+    private void setupNhanVienFilter(JTextField txtMaNV, JTextField txtTenNV, JTable tableNV) { // *** Bỏ tham số sorter ***
+        DefaultTableModel modelNV = (DefaultTableModel) tableNV.getModel();
+        TableRowSorter<DefaultTableModel> currentSorter; // Biến cục bộ tạm để listener truy cập
+
+        // Xác định và khởi tạo sorter tương ứng cho bảng
+        if (tableNV == view.table_8) {
+            sorterNVNgay = new TableRowSorter<>(modelNV);
+            tableNV.setRowSorter(sorterNVNgay);
+            currentSorter = sorterNVNgay; // Gán sorter của tab Ngày
+        } else if (tableNV == view.table_ttkt) {
+            sorterNVThang = new TableRowSorter<>(modelNV);
+            tableNV.setRowSorter(sorterNVThang);
+            currentSorter = sorterNVThang; // Gán sorter của tab Tháng
+        } else if (tableNV == view.table_tktn_hiennv) {
+            sorterNVNam = new TableRowSorter<>(modelNV);
+            tableNV.setRowSorter(sorterNVNam);
+            currentSorter = sorterNVNam; // Gán sorter của tab Năm
+        } else {
+             System.err.println("Lỗi setupNhanVienFilter: Bảng không xác định.");
+            return; // Thoát nếu bảng không khớp
+        }
+
+        // Biến currentSorter bây giờ là effectively final vì nó chỉ được gán giá trị một lần
+        // trong mỗi nhánh if/else if và không bị thay đổi sau đó trước khi listener được tạo.
+
+        DocumentListener filterListenerNV = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { applyNhanVienFilter(); }
+            @Override public void removeUpdate(DocumentEvent e) { applyNhanVienFilter(); }
+            @Override public void changedUpdate(DocumentEvent e) { applyNhanVienFilter(); }
+
+            private void applyNhanVienFilter() {
+                List<RowFilter<Object, Object>> filters = new ArrayList<>();
+                String maFilter = txtMaNV.getText().trim();
+                String tenFilter = txtTenNV.getText().trim();
+
+                if (!maFilter.isEmpty()) {
+                    filters.add(RowFilter.regexFilter("(?i)" + maFilter, 0));
+                }
+                if (!tenFilter.isEmpty()) {
+                    filters.add(RowFilter.regexFilter("(?i)" + tenFilter, 1));
+                }
+
+                RowFilter<Object, Object> combinedFilter = RowFilter.andFilter(filters);
+                // *** SỬA Ở ĐÂY: Dùng biến currentSorter (effectively final) ***
+                currentSorter.setRowFilter(combinedFilter); // Dòng 1298 cũ giờ dùng currentSorter
+            }
+        };
+
+        txtMaNV.getDocument().addDocumentListener(filterListenerNV);
+        txtTenNV.getDocument().addDocumentListener(filterListenerNV);
+
+        // *** Bỏ khối if/else gán sorter ở cuối vì đã gán ở trên rồi ***
+        // if (tableNV == view.table_8) sorterNVNgay = sorter;
+        // else if (tableNV == view.table_ttkt) sorterNVThang = sorter;
+        // else if (tableNV == view.table_tktn_hiennv) sorterNVNam = sorter;
+    }
+
+    /** THÊM MỚI: Lấy mã NV từ dòng đang được chọn trong bảng lọc NV */
+    private String getSelectedMaNV(JTable tableNV) {
+        int selectedRow = tableNV.getSelectedRow();
+        if (selectedRow != -1) {
+            // Chuyển đổi view row index sang model row index (quan trọng khi có filter)
+            int modelRow = tableNV.convertRowIndexToModel(selectedRow);
+            return tableNV.getModel().getValueAt(modelRow, 0).toString(); // Cột 0 là Mã NV
+        }
+        return null; // Không có NV nào được chọn
+    }
+
+    /** THÊM MỚI: Bỏ chọn dòng trong bảng lọc NV */
+    /** Bỏ chọn dòng trong bảng lọc NV */
+    private void clearNhanVienSelection(JTable tableNV) {
+        tableNV.clearSelection(); 
+    }
+
+    /**
+     * THÊM MỚI: Lọc bảng hóa đơn chi tiết (tab Ngày) dựa trên nhân viên được chọn.
+     * Áp dụng filter trực tiếp lên TableRowSorter của bảng hóa đơn.
+     * @param tableNV Bảng lọc nhân viên
+     * @param tableHD Bảng hóa đơn cần lọc
+     * @param colMaNV Index cột Mã NV trong bảng HD
+     * @param colTenNV Index cột Tên NV trong bảng HD (có thể dùng 1 trong 2)
+     */
+     private void filterHoaDonTableBySelectedNV(JTable tableNV, JTable tableHD, int colMaNV, int colTenNV) {
+         String maNVSelected = getSelectedMaNV(tableNV);
+         DefaultTableModel modelHD = (DefaultTableModel) tableHD.getModel();
+         TableRowSorter<DefaultTableModel> sorterHD = new TableRowSorter<>(modelHD);
+         tableHD.setRowSorter(sorterHD);
+
+         if (maNVSelected != null) {
+             // Lọc bảng HD theo mã NV đã chọn (không phân biệt hoa thường)
+             sorterHD.setRowFilter(RowFilter.regexFilter("(?i)" + maNVSelected, colMaNV));
+         } else {
+             // Nếu không có NV nào được chọn, hiển thị tất cả
+             sorterHD.setRowFilter(null);
+         }
+     }
+
+     // === CÁC HÀM TÍNH TOÁN TỔNG KẾT THEO NV (TẠM THỜI) ===
+     // Lưu ý: Các hàm này sẽ chậm nếu có nhiều hóa đơn. Nên tối ưu trong DAO.
+
+     private Map<String, Object> tinhTongKetThangTheoNV(int thang, int nam, String maNV) {
+         Map<String, Object> result = new HashMap<>();
+         int tongSoHD = 0;
+         double tongTien = 0.0;
+
+         // Lấy tất cả HD chi tiết trong tháng (chưa tối ưu)
+         List<Object[]> dsHDThang = hoaDonDAO.getHoaDonChiTietTrongThangNam(thang, nam); // Cần thêm hàm này vào DAO
+
+         for (Object[] hd : dsHDThang) {
+             String maNVTrongHD = (String) hd[3]; // Giả sử cột 3 là MaNV
+             if (maNV.equals(maNVTrongHD)) {
+                 tongSoHD++;
+                 tongTien += (Double) hd[5]; // Giả sử cột 5 là Tổng tiền
+             }
+         }
+         result.put("tongSoHD", tongSoHD);
+         result.put("tongTien", tongTien);
+         return result;
+     }
+
+     private Map<String, Object> tinhTongKetNamTheoNV(int nam, String maNV) {
+         Map<String, Object> result = new HashMap<>();
+         int tongSoHD = 0;
+         double tongTien = 0.0;
+
+         // Lấy tất cả HD chi tiết trong năm (chưa tối ưu)
+          List<Object[]> dsHDNam = hoaDonDAO.getHoaDonChiTietTrongNam(nam); // Cần thêm hàm này vào DAO
+
+         for (Object[] hd : dsHDNam) {
+             String maNVTrongHD = (String) hd[3]; // Giả sử cột 3 là MaNV
+             if (maNV.equals(maNVTrongHD)) {
+                 tongSoHD++;
+                 tongTien += (Double) hd[5]; // Giả sử cột 5 là Tổng tiền
+             }
+         }
+         result.put("tongSoHD", tongSoHD);
+         result.put("tongTien", tongTien);
+         return result;
+     }
+     /**
+      * Bật/tắt các controls lọc nhân viên VÀ xóa/tải lại bảng NV.
+      * @param filterPanel Panel chứa JTextField tìm kiếm (ví dụ: pn_tktn_tktnv_boloc_pntk).
+      * @param employeeTable Bảng hiển thị danh sách nhân viên (ví dụ: table_8).
+      * @param enable Trạng thái true (bật) hoặc false (tắt).
+      */
+     private void setNhanVienFilterControlsVisible(JPanel filterPanel, JTable employeeTable, boolean enable) {
+         // Bật/tắt các JTextField bên trong filterPanel
+         if (filterPanel != null) {
+             for (Component comp : filterPanel.getComponents()) {
+                 if (comp instanceof JTextField) {
+                     comp.setEnabled(enable);
+                     if (!enable) {
+                         ((JTextField) comp).setText(""); // Xóa text khi tắt
+                     }
+                 }
+                 // Có thể xử lý thêm JComboBox bên trong nếu cần
+             }
+             // Đảm bảo panel lọc luôn hiển thị
+              filterPanel.setVisible(true);
+              if(filterPanel.getParent() != null) { // Đảm bảo panel cha của filterPanel cũng hiển thị
+                   filterPanel.getParent().setVisible(true);
+              }
+         }
+
+         // Xóa hoặc tải lại dữ liệu bảng nhân viên
+         if (employeeTable != null) {
+             DefaultTableModel model = (DefaultTableModel) employeeTable.getModel();
+             if (!enable) {
+                 model.setRowCount(0); // Xóa hết nhân viên khỏi bảng
+                 employeeTable.clearSelection(); // Bỏ chọn
+                 // Vô hiệu hóa bảng (tùy chọn)
+                 // employeeTable.setEnabled(false);
+             } else {
+                 loadNhanVienToTable(employeeTable); // Tải lại danh sách NV
+                 // Kích hoạt lại bảng (nếu đã vô hiệu hóa)
+                 // employeeTable.setEnabled(true);
+             }
+              // Đảm bảo ScrollPane chứa bảng luôn hiển thị
+              Component parent = employeeTable.getParent(); // Thường là JViewport
+              if(parent != null && parent.getParent() instanceof JScrollPane){
+                  ((JScrollPane)parent.getParent()).setVisible(true);
+              }
+         }
+         // Revalidate và repaint để cập nhật giao diện
+         if (filterPanel != null && filterPanel.getParent() != null) {
+              filterPanel.getParent().revalidate();
+              filterPanel.getParent().repaint();
+         }
+         if (employeeTable != null && employeeTable.getParent() != null && employeeTable.getParent().getParent() != null) { // table -> viewport -> scrollpane
+              employeeTable.getParent().getParent().revalidate();
+              employeeTable.getParent().getParent().repaint();
+         }
+     }
+     /**
+      * Vẽ biểu đồ cột doanh thu theo ngày trong tháng.
+      * @param data Danh sách dữ liệu, mỗi Object[] chứa: [Ngày (int), TổngSốHD (int), TổngTiền (double)]
+      */
+     private void veBieuDoThang(List<Object[]> data) {
+         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+         String series = "Doanh thu";
+
+         // Thêm dữ liệu vào dataset
+         if (data != null && !data.isEmpty()) {
+             for (Object[] row : data) {
+                 try {
+                     String ngay = String.valueOf(row[0]); // Ngày là category (trục X)
+                     double doanhThu = ((Number) row[2]).doubleValue(); // Doanh thu là value (trục Y)
+                     dataset.addValue(doanhThu, series, ngay);
+                 } catch (Exception e) { System.err.println("Lỗi dữ liệu biểu đồ tháng: " + e.getMessage()); }
+             }
+         } else {
+              dataset.addValue(0, series, "1"); // Giá trị 0 nếu không có data
+         }
+
+         // Tạo biểu đồ
+         JFreeChart barChart = ChartFactory.createBarChart(
+                 "", "Ngày", "Doanh thu (VND)", dataset,
+                 PlotOrientation.VERTICAL, false, true, false);
+
+         // Tùy chỉnh (màu sắc, font)
+         CategoryPlot plot = barChart.getCategoryPlot();
+         plot.setBackgroundPaint(Color.WHITE);
+         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+         plot.setInsets(new RectangleInsets(10, 10, 10, 10)); // Padding
+
+         CategoryAxis domainAxis = plot.getDomainAxis();
+         domainAxis.setLabelFont(new Font("Segoe UI", Font.BOLD, 14));
+         domainAxis.setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+         NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+         rangeAxis.setLabelFont(new Font("Segoe UI", Font.BOLD, 14));
+         rangeAxis.setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 12));
+         rangeAxis.setNumberFormatOverride(new DecimalFormat("#,##0"));
+
+         BarRenderer renderer = (BarRenderer) plot.getRenderer();
+         renderer.setSeriesPaint(0, new Color(0, 123, 255)); // Màu xanh dương
+         renderer.setDrawBarOutline(false);
+         renderer.setItemMargin(0.2);
+
+         // Hiển thị biểu đồ lên panel
+         ChartPanel chartPanel = new ChartPanel(barChart);
+         chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+         chartPanel.setBackground(Color.WHITE);
+
+         view.pn_bieudo_thang.removeAll(); // Xóa biểu đồ cũ
+         view.pn_bieudo_thang.add(chartPanel, BorderLayout.CENTER); // Thêm biểu đồ mới vào giữa (do dùng BorderLayout)
+         view.pn_bieudo_thang.revalidate();
+         view.pn_bieudo_thang.repaint();
+     }
+     
+     /**
+      * Vẽ biểu đồ cột doanh thu theo tháng trong năm.
+      * @param data Danh sách dữ liệu, mỗi Object[] chứa: [Tháng (int/String), TổngSốHD (int), TổngTiền (double)]
+      */
+     private void veBieuDoNam(List<Object[]> data) {
+         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+         String series = "Doanh thu";
+
+         // Thêm dữ liệu vào dataset
+         if (data != null && !data.isEmpty()) {
+             for (Object[] row : data) {
+                  try {
+                      // Lấy tháng (có thể là số hoặc "Tháng x")
+                      String thang;
+                      if(row[0] instanceof String && ((String)row[0]).startsWith("Tháng ")){
+                          thang = ((String)row[0]).replace("Tháng ", "");
+                      } else {
+                          thang = String.valueOf(row[0]);
+                      }
+                     double doanhThu = ((Number) row[2]).doubleValue();
+                     dataset.addValue(doanhThu, series, "T" + thang); // Hiển thị T1, T2,... trên trục X
+                  } catch (Exception e) { System.err.println("Lỗi dữ liệu biểu đồ năm: " + e.getMessage()); }
+             }
+         } else {
+              dataset.addValue(0, series, "T1"); // Giá trị 0 nếu không có data
+         }
+
+         // Tạo biểu đồ
+         JFreeChart barChart = ChartFactory.createBarChart(
+                 "", "Tháng", "Doanh thu (VND)", dataset,
+                 PlotOrientation.VERTICAL, false, true, false);
+
+         // Tùy chỉnh (tương tự biểu đồ tháng, đổi màu cột)
+         CategoryPlot plot = barChart.getCategoryPlot();
+         plot.setBackgroundPaint(Color.WHITE);
+         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+         plot.setInsets(new RectangleInsets(10, 10, 10, 10));
+
+         CategoryAxis domainAxis = plot.getDomainAxis();
+         domainAxis.setLabelFont(new Font("Segoe UI", Font.BOLD, 14));
+         domainAxis.setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+         NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+         rangeAxis.setLabelFont(new Font("Segoe UI", Font.BOLD, 14));
+         rangeAxis.setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 12));
+         rangeAxis.setNumberFormatOverride(new DecimalFormat("#,##0"));
+
+         BarRenderer renderer = (BarRenderer) plot.getRenderer();
+         renderer.setSeriesPaint(0, new Color(40, 167, 69)); // Màu xanh lá
+         renderer.setDrawBarOutline(false);
+         renderer.setItemMargin(0.2);
+
+         // Hiển thị biểu đồ lên panel
+         ChartPanel chartPanel = new ChartPanel(barChart);
+         chartPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+         chartPanel.setBackground(Color.WHITE);
+
+         view.pn_bieudo_nam.removeAll(); // Xóa biểu đồ cũ
+         view.pn_bieudo_nam.add(chartPanel, BorderLayout.CENTER); // Thêm biểu đồ mới
+         view.pn_bieudo_nam.revalidate();
+         view.pn_bieudo_nam.repaint();
+     }
 }
+     

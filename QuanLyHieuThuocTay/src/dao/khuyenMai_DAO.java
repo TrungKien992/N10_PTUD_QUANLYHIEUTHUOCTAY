@@ -159,4 +159,40 @@ public class khuyenMai_DAO {
         }
         return dsKM;
     }
+ // (Thêm vào cuối file khuyenMai_DAO.java)
+
+    /**
+     * Tự động tạo mã Khuyến Mãi mới (VD: KM005 -> KM006)
+     * @return String mã KM mới
+     */
+    public String generateNewMaKM() {
+        String newMaKM = "KM001"; // Mã mặc định nếu bảng trống
+        // Lưu ý: "SELECT TOP 1" là cú pháp của SQL Server. 
+        // Nếu Đại Ca dùng MySQL, hãy đổi thành "SELECT ... LIMIT 1"
+        String query = "SELECT TOP 1 MaKM FROM KhuyenMai ORDER BY MaKM DESC";
+        
+        // Sử dụng cách kết nối giống như các hàm khác trong file của Đại Ca
+        try (Connection con = ConnectDB.getConnection(); 
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            
+            if (rs.next()) {
+                String lastMaKM = rs.getString("MaKM");
+                try {
+                    // Tách phần số (VD: "KM005" -> 5)
+                    int lastNum = Integer.parseInt(lastMaKM.substring(2));
+                    int newNum = lastNum + 1;
+                    // Format lại (VD: 6 -> "KM006")
+                    newMaKM = String.format("KM%03d", newNum);
+                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                    System.err.println("Lỗi khi phân tích mã KM cuối cùng: " + lastMaKM);
+                    // (Trong trường hợp mã không theo định dạng, ta vẫn trả về KM001)
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // (Xử lý lỗi kết nối DB)
+        }
+        return newMaKM;
+    }
 }

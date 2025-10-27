@@ -27,9 +27,6 @@ import utils.PdfExporter;
 public class XemchitietHD_GUI extends JDialog {
 	private JTable table;
 
-	// (Các hằng số màu/font và hàm helper styleButton, applyCommonTableStyling giữ nguyên)
-	// ... (Copy/Paste hằng số màu + 2 hàm style từ file cũ) ...
-	// ========== THÊM HẰNG SỐ MÀU/FONT VÀ HÀM TRỢ GIÚP ==========
 	private static final Color COLOR_BACKGROUND_PRIMARY = new Color(240, 242, 245);
 	private static final Color COLOR_CARD_BACKGROUND = Color.WHITE;
 	private static final Color COLOR_PRIMARY_BLUE = new Color(0, 123, 255);

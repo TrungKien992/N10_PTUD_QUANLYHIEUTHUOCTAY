@@ -94,33 +94,29 @@ public class PhieuChoThanhToan_DAO {
         }
     }
 
-    // Lấy danh sách phiếu chờ (chỉ thông tin cơ bản để hiển thị)
-    // Dùng DISTINCT để mỗi khách hàng chỉ hiện 1 lần
+ // Lấy danh sách phiếu chờ (chỉ thông tin cơ bản để hiển thị)
+    // SỬA LẠI: Lấy tất cả các phiếu chờ, không lọc theo SĐT nữa
     public List<PhieuChoThanhToan> getDanhSachCho() {
         List<PhieuChoThanhToan> dsPhieuCho = new ArrayList<>();
-        // Sửa: Lấy MA PHIẾU CHỜ MỚI NHẤT của mỗi SĐT
-        String query = "WITH RankedPhieu AS (" +
-                       "    SELECT maPhieuCho, sdtKH, tenKH, maKH, " +
-                       "           ROW_NUMBER() OVER(PARTITION BY sdtKH ORDER BY ngayLap DESC, maPhieuCho DESC) as rn " +
-                       "    FROM PhieuChoThanhToan " +
-                       ") " +
-                       "SELECT maPhieuCho, sdtKH, tenKH, maKH FROM RankedPhieu WHERE rn = 1";
-        
+        String query = "SELECT maPhieuCho, sdtKH, tenKH, maKH, ngayLap " + // Thêm ngayLap để sắp xếp nếu cần
+                       "FROM PhieuChoThanhToan " +
+                       "ORDER BY ngayLap DESC, maPhieuCho DESC"; // Sắp xếp mới nhất lên đầu
+
         try (Connection conn = ConnectDB.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
                 PhieuChoThanhToan pc = new PhieuChoThanhToan();
-                pc.setMaPhieuCho(rs.getString("maPhieuCho")); // Lấy mã phiếu mới nhất
+                pc.setMaPhieuCho(rs.getString("maPhieuCho"));
                 pc.setSdtKH(rs.getString("sdtKH"));
                 pc.setTenKH(rs.getString("tenKH"));
-                
+
                 String maKH = rs.getString("maKH");
                 if(maKH != null) {
                     pc.setKhachHang(new KhachHang(maKH)); // Chỉ cần mã KH
                 }
-                
+
                 dsPhieuCho.add(pc);
             }
         } catch (SQLException e) {

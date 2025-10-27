@@ -46,6 +46,8 @@ public class KhuyenMai_Controller {
         
         // Gắn sự kiện cho Panel Tìm Kiếm KM
         addTimKiemKMListeners();
+     // Tự động tải mã KM mới cho tab Thêm khi khởi động
+        clearThemKMForm();
     }
 
     // --- Phương thức chung ---
@@ -94,7 +96,7 @@ public class KhuyenMai_Controller {
     }
 
     private void clearThemKMForm() {
-        view.txtMaKM_Them.setText("");
+    	view.txtMaKM_Them.setText(kmDAO.generateNewMaKM());
         view.txtTenKM_Them.setText("");
         view.txtGiaTri_Them.setText("");
         view.txtSoLuong_Them.setText("");
