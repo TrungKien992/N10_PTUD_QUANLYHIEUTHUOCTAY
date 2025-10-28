@@ -3222,6 +3222,23 @@ public class TrangChu_GUI extends JFrame{
                 maincontent.add(panel_ThemNV, "themNV");
                 panel_ThemNV.setLayout(null);
                 panel_ThemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+                panel_ThemNV.addComponentListener(new java.awt.event.ComponentAdapter() {
+                    @Override
+                    public void componentShown(java.awt.event.ComponentEvent e) {
+                        loadDataToTableNV(table_TNV);
+                        try {
+                            nhanVien_DAO nvDAO = new nhanVien_DAO();
+                            if (tempListNV == null) { 
+                                tempListNV = new ArrayList<>();
+                            }
+                            String nextMa = nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV);
+                            txtMaNV_TNV.setText(nextMa);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            txtMaNV_TNV.setText("Lỗi!");
+                        }
+                    }
+                });
 
                 // Panel tiêu đề (Dùng màu gốc của Đại Ca)
                 JPanel panel_title_ThemNV = new JPanel();
@@ -3512,7 +3529,7 @@ public class TrangChu_GUI extends JFrame{
                         String maNhanVienMoi = nvDAO.generateNewMaNV_FromTable(table_TNV,tempListNV);
 
                         // ✅ Giữ nguyên format ngày sinh
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                         String ngaySinhStr = sdf.format(ngaySinh);
 
                         // ✅ Kiểm tra bảng đã được khởi tạo chưa
@@ -3705,6 +3722,7 @@ public class TrangChu_GUI extends JFrame{
                         }
 
                         // Sau khi lưu xong, load lại bảng
+                        tempListNV.clear();
                         loadDataToTableNV(table_TNV);
 
                         JOptionPane.showMessageDialog(null,
@@ -3717,7 +3735,7 @@ public class TrangChu_GUI extends JFrame{
                             "Lỗi khi lưu: " + ex.getMessage(),
                             "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
-                    tempListNV.clear();
+                   
                 });
 
                 panel_ThemNV.add(btnLuu_TNV);
@@ -3730,6 +3748,12 @@ public class TrangChu_GUI extends JFrame{
                 maincontent.add(panel_TimKiemNV, "timkiemnv");
                 panel_TimKiemNV.setLayout(null);
                 panel_TimKiemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+    	        panel_TimKiemNV.addComponentListener(new ComponentAdapter() {
+    	            @Override
+    	            public void componentShown(ComponentEvent e) {
+    	                loadDataToTableNV(table_CNNV);
+    	            }
+    	        });
 
                 // Panel tiêu đề
                 JPanel panel_title_TKNV = new JPanel();
@@ -7527,27 +7551,30 @@ public class TrangChu_GUI extends JFrame{
         // Lấy danh sách nhân viên từ DAO
         nhanVien_DAO dao = new nhanVien_DAO();
         List<NhanVien> dsNV = dao.getAllNhanVien();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         // Chỉ load những nhân viên còn làm việc
         for (NhanVien nv : dsNV) {
-                model.addRow(new Object[]{
-                    nv.getMaNV(),
-                    nv.getTenNV(),
-                    nv.getNgaySinh(),
-                    nv.getGioiTinh(),
-                    nv.getChucVu().getTenChucVu(),
-                    nv.getSoDienThoai(),
-                    nv.getDiaChi(),
-                    nv.getAnh(),
-                    nv.getTaiKhoan().getTenTK()
-                });
+            model.addRow(new Object[]{
+                nv.getMaNV(),
+                nv.getTenNV(),
+                nv.getNgaySinh().format(dtf), 
+                nv.getGioiTinh(),
+                nv.getChucVu().getTenChucVu(),
+                nv.getSoDienThoai(),
+                nv.getDiaChi(),
+                nv.getAnh(),
+                nv.getTaiKhoan().getTenTK()
+            });
         }
-		if (tempListNV != null && !tempListNV.isEmpty()) {
+        
+        // Tương tự, sửa cho tempListNV
+        if (tempListNV != null && !tempListNV.isEmpty()) {
             for (NhanVien nv : tempListNV) {
                 model.addRow(new Object[]{
                     nv.getMaNV(),
                     nv.getTenNV(),
-                    new SimpleDateFormat("dd/MM/yyyy").format(nv.getNgaySinh()),
+                    nv.getNgaySinh().format(dtf),
                     nv.getGioiTinh(),
                     nv.getChucVu().getTenChucVu(),
                     nv.getSoDienThoai(),
