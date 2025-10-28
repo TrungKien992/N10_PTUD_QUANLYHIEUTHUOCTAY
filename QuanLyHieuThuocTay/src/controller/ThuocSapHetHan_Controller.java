@@ -4,12 +4,10 @@ import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.swing.JOptionPane;
 
 import dao.thuoc_DAO;
 import entity.Thuoc;
-
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -24,25 +22,28 @@ public class ThuocSapHetHan_Controller {
     }
 
     /**
-     * Lấy danh sách thuốc sắp hết hạn (<= 30 ngày)
+     * Lấy danh sách thuốc hết hạn hoặc sắp hết hạn (<= 30 ngày)
      */
-    public List<Thuoc> getDanhSachThuocSapHetHan() {
-        List<Thuoc> dsThuoc = thuocDAO.getAllThuoc(); // lấy toàn bộ thuốc
+    public List<Thuoc> getDanhSachThuocHetHanVaSapHetHan() {
+        List<Thuoc> dsThuoc = thuocDAO.getAllThuoc();
         LocalDate today = LocalDate.now();
 
         return dsThuoc.stream()
                 .filter(t -> t.getHanSuDung() != null)
-                .filter(t -> !t.getHanSuDung().isBefore(today)) // chưa hết hạn
-                .filter(t -> t.getHanSuDung().isBefore(today.plusDays(30))) // còn <= 30 ngày
+                .filter(t -> !t.getHanSuDung().isAfter(today.plusDays(30))) // hết hạn hoặc <=30 ngày
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Xuất danh sách ra Excel
+     */
     public void exportToExcel(List<Thuoc> ds, String filePath) {
         try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Thuốc sắp hết hạn");
+            Sheet sheet = workbook.createSheet("Thuốc hết hạn / sắp hết hạn");
 
             String[] headers = {
                 "Mã Thuốc", "Tên Thuốc", "Số Lượng", "Giá Nhập", "Giá Bán", "Đơn Vị Tính",
-                "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc", "Thành Phần"
+                "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc", "Thành Phần", "Trạng Thái"
             };
 
             // Dòng tiêu đề
@@ -52,10 +53,15 @@ public class ThuocSapHetHan_Controller {
                 cell.setCellValue(headers[i]);
             }
 
-            // Ghi dữ liệu
+            LocalDate today = LocalDate.now();
             int rowNum = 1;
+
             for (Thuoc t : ds) {
                 Row row = sheet.createRow(rowNum++);
+
+                long daysLeft = ChronoUnit.DAYS.between(today, t.getHanSuDung());
+                String trangThai = daysLeft < 0 ? "ĐÃ HẾT HẠN" : "SẮP HẾT HẠN";
+
                 row.createCell(0).setCellValue(t.getMaThuoc());
                 row.createCell(1).setCellValue(t.getTenThuoc());
                 row.createCell(2).setCellValue(t.getSoLuong());
@@ -66,9 +72,9 @@ public class ThuocSapHetHan_Controller {
                 row.createCell(7).setCellValue(t.getHanSuDung() != null ? t.getHanSuDung().toString() : "");
                 row.createCell(8).setCellValue(t.getKeThuoc() != null ? t.getKeThuoc().getLoaiKe() : "");
                 row.createCell(9).setCellValue(t.getThanhPhan());
+                row.createCell(10).setCellValue(trangThai);
             }
 
-            // Căn chỉnh độ rộng cột
             for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
             }
@@ -82,18 +88,36 @@ public class ThuocSapHetHan_Controller {
             JOptionPane.showMessageDialog(null, "Lỗi khi xuất file Excel: " + e.getMessage());
         }
     }
+
+    /**
+     * Tính số ngày còn lại trước khi hết hạn
+     */
     public long tinhSoNgayConLai(LocalDate hanSuDung) {
         return ChronoUnit.DAYS.between(LocalDate.now(), hanSuDung);
     }
+
+    /**
+     * Tạo dataset cho biểu đồ — chỉ hiển thị thuốc còn hạn và sắp hết hạn (<= 30 ngày)
+     */
     public DefaultCategoryDataset taoDatasetBieuDo() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        List<Thuoc> ds = getDanhSachThuocSapHetHan();
-        for (Thuoc t : ds) {
-            if (t.getHanSuDung() != null) {
-                long ngayConLai = tinhSoNgayConLai(t.getHanSuDung());
-                dataset.addValue(ngayConLai, "Số ngày còn lại", t.getTenThuoc());
+
+        List<Thuoc> dsThuoc = thuocDAO.getAllThuoc();
+        LocalDate today = LocalDate.now();
+
+        for (Thuoc thuoc : dsThuoc) {
+            if (thuoc.getHanSuDung() == null)
+                continue;
+
+            LocalDate hsd = thuoc.getHanSuDung();
+            long daysLeft = ChronoUnit.DAYS.between(today, hsd);
+
+            // CHỈ lấy thuốc còn hạn và sắp hết hạn (<= 30 ngày)
+            if (daysLeft > 0 && daysLeft <= 30) {
+                dataset.addValue(daysLeft, "Số ngày còn lại", thuoc.getTenThuoc());
             }
         }
+
         return dataset;
     }
 }

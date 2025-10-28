@@ -15,6 +15,7 @@ public class NhanVien {
 	private String soDienThoai;
 	private String diaChi;
 	private String anh;
+	private String trangThai;
 	private TaiKhoan taiKhoan;
 	
 	public String getMaNV() {
@@ -64,6 +65,12 @@ public class NhanVien {
 	}
 	public void setAnh(String anh) {
 		this.anh = anh;
+	}
+	public String getTrangThai() {
+		return trangThai;
+	}
+	public void setTrangThai(String trangThai) {
+		this.trangThai = trangThai;
 	}
 	public TaiKhoan getTaiKhoan() {
 		return taiKhoan;
