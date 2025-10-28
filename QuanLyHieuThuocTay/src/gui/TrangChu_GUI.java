@@ -7,6 +7,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JMonthChooser;
@@ -26,6 +29,7 @@ import entity.Thuoc;
 
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,6 +64,10 @@ import java.awt.event.*;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -2794,6 +2802,22 @@ public class TrangChu_GUI extends JFrame{
                 scP_tktn_tktnv_table.setViewportView(table_tktn);
                 
                 JButton btn_tktn_Xuatfile = new JButton("Xuất File");
+                btn_tktn_Xuatfile.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if (table_tktn.getRowCount() == 0) {
+                            JOptionPane.showMessageDialog(QuanLyHieuThuocTay, "Không có dữ liệu để xuất!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                        
+                        // Lấy ngày tháng từ JDateChooser để đặt tên file
+                        String tenFile = "ThongKeTheoNgay_TongHop";
+                        if (date_tktn_ngay.getDate() != null) {
+                            tenFile = "ThongKeNgay_" + new SimpleDateFormat("dd-MM-yyyy").format(date_tktn_ngay.getDate());
+                        }
+                        
+                        exportTableToExcel(table_tktn, tenFile);
+                    }
+                });
                 btn_tktn_Xuatfile.setBounds(1521, 833, 143, 42);
                 btn_tktn_Xuatfile.setFont(FONT_BUTTON_STANDARD);
                 styleButton(btn_tktn_Xuatfile, COLOR_SUCCESS_GREEN);
@@ -2852,12 +2876,6 @@ public class TrangChu_GUI extends JFrame{
         lbl_tktt_hientongtienhd.setForeground(COLOR_SUCCESS_GREEN);
         lbl_tktt_hientongtienhd.setBounds(1070, 11, 250, 30);
         pn_tketheothang.add(lbl_tktt_hientongtienhd);
-        
-        JButton btn_tktt_xuatfile = new JButton("Xuất File");
-        btn_tktt_xuatfile.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btn_tktt_xuatfile, COLOR_SUCCESS_GREEN);
-        btn_tktt_xuatfile.setBounds(1551, 833, 143, 42);
-        pn_tketheothang.add(btn_tktt_xuatfile);
         
         // -- Panel bên trái (Lọc nhân viên) --
         JPanel pn_tktt_tk = new JPanel(); // Giữ nguyên tên biến
@@ -2976,7 +2994,7 @@ public class TrangChu_GUI extends JFrame{
         });
         btn_tktt_xemchitiet.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_tktt_xemchitiet, COLOR_PRIMARY_BLUE);
-        btn_tktt_xemchitiet.setBounds(1398, 833, 143, 42);
+        btn_tktt_xemchitiet.setBounds(1521, 833, 143, 42);
         pn_tketheothang.add(btn_tktt_xemchitiet);
         
         // -- Khu vực biểu đồ (Đại Ca sẽ tự thêm component biểu đồ vào đây) --
@@ -3040,12 +3058,6 @@ public class TrangChu_GUI extends JFrame{
         lbl_tktnam_hientongsotien.setForeground(COLOR_SUCCESS_GREEN);
         lbl_tktnam_hientongsotien.setBounds(1070, 11, 250, 30);
         pn_tketheonam.add(lbl_tktnam_hientongsotien);
-        
-        JButton btn_tktnam_xuatfile = new JButton("Xuất File");
-        btn_tktnam_xuatfile.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btn_tktnam_xuatfile, COLOR_SUCCESS_GREEN);
-        btn_tktnam_xuatfile.setBounds(1531, 833, 143, 42);
-        pn_tketheonam.add(btn_tktnam_xuatfile);
 
         // -- Panel bên trái (Lọc nhân viên) --
         JPanel pn_tktnam_tk = new JPanel(); // Giữ tên biến
@@ -3160,7 +3172,7 @@ public class TrangChu_GUI extends JFrame{
         btn_tktnam_xemchitiet = new JButton("Xem Chi tiết");
         btn_tktnam_xemchitiet.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_tktnam_xemchitiet, COLOR_PRIMARY_BLUE);
-        btn_tktnam_xemchitiet.setBounds(1378, 833, 143, 42);
+        btn_tktnam_xemchitiet.setBounds(1521, 833, 143, 42);
         pn_tketheonam.add(btn_tktnam_xemchitiet);
         
         // -- Khu vực biểu đồ --
@@ -7667,6 +7679,102 @@ public class TrangChu_GUI extends JFrame{
             sidebarContainer.revalidate();
             sidebarContainer.repaint();
         });
+    }
+    
+    /**
+     * Hàm hỗ trợ xuất dữ liệu từ JTable ra file Excel (dùng Apache POI)
+     * Lưu tự động vào thư mục 'xuat_excel' trong project.
+     * @param tableToExport Bảng JTable chứa dữ liệu cần xuất
+     * @param defaultFileName Tên file gợi ý (không bao gồm .xlsx) - SẼ BỊ GHI ĐÈ BỞI FORMAT MỚI
+     */
+    private void exportTableToExcel(JTable tableToExport, String defaultFileName) {
+        // --- BẮT ĐẦU THAY ĐỔI ---
+        // 1. Lấy ngày từ JDateChooser để đặt tên file (Ưu tiên) hoặc dùng ngày hiện tại
+        String ngayXuatStr;
+        if (date_tktn_ngay.getDate() != null) {
+            ngayXuatStr = new SimpleDateFormat("dd-MM-yyyy").format(date_tktn_ngay.getDate());
+        } else {
+            // Nếu không chọn ngày, lấy ngày hiện tại
+            ngayXuatStr = new SimpleDateFormat("dd-MM-yyyy").format(new java.util.Date());
+        }
+        String finalFileName = "Thong Ke Hoa Don Ngay " + ngayXuatStr + ".xlsx";
+
+        // 2. Tạo đường dẫn thư mục 'xuat_excel' trong thư mục gốc của project
+        String projectDir = System.getProperty("user.dir"); // Lấy thư mục gốc của project
+        String exportDirPath = projectDir + File.separator + "xuat_excel"; // Đường dẫn thư mục xuất file
+        File exportDir = new File(exportDirPath);
+
+        // 3. Tạo thư mục nếu chưa tồn tại
+        if (!exportDir.exists()) {
+            boolean created = exportDir.mkdirs(); // Tạo thư mục (và các thư mục cha nếu cần)
+            if (!created) {
+                JOptionPane.showMessageDialog(QuanLyHieuThuocTay,
+                        "Không thể tạo thư mục lưu file tại:\n" + exportDirPath,
+                        "Lỗi Tạo Thư Mục", JOptionPane.ERROR_MESSAGE);
+                return; // Dừng lại nếu không tạo được thư mục
+            }
+        }
+
+        // 4. Tạo đường dẫn file đầy đủ
+        String filePath = exportDirPath + File.separator + finalFileName;
+        // --- KẾT THÚC THAY ĐỔI ---
+
+        // 5. Bắt đầu quá trình tạo file Excel (Giữ nguyên phần try-catch)
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("ThongKeNgay_" + ngayXuatStr); // Tên sheet có thể giữ hoặc đổi
+            TableModel model = tableToExport.getModel();
+
+            // 6. Tạo hàng tiêu đề (Header)
+            Row headerRow = sheet.createRow(0);
+            for (int j = 0; j < model.getColumnCount(); j++) {
+                Cell cell = headerRow.createCell(j);
+                cell.setCellValue(model.getColumnName(j));
+            }
+
+            // 7. Ghi dữ liệu từ JTable vào file
+            for (int i = 0; i < model.getRowCount(); i++) {
+                Row dataRow = sheet.createRow(i + 1);
+                for (int j = 0; j < model.getColumnCount(); j++) {
+                    Object value = model.getValueAt(i, j);
+                    Cell cell = dataRow.createCell(j);
+                    // Set giá trị (Giữ nguyên logic xử lý kiểu dữ liệu)
+                    if (value instanceof String) {
+                        cell.setCellValue((String) value);
+                    } else if (value instanceof Integer) {
+                        cell.setCellValue((Integer) value);
+                    } else if (value instanceof Double) {
+                        cell.setCellValue((Double) value);
+                    } else if (value instanceof Boolean) {
+                        cell.setCellValue((Boolean) value);
+                    } else if (value != null) {
+                        cell.setCellValue(value.toString());
+                    } else {
+                        cell.setCellValue("");
+                    }
+                }
+            }
+            
+            // Tự động điều chỉnh độ rộng cột
+            for(int j = 0; j < model.getColumnCount(); j++) {
+                sheet.autoSizeColumn(j);
+            }
+
+            // 8. Lưu file (Đường dẫn đã được xác định ở trên)
+            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+                workbook.write(fileOut);
+            }
+
+            JOptionPane.showMessageDialog(QuanLyHieuThuocTay,
+                    "Xuất file Excel thành công!\nĐã lưu tại thư mục 'xuat_excel' trong project.", // Thông báo mới
+                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(QuanLyHieuThuocTay,
+                    "Có lỗi xảy ra khi xuất file Excel:\n" + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+        // Bỏ hoàn toàn phần else của if (userSelection == JFileChooser.APPROVE_OPTION)
     }
     
     private ImageIcon loadIcon(String path) {

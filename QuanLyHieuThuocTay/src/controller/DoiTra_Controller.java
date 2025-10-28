@@ -845,8 +845,15 @@ public class DoiTra_Controller implements ActionListener {
         List<HoaDon> dsHD = hoaDonDAO.getAllHoaDon();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
+     // [BẮT ĐẦU CODE ĐÃ SỬA]
         for (HoaDon hd : dsHD) {
-            KhachHang kh = khachHangDAO.getKhachHangTheoMa(hd.getKhachHang().getMaKH());
+            KhachHang kh = null; // 1. Khởi tạo kh = null
+
+            // 2. Chỉ lấy thông tin khách hàng NẾU nó không null
+            if (hd.getKhachHang() != null) {
+                kh = khachHangDAO.getKhachHangTheoMa(hd.getKhachHang().getMaKH());
+            }
+
             NhanVien nv = nhanVienDAO.getNhanVienTheoMa(hd.getNhanVien().getMaNV());
             KhuyenMai km = null;
             if (hd.getKhuyenMai() != null) {
@@ -861,16 +868,18 @@ public class DoiTra_Controller implements ActionListener {
                 ngayLapFormatted = sdf.format(ngay);
             }
 
+            // 3. (Gợi ý) Thay vì để "", đại ca có thể hiển thị "Khách vãng lai" cho rõ
             model.addRow(new Object[]{
                     hd.getMaHD(),
-                    kh != null ? kh.getTenKH() : "",
-                    kh != null ? kh.getSoDienThoai() : "",
+                    kh != null ? kh.getTenKH() : "Khách vãng lai", // Hiển thị rõ ràng
+                    kh != null ? kh.getSoDienThoai() : "N/A", // Hiển thị rõ ràng
                     nv != null ? nv.getTenNV() : "",
                     ngayLapFormatted,
                     km != null ? km.getTenChuongTrinh() : "Không có",
                     tongTien
             });
         }
+        // [KẾT THÚC CODE ĐÃ SỬA]
         tempCTPhieuTraList.clear();
         updateTraThuocTable();
         trangChuGUI.table_trathuoc_thuoc.clearSelection();
@@ -900,8 +909,15 @@ public class DoiTra_Controller implements ActionListener {
         List<HoaDon> dsHD = hoaDonDAO.getAllHoaDon();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
+     // [BẮT ĐẦU CODE ĐÃ SỬA CHO DÒNG 913]
         for (HoaDon hd : dsHD) {
-            KhachHang kh = khachHangDAO.getKhachHangTheoMa(hd.getKhachHang().getMaKH());
+            KhachHang kh = null; // 1. Khởi tạo kh = null
+
+            // 2. Chỉ lấy thông tin khách hàng NẾU nó không null
+            if (hd.getKhachHang() != null) {
+                kh = khachHangDAO.getKhachHangTheoMa(hd.getKhachHang().getMaKH());
+            }
+
             NhanVien nv = nhanVienDAO.getNhanVienTheoMa(hd.getNhanVien().getMaNV());
             KhuyenMai km = null;
             if (hd.getKhuyenMai() != null) {
@@ -916,16 +932,18 @@ public class DoiTra_Controller implements ActionListener {
                 ngayLapFormatted = sdf.format(ngay);
             }
 
+            // 3. Sửa lại hiển thị cho đẹp
             model.addRow(new Object[]{
                     hd.getMaHD(),
-                    kh != null ? kh.getTenKH() : "",
-                    kh != null ? kh.getSoDienThoai() : "",
+                    kh != null ? kh.getTenKH() : "Khách vãng lai", 
+                    kh != null ? kh.getSoDienThoai() : "N/A", 
                     nv != null ? nv.getTenNV() : "",
                     ngayLapFormatted,
                     km != null ? km.getTenChuongTrinh() : "Không có",
                     tongTien
             });
         }
+        // [KẾT THÚC CODE ĐÃ SỬA]
         tempCTPhieuDoiTraList.clear();
         updateDoiThuocTable();
         trangChuGUI.table_doithuoc_thuoc.clearSelection();

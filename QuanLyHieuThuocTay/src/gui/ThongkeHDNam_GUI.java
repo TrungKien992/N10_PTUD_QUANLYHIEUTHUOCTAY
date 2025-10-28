@@ -1,28 +1,28 @@
 package gui;
 
-import java.awt.BorderLayout; // Import mới
-import java.awt.Color; // Import mới
-import java.awt.Font; // Import mới
-import java.awt.event.ActionEvent; // Import mới
-import java.awt.event.ActionListener; // Import mới
-import java.text.DecimalFormat; // Import mới
-import java.time.LocalDate; // Import mới
-import java.util.List; // Import mới
-import javax.swing.BorderFactory; // Import mới
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane; // Import mới
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.SwingConstants; // Import mới
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader; // Import mới
-import javax.swing.table.TableCellRenderer; // Import mới
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 
-import dao.hoaDon_DAO; // Import DAO
+import dao.hoaDon_DAO;
 
 public class ThongkeHDNam_GUI extends JDialog {
 
@@ -40,47 +40,49 @@ public class ThongkeHDNam_GUI extends JDialog {
     private static final Font FONT_TABLE_HEADER = new Font("Segoe UI", Font.BOLD, 15);
     private static final Font FONT_TABLE_CELL = new Font("Segoe UI", Font.PLAIN, 14);
     private static final Font FONT_SUMMARY_TOTAL = new Font("Segoe UI", Font.BOLD, 20);
-    private static final Font FONT_BUTTON_STANDARD = new Font("Segoe UI", Font.BOLD, 14); // Font nút
+    private static final Font FONT_BUTTON_STANDARD = new Font("Segoe UI", Font.BOLD, 14);
     // --- Kết thúc định nghĩa Style ---
 
     private JTable table;
-    private JLabel lblTitle; // Label tiêu đề
-    private JLabel lblTongSoHDValue; // Label giá trị tổng số HD
-    private JLabel lblTongTienValue; // Label giá trị tổng tiền
-    private JButton btnXemChiTiet; // Nút Xem Chi Tiết
+    private JLabel lblTitle;
+    private JLabel lblTongSoHDValue;
+    private JLabel lblTongTienValue;
+    private JButton btnXemChiTiet;
 
-    private hoaDon_DAO hoaDonDAO; // DAO
-    private DecimalFormat df = new DecimalFormat("#,##0 VND"); // Format tiền
-    private JFrame parentFrame; // Lưu frame cha để mở dialog con
-    private int currentYear; // Lưu năm đang xem
-    private String currentMaNV; // Lưu mã NV đang lọc
+    private hoaDon_DAO hoaDonDAO;
+    private DecimalFormat df = new DecimalFormat("#,##0 VND");
+    private JFrame parentFrame;
+    private int currentYear;
+    private String currentMaNV;
 
     public ThongkeHDNam_GUI(JFrame parent) {
-        super(parent, "Chi Tiết Thống Kê Theo Tháng", true); // Tiêu đề Dialog
-        this.parentFrame = parent; // Lưu frame cha
-        hoaDonDAO = new hoaDon_DAO(); // Khởi tạo DAO
+        super(parent, "Chi Tiết Thống Kê Theo Tháng", true);
+        this.parentFrame = parent;
+        hoaDonDAO = new hoaDon_DAO();
         initialize();
         setLocationRelativeTo(parent);
     }
 
     private void initialize() {
-        setSize(800, 725); // Điều chỉnh kích thước nếu cần
+        setSize(800, 725);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        getContentPane().setLayout(new BorderLayout(10, 10)); // Dùng BorderLayout
-        getContentPane().setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
-        getRootPane().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding
+        getContentPane().setLayout(null); // <<< THAY ĐỔI 1: SỬ DỤNG ABSOLUTE LAYOUT
+        getContentPane().setBackground(COLOR_BACKGROUND_PRIMARY);
+        getRootPane().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // --- Tiêu đề ---
-        lblTitle = new JLabel(""); // Text mặc định
-        lblTitle.setFont(FONT_TITLE_SECTION); // Font tiêu đề
-        lblTitle.setForeground(COLOR_PRIMARY_BLUE); // Màu xanh
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa
-        getContentPane().add(lblTitle, BorderLayout.NORTH); // Vị trí NORTH
+        lblTitle = new JLabel("");
+        lblTitle.setFont(FONT_TITLE_SECTION);
+        lblTitle.setForeground(COLOR_PRIMARY_BLUE);
+        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        lblTitle.setBounds(10, 10, 764, 36); // <<< THAY ĐỔI 2: setBounds
+        getContentPane().add(lblTitle);
 
         // --- Bảng Dữ Liệu ---
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền
-        getContentPane().add(scrollPane, BorderLayout.CENTER); // Vị trí CENTER
+        scrollPane.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
+        scrollPane.setBounds(10, 56, 764, 540); // <<< THAY ĐỔI 3: setBounds
+        getContentPane().add(scrollPane);
 
         table = new JTable() {
             @Override
@@ -94,15 +96,13 @@ public class ThongkeHDNam_GUI extends JDialog {
                 return c;
             }
         };
-        // Áp dụng style chung cho bảng
         applyCommonTableStyling(table);
         table.setModel(new DefaultTableModel(
-            new Object[][] {}, // Dữ liệu trống
+            new Object[][] {},
             new String[] {
-                "Ngày", "Tổng Số Hóa Đơn", "Tổng Tiền Các Hóa Đơn" // Đổi tên cột
+                "Ngày", "Tổng Số Hóa Đơn", "Tổng Tiền Các Hóa Đơn"
             }
         ){
-            // Chặn sửa
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -111,44 +111,51 @@ public class ThongkeHDNam_GUI extends JDialog {
         scrollPane.setViewportView(table);
 
         // --- Panel Tổng Kết và Nút (ở dưới) ---
-        JPanel panelSouth = new JPanel(new BorderLayout(10, 5)); // Chứa cả tổng kết và nút
-        panelSouth.setOpaque(false); // Trong suốt
+        JPanel panelSouth = new JPanel(null); // <<< THAY ĐỔI 4: setLayout(null)
+        panelSouth.setOpaque(false);
         panelSouth.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(1, 0, 0, 0, COLOR_BORDER_LIGHT),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
-        getContentPane().add(panelSouth, BorderLayout.SOUTH); // Vị trí SOUTH
+        panelSouth.setBounds(10, 607, 764, 68); // <<< THAY ĐỔI 5: setBounds
+        getContentPane().add(panelSouth);
 
-        // -- Panel con cho tổng kết (FlowLayout) --
-        JPanel panelSummary = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 20, 5));
-        panelSummary.setOpaque(false); // Trong suốt
-        panelSouth.add(panelSummary, BorderLayout.CENTER); // Tổng kết ở giữa
+        // -- Panel con cho tổng kết --
+        JPanel panelSummary = new JPanel(null); // <<< THAY ĐỔI 6: setLayout(null)
+        panelSummary.setOpaque(false);
+        panelSummary.setBounds(0, 0, 580, 68); // <<< THAY ĐỔI 7: setBounds
+        panelSouth.add(panelSummary);
 
         JLabel lblTongSoHD = new JLabel("Tổng Số Hóa Đơn:");
         lblTongSoHD.setFont(FONT_LABEL_BOLD);
         lblTongSoHD.setForeground(COLOR_TEXT_DARK);
+        lblTongSoHD.setBounds(10, 11, 140, 32); // <<< THAY ĐỔI 8: setBounds
         panelSummary.add(lblTongSoHD);
 
         lblTongSoHDValue = new JLabel("0");
         lblTongSoHDValue.setFont(FONT_LABEL_BOLD);
         lblTongSoHDValue.setForeground(COLOR_PRIMARY_BLUE);
+        lblTongSoHDValue.setBounds(160, 11, 50, 32); // <<< THAY ĐỔI 9: setBounds
         panelSummary.add(lblTongSoHDValue);
 
         JLabel lblTongTien = new JLabel("Tổng Tiền Các Hóa Đơn:");
         lblTongTien.setFont(FONT_LABEL_BOLD);
         lblTongTien.setForeground(COLOR_TEXT_DARK);
+        lblTongTien.setBounds(220, 11, 180, 32); // <<< THAY ĐỔI 10: setBounds
         panelSummary.add(lblTongTien);
 
         lblTongTienValue = new JLabel("0 VND");
         lblTongTienValue.setFont(FONT_SUMMARY_TOTAL);
         lblTongTienValue.setForeground(COLOR_SUCCESS_GREEN);
+        lblTongTienValue.setBounds(410, 11, 200, 32); // <<< THAY ĐỔI 11: setBounds
         panelSummary.add(lblTongTienValue);
 
-        // -- Nút Xem Chi Tiết (ở bên phải) --
-        btnXemChiTiet = new JButton("Xem Chi Tiết Ngày"); // Đổi tên nút
-        btnXemChiTiet.setFont(FONT_BUTTON_STANDARD); // Font nút
-        styleButton(btnXemChiTiet, COLOR_PRIMARY_BLUE); // Style nút
-        panelSouth.add(btnXemChiTiet, BorderLayout.EAST); // Nút ở bên phải
+        // -- Nút Xem Chi Tiết --
+        btnXemChiTiet = new JButton("Xem Chi Tiết Ngày");
+        btnXemChiTiet.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnXemChiTiet, COLOR_PRIMARY_BLUE);
+        btnXemChiTiet.setBounds(584, 11, 170, 45); // <<< THAY ĐỔI 12: setBounds
+        panelSouth.add(btnXemChiTiet);
 
         // --- Thêm ActionListener cho nút Xem Chi Tiết ---
         btnXemChiTiet.addActionListener(new ActionListener() {
@@ -186,7 +193,7 @@ public class ThongkeHDNam_GUI extends JDialog {
         button.setBackground(background);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15)); // Padding
+        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
     }
 
     /**
@@ -196,32 +203,28 @@ public class ThongkeHDNam_GUI extends JDialog {
      * @param maNVSelected Mã nhân viên cần lọc (hoặc null/rỗng)
      */
     public void loadData(int thang, int nam, String maNVSelected) {
-        this.currentYear = nam; // Lưu lại năm
-        this.currentMaNV = maNVSelected; // Lưu lại mã NV
+        this.currentYear = nam;
+        this.currentMaNV = maNVSelected;
 
-        // Cập nhật tiêu đề
         lblTitle.setText("Thống Kê Chi Tiết Tháng " + thang + "/" + nam);
 
-        // Lấy dữ liệu từ DAO
         List<Object[]> dsThongKeNgay = hoaDonDAO.getThongKeTheoNgayTrongThang(thang, nam, maNVSelected);
 
-        // Hiển thị lên bảng
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setRowCount(0); // Xóa cũ
+        model.setRowCount(0);
         int tongSoHDThang = 0;
         double tongTienThang = 0;
 
         for (Object[] row : dsThongKeNgay) {
             int soHDNgay = (int) row[1];
             double tongTienNgay = (double) row[2];
-            row[2] = df.format(tongTienNgay); // Format tiền
+            row[2] = df.format(tongTienNgay);
             model.addRow(row);
 
             tongSoHDThang += soHDNgay;
             tongTienThang += tongTienNgay;
         }
 
-        // Cập nhật label tổng kết
         lblTongSoHDValue.setText(String.valueOf(tongSoHDThang));
         lblTongTienValue.setText(df.format(tongTienThang));
     }
@@ -239,16 +242,15 @@ public class ThongkeHDNam_GUI extends JDialog {
         int ngay = (int) table.getValueAt(selectedRow, 0);
         String title = lblTitle.getText();
         String[] parts = title.split(" ");
-        String thangNamPart = parts[parts.length - 1]; // "10/2025"
+        String thangNamPart = parts[parts.length - 1];
         String[] thangNam = thangNamPart.split("/");
         int thang = Integer.parseInt(thangNam[0]);
         int nam = this.currentYear;
 
         LocalDate selectedDate = LocalDate.of(nam, thang, ngay);
 
-        // Mở dialog ThongkeHDThang_GUI
         ThongkeHDThang_GUI dialogChiTietNgay = new ThongkeHDThang_GUI(this.parentFrame);
-        dialogChiTietNgay.loadData(selectedDate, this.currentMaNV); // Truyền ngày và mã NV đang lọc
+        dialogChiTietNgay.loadData(selectedDate, this.currentMaNV);
         dialogChiTietNgay.setVisible(true);
     }
 }
