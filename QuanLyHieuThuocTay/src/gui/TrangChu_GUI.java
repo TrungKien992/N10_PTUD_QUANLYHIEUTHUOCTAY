@@ -140,6 +140,7 @@ public class TrangChu_GUI extends JFrame{
     public JTextField txtTenNV_TNV;
     public JTextField txtSDT_TNV;
     public JTable table_TNV;
+    private List<NhanVien> tempListNV = new ArrayList<>();
     public JTextField txt_TenNV_TKNV;
     public JTextField txtSDT_TKNV;
     public JTable table_TKNV;
@@ -2257,7 +2258,7 @@ public class TrangChu_GUI extends JFrame{
         pn_thuocsaphethan.setLayout(null);
         pn_thuocsaphethan.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
 
-        JLabel lbl_tshh_tieude = new JLabel("DANH SÁCH THUỐC SẮP HẾT HẠN"); // Tiêu đề
+        JLabel lbl_tshh_tieude = new JLabel("DANH SÁCH THUỐC HẾT HẠN / SẮP HẾT HẠN");
         lbl_tshh_tieude.setFont(FONT_TITLE_MAIN);
         lbl_tshh_tieude.setForeground(COLOR_DANGER_RED); // Màu đỏ cảnh báo
         lbl_tshh_tieude.setHorizontalAlignment(SwingConstants.CENTER);
@@ -2271,18 +2272,36 @@ public class TrangChu_GUI extends JFrame{
 
         // Style bảng table_tshh
         table_tshh = new JTable() {
-             @Override
+            @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
+                DefaultTableModel model = (DefaultTableModel) getModel();
+                Object hanSuDungObj = model.getValueAt(row, 7); // cột Hạn Sử Dụng
+
                 if (!isRowSelected(row)) {
-                    c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
-                    c.setForeground(this.getForeground());
+                    LocalDate today = LocalDate.now();
+                    if (hanSuDungObj != null && !hanSuDungObj.toString().isEmpty()) {
+                        LocalDate han = LocalDate.parse(hanSuDungObj.toString());
+                        if (han.isBefore(today)) {
+                            // Thuốc đã hết hạn → nền đỏ nhạt, chữ trắng
+                            c.setBackground(new Color(255, 102, 102));
+                            c.setForeground(Color.WHITE);
+                        } else {
+                            // Xen kẽ màu nền bình thường
+                            c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                            c.setForeground(getForeground());
+                        }
+                    } else {
+                        c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
+                        c.setForeground(getForeground());
+                    }
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
                 }
                 return c;
             }
         };
+
         applyCommonTableStyling(table_tshh);
         table_tshh.setModel(new DefaultTableModel(
             	new Object[][] {},
@@ -2349,7 +2368,7 @@ public class TrangChu_GUI extends JFrame{
         btn_tshh_xuatfile.setBounds(1537, 950, 152, 40); // Điều chỉnh
         btn_tshh_xuatfile.addActionListener(e -> {
             ThuocSapHetHan_Controller controller = new ThuocSapHetHan_Controller();
-            List<Thuoc> dsSapHetHan = controller.getDanhSachThuocSapHetHan();
+            List<Thuoc> dsSapHetHan = controller.getDanhSachThuocHetHanVaSapHetHan();
 
             if (dsSapHetHan.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Không có thuốc sắp hết hạn để xuất!");
@@ -2379,9 +2398,9 @@ public class TrangChu_GUI extends JFrame{
                 model.setRowCount(0); // Xóa dữ liệu cũ
 
                 ThuocSapHetHan_Controller controller = new ThuocSapHetHan_Controller();
-                List<Thuoc> dsSapHetHan = controller.getDanhSachThuocSapHetHan();
+                List<Thuoc> ds = controller.getDanhSachThuocHetHanVaSapHetHan(); // <-- dùng hàm mới
 
-                for (Thuoc t : dsSapHetHan) {
+                for (Thuoc t : ds) {
                     model.addRow(new Object[]{
                         t.getMaThuoc(),
                         t.getTenThuoc(),
@@ -2397,6 +2416,7 @@ public class TrangChu_GUI extends JFrame{
                 }
             }
         });
+
 
         // ===== KẾT THÚC KHỐI CODE THUỐC SẮP HẾT HẠN =====
 
@@ -3231,6 +3251,23 @@ public class TrangChu_GUI extends JFrame{
                 maincontent.add(panel_ThemNV, "themNV");
                 panel_ThemNV.setLayout(null);
                 panel_ThemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+                panel_ThemNV.addComponentListener(new java.awt.event.ComponentAdapter() {
+                    @Override
+                    public void componentShown(java.awt.event.ComponentEvent e) {
+                        loadDataToTableNV(table_TNV);
+                        try {
+                            nhanVien_DAO nvDAO = new nhanVien_DAO();
+                            if (tempListNV == null) { 
+                                tempListNV = new ArrayList<>();
+                            }
+                            String nextMa = nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV);
+                            txtMaNV_TNV.setText(nextMa);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            txtMaNV_TNV.setText("Lỗi!");
+                        }
+                    }
+                });
 
                 // Panel tiêu đề (Dùng màu gốc của Đại Ca)
                 JPanel panel_title_ThemNV = new JPanel();
@@ -3516,30 +3553,57 @@ public class TrangChu_GUI extends JFrame{
                             return;
                         }
 
-                        // Tạo mã nhân viên tạm thời
+                        // ✅ Tạo mã nhân viên mới (đảm bảo duy nhất, kể cả trong bảng)
                         nhanVien_DAO nvDAO = new nhanVien_DAO();
-                        String maNhanVienMoi = nvDAO.generateNewMaNV();
+                        String maNhanVienMoi = nvDAO.generateNewMaNV_FromTable(table_TNV,tempListNV);
 
-                        // Chuyển ngày sinh sang String (để hiển thị bảng)
+                        // ✅ Giữ nguyên format ngày sinh
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                         String ngaySinhStr = sdf.format(ngaySinh);
 
-                        // ✅ Dùng table_TNV đã khai báo toàn cục
+                        // ✅ Kiểm tra bảng đã được khởi tạo chưa
                         if (table_TNV == null) {
                             JOptionPane.showMessageDialog(null, "Bảng nhân viên chưa được khởi tạo!");
                             return;
                         }
 
+                        // ✅ Tạo đối tượng NhanVien và thêm vào danh sách tạm
+                        java.time.LocalDate ngaySinhLocal = ngaySinh.toInstant()
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate();
+
+                        NhanVien nv = new NhanVien(
+                            maNhanVienMoi,
+                            ten,
+                            ngaySinhLocal,
+                            gioiTinh,
+                            selectedCV,
+                            sdt,
+                            tinh + ", " + huyen,
+                            anh,
+                            selectedTK
+                        );
+
+                        if (tempListNV == null) {
+                            tempListNV = new ArrayList<>();
+                        }
+                        tempListNV.add(nv);
+
+                        // ✅ Thêm dòng mới lên JTable
                         DefaultTableModel model = (DefaultTableModel) table_TNV.getModel();
                         model.addRow(new Object[]{
                             maNhanVienMoi, ten, ngaySinhStr, gioiTinh, tenChucVu,
                             sdt, tinh + ", " + huyen, anh, tenTaiKhoan
                         });
-
+                        
+                        // ✅ Reset form
+                        btnLamMoi_TNV.doClick();
+                        
+                        String nextMa = nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV);
+                        txtMaNV_TNV.setText(nextMa);
                         JOptionPane.showMessageDialog(null, "Đã thêm nhân viên vào danh sách chờ lưu!");
 
-                        // Reset form
-                        btnLamMoi_TNV.doClick();
+
 
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -3568,7 +3632,7 @@ public class TrangChu_GUI extends JFrame{
                 scrollPane_TNV.setBounds(10, 701, 1679, 289); // Vị trí bảng
                 panel_ThemNV.add(scrollPane_TNV);
 
-                // Style bảng table_TKNV
+                // Style bảng table_TNV
                table_TNV = new JTable() {
                      @Override
                     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -3687,6 +3751,7 @@ public class TrangChu_GUI extends JFrame{
                         }
 
                         // Sau khi lưu xong, load lại bảng
+                        tempListNV.clear();
                         loadDataToTableNV(table_TNV);
 
                         JOptionPane.showMessageDialog(null,
@@ -3699,6 +3764,7 @@ public class TrangChu_GUI extends JFrame{
                             "Lỗi khi lưu: " + ex.getMessage(),
                             "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
+                   
                 });
 
                 panel_ThemNV.add(btnLuu_TNV);
@@ -3711,6 +3777,12 @@ public class TrangChu_GUI extends JFrame{
                 maincontent.add(panel_TimKiemNV, "timkiemnv");
                 panel_TimKiemNV.setLayout(null);
                 panel_TimKiemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
+    	        panel_TimKiemNV.addComponentListener(new ComponentAdapter() {
+    	            @Override
+    	            public void componentShown(ComponentEvent e) {
+    	                loadDataToTableNV(table_CNNV);
+    	            }
+    	        });
 
                 // Panel tiêu đề
                 JPanel panel_title_TKNV = new JPanel();
@@ -7467,37 +7539,7 @@ public class TrangChu_GUI extends JFrame{
             });
         }
     }
-    private void loadDataThuocSapHetHan() {
-        try {
-            ThuocSapHetHan_Controller controller = new ThuocSapHetHan_Controller();
-            List<Thuoc> dsThuoc = controller.getDanhSachThuocSapHetHan();
 
-            DefaultTableModel model = (DefaultTableModel) table_tshh.getModel();
-            model.setRowCount(0); // Xóa dữ liệu cũ
-
-            for (Thuoc t : dsThuoc) {
-                model.addRow(new Object[] {
-                    t.getMaThuoc(),
-                    t.getTenThuoc(),
-                    t.getSoLuong(),
-                    t.getGiaNhap(),
-                    t.getGiaBan(),
-                    t.getDonViTinh(),
-                    t.getNhaCungCap() != null ? t.getNhaCungCap().getTenNhaCungCap() : "—",
-                    t.getHanSuDung(),
-                    t.getKeThuoc() != null ? t.getKeThuoc().getLoaiKe() : "—",
-                    t.getThanhPhan()
-                });
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null,
-                "Lỗi khi tải dữ liệu thuốc sắp hết hạn!",
-                "Lỗi",
-                JOptionPane.ERROR_MESSAGE);
-        }
-    }
  // Hàm tạo nút cho submenu con
     private JButton createSubmenuButton(String text) {
         JButton button = new JButton(text);
@@ -7538,13 +7580,14 @@ public class TrangChu_GUI extends JFrame{
         // Lấy danh sách nhân viên từ DAO
         nhanVien_DAO dao = new nhanVien_DAO();
         List<NhanVien> dsNV = dao.getAllNhanVien();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        // Thêm từng nhân viên vào bảng
+        // Chỉ load những nhân viên còn làm việc
         for (NhanVien nv : dsNV) {
             model.addRow(new Object[]{
                 nv.getMaNV(),
                 nv.getTenNV(),
-                nv.getNgaySinh(),
+                nv.getNgaySinh().format(dtf), 
                 nv.getGioiTinh(),
                 nv.getChucVu().getTenChucVu(),
                 nv.getSoDienThoai(),
@@ -7553,7 +7596,25 @@ public class TrangChu_GUI extends JFrame{
                 nv.getTaiKhoan().getTenTK()
             });
         }
+        
+        // Tương tự, sửa cho tempListNV
+        if (tempListNV != null && !tempListNV.isEmpty()) {
+            for (NhanVien nv : tempListNV) {
+                model.addRow(new Object[]{
+                    nv.getMaNV(),
+                    nv.getTenNV(),
+                    nv.getNgaySinh().format(dtf),
+                    nv.getGioiTinh(),
+                    nv.getChucVu().getTenChucVu(),
+                    nv.getSoDienThoai(),
+                    nv.getDiaChi(),
+                    nv.getAnh(),
+                    nv.getTaiKhoan().getTenTK()
+                });
+            }
+        }
     }
+
     
     private void locNhanVien(JTextField txtTen, JTextField txtSDT, JTextField txtTinh,
             JTextField txtHuyen, JComboBox<String> cboGioiTinh,
