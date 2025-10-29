@@ -1,6 +1,7 @@
 package gui;
 
 import dao.thuoc_DAO;
+import controller.ThuocBanChay_Controller;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
@@ -229,6 +230,7 @@ public class TrangChu_GUI extends JFrame{
 	public JPanel pn_bieudo_nam;  
 	private HoaDon_Controller hoaDonController;
     private DoiTra_Controller doiTra_Controller;
+    public ThuocBanChay_Controller thuocBanChayController;
 	
     
 
@@ -1202,7 +1204,7 @@ public class TrangChu_GUI extends JFrame{
         pn_Nhapthongtintk.add(btn_tkhd_xemchitiet);
         
         JScrollPane scP_tabletkhd = new JScrollPane();
-        scP_tabletkhd.setBounds(10, 183, 1699, 796); // ĐÃ SỬA
+        scP_tabletkhd.setBounds(10, 183, 1679, 796); // ĐÃ SỬA
         scP_tabletkhd.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // ĐÃ SỬA
         pn_tkhd.add(scP_tabletkhd);
         
@@ -2433,13 +2435,11 @@ public class TrangChu_GUI extends JFrame{
         };
         applyCommonTableStyling(table_5);
         table_5.setModel(new DefaultTableModel(
-            	new Object[][] {},
-            	new String[] { // Nên thêm cột Số Lượng Bán
+            	new Object[][] {}, // Bỏ dữ liệu mẫu null
+            	new String[] { // Sửa lại tên cột và thêm cột "Số Lượng Bán"
             		"Mã Thuốc", "Tên Thuốc", "Số Lượng Bán", "Giá Bán", "Đơn Vị Tính", "Nhà Cung Cấp", "Hạn Sử Dụng", "Tên Kệ Thuốc"
             	}
             ));
-        // Điều chỉnh lại setPreferredWidth cho phù hợp cột mới
-        // table_5.getColumnModel().getColumn(0).setPreferredWidth(30); ...
         scP_tbc_table.setViewportView(table_5);
 
         JButton btn_tbc_xuatfile = new JButton("Xuất File");
@@ -2448,6 +2448,35 @@ public class TrangChu_GUI extends JFrame{
         btn_tbc_xuatfile.setBounds(1537, 950, 152, 40); // Điều chỉnh
         pn_thuocbanchay.add(btn_tbc_xuatfile);
 
+     // ===== THÊM CODE TỪ ĐÂY =====
+        // Khởi tạo Controller
+        thuocBanChayController = new ThuocBanChay_Controller();
+
+        // Thêm Listener để load dữ liệu khi panel "Thuốc Bán Chạy" được hiển thị
+        pn_thuocbanchay.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                DefaultTableModel model = (DefaultTableModel) table_5.getModel();
+                model.setRowCount(0); // Xóa dữ liệu cũ
+
+                try {
+                    List<Object[]> data = thuocBanChayController.getDanhSachThuocBanChay();
+                    if (data.isEmpty()) {
+                        System.out.println("Không có dữ liệu thuốc bán chạy."); // Hoặc hiện thông báo
+                    }
+                    for (Object[] rowData : data) {
+                        model.addRow(rowData);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(QuanLyHieuThuocTay, // Hoặc this
+                        "Lỗi khi tải dữ liệu thuốc bán chạy:\n" + ex.getMessage(),
+                        "Lỗi Dữ Liệu", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        // ===== KẾT THÚC CODE THÊM =====
+        
         // ===== KẾT THÚC KHỐI CODE THUỐC BÁN CHẠY =====
 
 

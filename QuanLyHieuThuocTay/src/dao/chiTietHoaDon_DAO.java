@@ -4,7 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import connectDB.ConnectDB;
 import entity.ChiTietHoaDon;
 import entity.HoaDon;
@@ -60,5 +64,27 @@ public class chiTietHoaDon_DAO {
             e.printStackTrace();
         }
         return false;
+    }
+    public Map<String, Integer> getThongKeThuocBanChay() {
+        Map<String, Integer> thongKe = new HashMap<>();
+        String sql = "SELECT MaThuoc, SUM(SoLuong) AS TongSoLuongBan " +
+                     "FROM ChiTietHoaDon " +
+                     "GROUP BY MaThuoc " +
+                     "ORDER BY TongSoLuongBan DESC";
+
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String maThuoc = rs.getString("MaThuoc");
+                int tongSoLuong = rs.getInt("TongSoLuongBan");
+                thongKe.put(maThuoc, tongSoLuong);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Có thể throw exception hoặc trả về map rỗng tùy xử lý lỗi mong muốn
+        }
+        return thongKe;
     }
 }

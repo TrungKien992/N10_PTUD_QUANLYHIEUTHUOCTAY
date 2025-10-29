@@ -248,25 +248,113 @@ public class thuoc_DAO {
     
 // (Thêm vào thuoc_DAO.java)
     
+    /**
+     * HÀM NÀY DÙNG CHO BÁN HÀNG (TRONG CONTROLLER HÓA ĐƠN)
+     *
+     * - Lọc thuốc hết hạn (hanSuDung > GETDATE())
+     * - Lọc thuốc hết hàng (soLuong > 0)
+     * - Sắp xếp theo số lượng (thấp -> cao)
+     * - Sắp xếp theo HSD (gần -> xa)
+     */
     public List<Thuoc> searchThuoc(String maThuoc, String tenThuoc, String loaiKe) {
         List<Thuoc> dsThuoc = new ArrayList<>();
-        // Sửa: Thêm ISNULL và JOINs
-        String sql = "SELECT t.*, k.viTri, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
-                     "LEFT JOIN KeThuoc k ON t.maKe = k.maKe " +
-                     "LEFT JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
-                     "WHERE t.maThuoc LIKE ? " +
-                     "AND t.tenThuoc LIKE ? " +
-                     "AND (k.loaiKe LIKE ? OR k.loaiKe IS NULL)"; // Cho phép kệ null
         
+        // 1. Dùng SELECT và JOINs giống hàm search cũ
+        //    vì mapRowToThuoc cần "loaiKe" và "tenNhaCungCap"
+        StringBuilder sqlBuilder = new StringBuilder(
+            "SELECT t.*, k.viTri, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
+            "LEFT JOIN KeThuoc k ON t.maKe = k.maKe " +
+            "LEFT JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
+            "WHERE t.maThuoc LIKE ? " +
+            "AND t.tenThuoc LIKE ? "
+        );
+        
+        List<Object> params = new ArrayList<>();
+        params.add("%" + maThuoc + "%");
+        params.add("%" + tenThuoc + "%");
+
+        // 2. Lọc theo loại kệ
+        // Logic này lấy từ HoaDon_Controller
+        if (loaiKe != null && !loaiKe.isEmpty() && !"Tất cả".equals(loaiKe)) {
+            sqlBuilder.append(" AND k.loaiKe = ? "); // Lọc chính xác tên kệ
+            params.add(loaiKe);
+        }
+        
+        // === BẮT ĐẦU LOGIC MỚI CHO BÁN HÀNG ===
+        
+        // 3. Lọc thuốc hết hạn (sử dụng GETDATE() của SQL Server)
+        sqlBuilder.append(" AND t.hanSuDung > GETDATE() ");
+        
+        // 4. Lọc thuốc hết hàng
+        sqlBuilder.append(" AND t.soLuong > 0 ");
+
+        // 5. Sắp xếp theo yêu cầu
+        sqlBuilder.append(" ORDER BY t.soLuong ASC, t.hanSuDung ASC ");
+        
+        // === KẾT THÚC LOGIC MỚI ===
+
         try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
-            ps.setString(1, "%" + maThuoc + "%");
-            ps.setString(2, "%" + tenThuoc + "%");
-            ps.setString(3, "%" + loaiKe + "%");
+             PreparedStatement ps = con.prepareStatement(sqlBuilder.toString())) {
+
+            // Set các tham số
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                // 6. Dùng mapRowToThuoc helper đã có
+                while (rs.next()) {
+                    dsThuoc.add(mapRowToThuoc(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dsThuoc;
+    }
+    
+    /**
+     * HÀM NÀY DÙNG CHO TAB QUẢN LÝ THUỐC
+     * - Hiển thị tất cả thuốc (kể cả hết hạn, hết hàng)
+     * - Chỉ lọc theo mã, tên, kệ
+     * - (Dựa trên logic cũ tại)
+     */
+    public List<Thuoc> searchThuocForQuanLy(String maThuoc, String tenThuoc, String loaiKe) {
+        List<Thuoc> dsThuoc = new ArrayList<>();
+        
+        // Dùng SELECT và JOINs như cũ
+        StringBuilder sqlBuilder = new StringBuilder(
+            "SELECT t.*, k.viTri, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
+            "LEFT JOIN KeThuoc k ON t.maKe = k.maKe " +
+            "LEFT JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
+            "WHERE t.maThuoc LIKE ? " +
+            "AND t.tenThuoc LIKE ? "
+        );
+        
+        List<Object> params = new ArrayList<>();
+        params.add("%" + maThuoc + "%");
+        params.add("%" + tenThuoc + "%");
+
+        // Lọc kệ (nếu có chọn "Tất cả" thì không lọc)
+        if (loaiKe != null && !loaiKe.isEmpty() && !"Tất cả".equals(loaiKe)) {
+            sqlBuilder.append(" AND k.loaiKe = ? ");
+            params.add(loaiKe);
+        }
+        
+        // Không có lọc HSD, số lượng
+        // Sắp xếp theo tên cho dễ nhìn
+        sqlBuilder.append(" ORDER BY t.tenThuoc ASC ");
+
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sqlBuilder.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
+                    // Dùng helper đã có
                     dsThuoc.add(mapRowToThuoc(rs));
                 }
             }
