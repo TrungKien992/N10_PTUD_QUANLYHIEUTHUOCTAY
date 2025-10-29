@@ -4824,7 +4824,7 @@ public class TrangChu_GUI extends JFrame{
 
         // ===== KẾT THÚC KHỐI CODE CẬP NHẬT NHÂN VIÊN =====
         
-     // ===== BẮT ĐẦU KHỐI CODE THÊM NHÀ CUNG CẤP ĐÃ SỬA =====
+        // ===== BẮT ĐẦU KHỐI CODE THÊM NHÀ CUNG CẤP ĐÃ SỬA =====
         JPanel panel_themNCC = new JPanel();
         maincontent.add(panel_themNCC, "themNCC");
         panel_themNCC.setLayout(null);
@@ -4836,26 +4836,6 @@ public class TrangChu_GUI extends JFrame{
         lblTitleThemNCC.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitleThemNCC.setBounds(0, 11, 1584, 45); // Vị trí tiêu đề
         panel_themNCC.add(lblTitleThemNCC);
-
-        // Panel ảnh (Tương tự Thêm Nhân Viên)
-        JPanel panelAnhNCC_TNCC = new JPanel();
-        panelAnhNCC_TNCC.setLayout(new BorderLayout(0,0)); // Dùng BorderLayout
-        panelAnhNCC_TNCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền nhạt
-        panelAnhNCC_TNCC.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền xám nhạt
-        panelAnhNCC_TNCC.setBounds(40, 80, 383, 400); // Điều chỉnh vị trí/kích thước
-        panel_themNCC.add(panelAnhNCC_TNCC);
-        // Thêm label placeholder cho ảnh vào đây nếu muốn
-        JLabel lblAnhNCC_TNCC = new JLabel("Chưa có ảnh NCC", SwingConstants.CENTER);
-        lblAnhNCC_TNCC.setFont(FONT_DETAIL_ITALIC);
-        lblAnhNCC_TNCC.setForeground(COLOR_TEXT_MUTED);
-        panelAnhNCC_TNCC.add(lblAnhNCC_TNCC, BorderLayout.CENTER);
-
-
-        JButton btnChonAnh_TNCC = new JButton("Chọn ảnh");
-        btnChonAnh_TNCC.setFont(FONT_BUTTON_STANDARD); // Font nút
-        styleButton(btnChonAnh_TNCC, COLOR_TEXT_MUTED); // Style nút phụ
-        btnChonAnh_TNCC.setBounds(159, 489, 143, 40); // Điều chỉnh vị trí
-        panel_themNCC.add(btnChonAnh_TNCC);
         // Đại Ca có thể thêm ActionListener cho nút này sau
 
         // Panel thông tin NCC
@@ -4866,7 +4846,7 @@ public class TrangChu_GUI extends JFrame{
             "Thông tin nhà cung cấp", TitledBorder.LEADING, TitledBorder.TOP,
             FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
         )); // Viền và tiêu đề
-        panel_ThongTinNCC.setBounds(449, 80, 1240, 380); // Điều chỉnh vị trí/kích thước
+        panel_ThongTinNCC.setBounds(40, 80, 1649, 380); // Điều chỉnh vị trí/kích thước
         panel_themNCC.add(panel_ThongTinNCC);
         panel_ThongTinNCC.setLayout(null);
 
@@ -4890,7 +4870,7 @@ public class TrangChu_GUI extends JFrame{
         txtMaNCC_TNCC.setForeground(COLOR_DANGER_RED); // Màu đỏ
         txtMaNCC_TNCC.setEditable(false); // Mã thường tự sinh
         txtMaNCC_TNCC.setColumns(10);
-        txtMaNCC_TNCC.setBounds(210, 40, 396, 33); // Điều chỉnh width
+        txtMaNCC_TNCC.setBounds(210, 40, 703, 33); // Điều chỉnh width
         txtMaNCC_TNCC.setBorder(null); // Bỏ viền
         txtMaNCC_TNCC.setBackground(COLOR_CARD_BACKGROUND); // Nền giống panel
         // Cần code để tạo mã NCC mới ở đây
@@ -4906,7 +4886,7 @@ public class TrangChu_GUI extends JFrame{
         txtTenNCC_TNCC = new JTextField();
         txtTenNCC_TNCC.setFont(FONT_TEXT_FIELD);
         txtTenNCC_TNCC.setColumns(10);
-        txtTenNCC_TNCC.setBounds(210, 88, 966, 33); // Kéo dài
+        txtTenNCC_TNCC.setBounds(210, 88, 1402, 33); // Kéo dài
         panel_ThongTinNCC.add(txtTenNCC_TNCC);
 
         JLabel lblSDTNCC_TNCC = new JLabel("Số điện thoại:");
@@ -4918,35 +4898,33 @@ public class TrangChu_GUI extends JFrame{
         txtSDT_TNCC = new JTextField();
         txtSDT_TNCC.setFont(FONT_TEXT_FIELD);
         txtSDT_TNCC.setColumns(10);
-        txtSDT_TNCC.setBounds(210, 136, 396, 33);
+        txtSDT_TNCC.setBounds(210, 136, 703, 33);
         panel_ThongTinNCC.add(txtSDT_TNCC);
 
         JLabel lblEmail_TNCC = new JLabel("Email:");
         lblEmail_TNCC.setFont(FONT_LABEL_BOLD);
         lblEmail_TNCC.setForeground(COLOR_TEXT_DARK);
-        lblEmail_TNCC.setBounds(639, 136, 120, height_tncc); // Điều chỉnh
+        lblEmail_TNCC.setBounds(923, 136, 120, height_tncc); 
         panel_ThongTinNCC.add(lblEmail_TNCC);
 
         txtEmail_TNCC = new JTextField();
         txtEmail_TNCC.setFont(FONT_TEXT_FIELD);
         txtEmail_TNCC.setColumns(10);
-        txtEmail_TNCC.setBounds(769, 136, 407, 33); // Điều chỉnh
+        txtEmail_TNCC.setBounds(1053, 136, 559, 33); 
         panel_ThongTinNCC.add(txtEmail_TNCC);
 
 
         JLabel lblTrangThai_TNCC = new JLabel("Trạng thái:");
         lblTrangThai_TNCC.setFont(FONT_LABEL_BOLD);
         lblTrangThai_TNCC.setForeground(COLOR_TEXT_DARK);
-        lblTrangThai_TNCC.setBounds(639, 40, 120, 33); // Điều chỉnh
+        lblTrangThai_TNCC.setBounds(923, 40, 120, 33); 
         panel_ThongTinNCC.add(lblTrangThai_TNCC);
 
-        // Nên dùng JComboBox cho Trạng thái
         cboTrangThai_TNCC = new JComboBox<String>();
         cboTrangThai_TNCC.setFont(FONT_TEXT_FIELD);
-        cboTrangThai_TNCC.setModel(new DefaultComboBoxModel<>(new String[] {"Đang hợp tác", "Ngừng hợp tác"})); // Ví dụ
-        cboTrangThai_TNCC.setBounds(769, 40, 407, 33); // Điều chỉnh
+        cboTrangThai_TNCC.setModel(new DefaultComboBoxModel<>(new String[] {"Đang hợp tác", "Ngừng hợp tác"})); 
+        cboTrangThai_TNCC.setBounds(1053, 40, 559, 33); 
         panel_ThongTinNCC.add(cboTrangThai_TNCC);
-        // Bỏ JTextField txtTrangThai_TNCC cũ
 
 
         JLabel lblGhiChu_TNCC = new JLabel("Ghi chú:");
@@ -4955,21 +4933,18 @@ public class TrangChu_GUI extends JFrame{
         lblGhiChu_TNCC.setBounds(40, 245, 160, height_tncc);
         panel_ThongTinNCC.add(lblGhiChu_TNCC);
 
-        // Dùng JScrollPane cho Ghi chú
         JScrollPane scrollPaneGhiChu = new JScrollPane();
-        scrollPaneGhiChu.setBounds(210, 250, 966, 60); 
+        scrollPaneGhiChu.setBounds(210, 250, 1402, 60); 
         panel_ThongTinNCC.add(scrollPaneGhiChu);
-                
-        // Giả sử txtGhiChu_TNCC đã được khai báo ở đầu class
+
         txtGhiChu_TNCC = new JTextArea();
         txtGhiChu_TNCC.setFont(FONT_TEXT_FIELD);
         txtGhiChu_TNCC.setLineWrap(true); 
         txtGhiChu_TNCC.setWrapStyleWord(true);
 
-        // Thêm JTextArea VÀO TRONG JScrollPane (ĐÚNG)
         scrollPaneGhiChu.setViewportView(txtGhiChu_TNCC);
                 txtGhiChu_TNCC.setFont(FONT_TEXT_FIELD);
-                txtGhiChu_TNCC.setLineWrap(true); // Tự xuống dòng
+                txtGhiChu_TNCC.setLineWrap(true); 
                 txtGhiChu_TNCC.setWrapStyleWord(true);
                 
                 JLabel lblDC_TNCC = new JLabel("Địa chỉ:");
@@ -4981,17 +4956,16 @@ public class TrangChu_GUI extends JFrame{
                 txtDC_TNCC = new JTextField();
                 txtDC_TNCC.setFont(new Font("Segoe UI", Font.PLAIN, 15));
                 txtDC_TNCC.setColumns(10);
-                txtDC_TNCC.setBounds(210, 190, 966, 33);
+                txtDC_TNCC.setBounds(210, 190, 1402, 33);
                 panel_ThongTinNCC.add(txtDC_TNCC);
 
-        // Nút chức năng (Thêm, Làm mới...)
-        btnLamMoi_TNCC = new JButton("Làm mới"); // Tạo nút mới
+        btnLamMoi_TNCC = new JButton("Làm mới"); 
         btnLamMoi_TNCC.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnLamMoi_TNCC, COLOR_TEXT_MUTED);
-        btnLamMoi_TNCC.setBounds(1320, 489, 140, 40); // Điều chỉnh
+        btnLamMoi_TNCC.setBounds(1320, 489, 140, 40);
         panel_themNCC.add(btnLamMoi_TNCC);
 
-        btnThem_TNCC = new JButton("Thêm NCC"); // Tạo nút mới
+        btnThem_TNCC = new JButton("Thêm NCC"); 
         btnThem_TNCC.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         	}
@@ -5048,27 +5022,6 @@ public class TrangChu_GUI extends JFrame{
         lblTitle_CN_NCC.setBounds(0, 11, 1584, 52); // Vị trí tiêu đề
         panel_capNhatNCC.add(lblTitle_CN_NCC);
 
-        // Panel ảnh
-        JPanel panelAnh_NCC = new JPanel(); // Giữ tên biến
-        panelAnh_NCC.setLayout(new BorderLayout(0,0));
-        panelAnh_NCC.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT));
-        panelAnh_NCC.setBackground(COLOR_BACKGROUND_PRIMARY);
-        panelAnh_NCC.setBounds(40, 80, 339, 328); // Vị trí
-        panel_capNhatNCC.add(panelAnh_NCC);
-        // Thêm label placeholder
-        JLabel lblAnh_CNNCC = new JLabel("Chưa có ảnh NCC", SwingConstants.CENTER);
-        lblAnh_CNNCC.setFont(FONT_DETAIL_ITALIC);
-        lblAnh_CNNCC.setForeground(COLOR_TEXT_MUTED);
-        panelAnh_NCC.add(lblAnh_CNNCC, BorderLayout.CENTER);
-
-
-        JButton btnChonAnh_CNNCC = new JButton("Chọn ảnh");
-        btnChonAnh_CNNCC.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btnChonAnh_CNNCC, COLOR_TEXT_MUTED);
-        btnChonAnh_CNNCC.setBounds(140, 420, 152, 37); // Vị trí
-        // Đại Ca thêm ActionListener sau
-        panel_capNhatNCC.add(btnChonAnh_CNNCC);
-
         // Panel thông tin cập nhật
         JPanel pnlInfo_CNNCC = new JPanel(); // Đặt tên mới
         pnlInfo_CNNCC.setBackground(COLOR_CARD_BACKGROUND);
@@ -5077,7 +5030,7 @@ public class TrangChu_GUI extends JFrame{
             "Thông Tin Cập Nhật", TitledBorder.LEADING, TitledBorder.TOP,
             FONT_LABEL_BOLD, COLOR_PRIMARY_BLUE
         ));
-        pnlInfo_CNNCC.setBounds(400, 80, 1289, 377); // Vị trí
+        pnlInfo_CNNCC.setBounds(40, 80, 1649, 377); // Vị trí
         panel_capNhatNCC.add(pnlInfo_CNNCC);
         pnlInfo_CNNCC.setLayout(null);
 
@@ -5101,7 +5054,7 @@ public class TrangChu_GUI extends JFrame{
         txtMaNCC_CNNCC.setForeground(COLOR_DANGER_RED);
         txtMaNCC_CNNCC.setEditable(false);
         txtMaNCC_CNNCC.setColumns(10);
-        txtMaNCC_CNNCC.setBounds(210, 30, 446, 33);
+        txtMaNCC_CNNCC.setBounds(210, 30, 731, 33);
         txtMaNCC_CNNCC.setBorder(null);
         txtMaNCC_CNNCC.setBackground(COLOR_CARD_BACKGROUND);
         pnlInfo_CNNCC.add(txtMaNCC_CNNCC);
@@ -5115,7 +5068,7 @@ public class TrangChu_GUI extends JFrame{
         txtTenNCC_CNNCC = new JTextField();
         txtTenNCC_CNNCC.setFont(FONT_TEXT_FIELD);
         txtTenNCC_CNNCC.setColumns(10);
-        txtTenNCC_CNNCC.setBounds(210, 78, 1018, 33);
+        txtTenNCC_CNNCC.setBounds(210, 78, 1396, 33);
         pnlInfo_CNNCC.add(txtTenNCC_CNNCC);
 
         JLabel lblSDT_CNNCC = new JLabel("Số điện thoại:");
@@ -5127,31 +5080,31 @@ public class TrangChu_GUI extends JFrame{
         txtSDT_CNNCC = new JTextField();
         txtSDT_CNNCC.setFont(FONT_TEXT_FIELD);
         txtSDT_CNNCC.setColumns(10);
-        txtSDT_CNNCC.setBounds(210, 126, 446, 33);
+        txtSDT_CNNCC.setBounds(210, 126, 731, 33);
         pnlInfo_CNNCC.add(txtSDT_CNNCC);
 
         JLabel lblEmail_CNNCC = new JLabel("Email:");
         lblEmail_CNNCC.setFont(FONT_LABEL_BOLD);
         lblEmail_CNNCC.setForeground(COLOR_TEXT_DARK);
-        lblEmail_CNNCC.setBounds(682, 126, 236, 33);
+        lblEmail_CNNCC.setBounds(951, 126, 117, 33);
         pnlInfo_CNNCC.add(lblEmail_CNNCC);
 
-        txtEmail_CNNCC = new JTextField(); // Giữ lại TextField vì code gốc có dùng
+        txtEmail_CNNCC = new JTextField(); 
         txtEmail_CNNCC.setFont(FONT_TEXT_FIELD);
         txtEmail_CNNCC.setColumns(10);
-        txtEmail_CNNCC.setBounds(804, 126, 424, 33);
+        txtEmail_CNNCC.setBounds(1078, 126, 528, 33);
         pnlInfo_CNNCC.add(txtEmail_CNNCC);
 
         JLabel lblTrangThai_CNNCC = new JLabel("Trạng thái:");
         lblTrangThai_CNNCC.setFont(FONT_LABEL_BOLD);
         lblTrangThai_CNNCC.setForeground(COLOR_TEXT_DARK);
-        lblTrangThai_CNNCC.setBounds(682, 30, 236, 33);
+        lblTrangThai_CNNCC.setBounds(951, 30, 117, 33);
         pnlInfo_CNNCC.add(lblTrangThai_CNNCC);
 
         cboTrangThai_CNNCC = new JComboBox<String>(); // Dùng ComboBox
         cboTrangThai_CNNCC.setFont(FONT_TEXT_FIELD);
         cboTrangThai_CNNCC.setModel(new DefaultComboBoxModel<>(new String[] {"Đang hợp tác", "Ngừng hợp tác"}));
-        cboTrangThai_CNNCC.setBounds(804, 30, 424, 33);
+        cboTrangThai_CNNCC.setBounds(1078, 30, 528, 33);
         pnlInfo_CNNCC.add(cboTrangThai_CNNCC);
         
         JLabel lblDC_CNNCC = new JLabel("Địa chỉ:");
@@ -5163,7 +5116,7 @@ public class TrangChu_GUI extends JFrame{
         txtDiaChi_CNNCC = new JTextField();
         txtDiaChi_CNNCC.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         txtDiaChi_CNNCC.setColumns(10);
-        txtDiaChi_CNNCC.setBounds(210, 170, 1018, 33);
+        txtDiaChi_CNNCC.setBounds(210, 170, 1396, 33);
         pnlInfo_CNNCC.add(txtDiaChi_CNNCC);
         
         JLabel lblGhiChu_CNNCC = new JLabel("Ghi chú:");
@@ -5173,12 +5126,12 @@ public class TrangChu_GUI extends JFrame{
         pnlInfo_CNNCC.add(lblGhiChu_CNNCC);
         
         JScrollPane scrollPaneGhiChuCNNCC = new JScrollPane();
-        scrollPaneGhiChuCNNCC.setBounds(210, 230, 1018, 136);
+        scrollPaneGhiChuCNNCC.setBounds(210, 230, 1396, 136);
         pnlInfo_CNNCC.add(scrollPaneGhiChuCNNCC);
-        txtGhiChu_CNNCC = new JTextArea(); // Khởi tạo
+        txtGhiChu_CNNCC = new JTextArea(); 
         txtGhiChu_CNNCC.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        txtGhiChu_CNNCC.setWrapStyleWord(true); // Tự động xuống dòng
-        txtGhiChu_CNNCC.setLineWrap(true);      // Tự động xuống dòng
+        txtGhiChu_CNNCC.setWrapStyleWord(true); 
+        txtGhiChu_CNNCC.setLineWrap(true);  
         scrollPaneGhiChuCNNCC.setViewportView(txtGhiChu_CNNCC);
 
         // Các nút chức năng
