@@ -2,7 +2,7 @@ package controller;
 
 import dao.nhaCungCap_DAO;
 import entity.NhaCungCap;
-import gui.Dialog_ChiTietNCC; // Import dialog
+import gui.Dialog_ChiTietNCC;
 import gui.TrangChu_GUI; 
 
 import javax.swing.table.DefaultTableModel;
@@ -17,13 +17,12 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-// Đã xóa import List thừa
+
 
 public class NhaCungCap_Controller {
 
-    private TrangChu_GUI trangChuGUI; // GUI chính
+    private TrangChu_GUI trangChuGUI;
     private nhaCungCap_DAO dao;
-    // Đã xóa biến private List<NhaCungCap> dsNhaCungCapFull;
     
     public NhaCungCap_Controller(TrangChu_GUI trangChuGUI) {
         this.trangChuGUI = trangChuGUI;

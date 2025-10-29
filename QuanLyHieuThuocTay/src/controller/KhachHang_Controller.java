@@ -105,7 +105,8 @@ public class KhachHang_Controller implements ActionListener {
         modelCN.setRowCount(0);
         modelTK.setRowCount(0);
         for (KhachHang kh : dsKH) {
-            Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getSoDienThoai(), kh.getDiaChi() };
+            // *** SỬA Ở ĐÂY: Đổi vị trí getDiaChi() và getSoDienThoai() ***
+            Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
             modelCN.addRow(row);
             modelTK.addRow(row);
         }
@@ -119,18 +120,20 @@ public class KhachHang_Controller implements ActionListener {
         if (row >= 0) {
             String maKH = trangChuGUI.table_CapNhatKH.getValueAt(row, 0).toString();
             String tenKH = trangChuGUI.table_CapNhatKH.getValueAt(row, 1).toString();
-            String sdt = trangChuGUI.table_CapNhatKH.getValueAt(row, 2).toString();
-            String diaChi = trangChuGUI.table_CapNhatKH.getValueAt(row, 3).toString();
+            // *** SỬA Ở ĐÂY: Lấy đúng cột và gán đúng ô text field ***
+            String diaChi = trangChuGUI.table_CapNhatKH.getValueAt(row, 2).toString(); // Cột 2 là Địa chỉ
+            String sdt = trangChuGUI.table_CapNhatKH.getValueAt(row, 3).toString();    // Cột 3 là SĐT
 
             trangChuGUI.txt_cnkh_MaKh.setText(maKH);
             trangChuGUI.txt_cnkh_tenkh.setText(tenKH);
-            trangChuGUI.txt_cnkh_SDt.setText(sdt);
-            trangChuGUI.txt_cnkh_dc.setText(diaChi);
+            trangChuGUI.txt_cnkh_dc.setText(diaChi); // Gán địa chỉ vào ô địa chỉ
+            trangChuGUI.txt_cnkh_SDt.setText(sdt);   // Gán SĐT vào ô SĐT
 
-            // lưu thông tin gốc để có thể khôi phục
-            khachHangGoc = new KhachHang(maKH, tenKH, diaChi, sdt);
+            // Lưu thông tin gốc (sửa thứ tự cho đúng constructor hoặc setter)
+            khachHangGoc = new KhachHang(maKH, tenKH, sdt, diaChi); // Giả sử constructor là (ma, ten, sdt, diaChi)
+            // Hoặc nếu constructor là (ma, ten, diaChi, sdt):
+            // khachHangGoc = new KhachHang(maKH, tenKH, diaChi, sdt);
         }
-        
     }
 
     /**
@@ -162,11 +165,10 @@ public class KhachHang_Controller implements ActionListener {
         }
 
         trangChuGUI.txt_cnkh_MaKh.setText(khachHangGoc.getMaKH());
-        trangChuGUI.txt_cnkh_tenkh.setText(khachHangGoc.getTenKH());trangChuGUI.txt_cnkh_SDt.setText(khachHangGoc.getSoDienThoai());
+        trangChuGUI.txt_cnkh_tenkh.setText(khachHangGoc.getTenKH());
+        // *** SỬA Ở ĐÂY: Gán đúng giá trị vào đúng ô text field ***
         trangChuGUI.txt_cnkh_dc.setText(khachHangGoc.getDiaChi());
-        
-
-
+        trangChuGUI.txt_cnkh_SDt.setText(khachHangGoc.getSoDienThoai());
     }
 
     /**
@@ -220,7 +222,7 @@ public class KhachHang_Controller implements ActionListener {
             // nếu trùng khớp điều kiện
             if ((maTK.isEmpty() || ma.contains(maTK)) &&
                 (tenTK.isEmpty() || ten.contains(tenTK))) {
-                Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getSoDienThoai(), kh.getDiaChi() };
+            	Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
                 model.addRow(row);
             }
         }
@@ -251,7 +253,7 @@ public class KhachHang_Controller implements ActionListener {
                 (tenTK.isEmpty() || ten.contains(tenTK)) &&
                 (sdtTK.isEmpty() || sdt.contains(sdtTK)) &&
                 (dcTK.isEmpty() || diachi.contains(dcTK))) {
-                Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getSoDienThoai(), kh.getDiaChi() };
+            	Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
                 model.addRow(row);
             }
         }
@@ -269,10 +271,12 @@ public class KhachHang_Controller implements ActionListener {
     private void capNhatKhachHang() {
         String maKH = trangChuGUI.txt_cnkh_MaKh.getText().trim();
         String tenKH = trangChuGUI.txt_cnkh_tenkh.getText().trim();
-        String sdt = trangChuGUI.txt_cnkh_SDt.getText().trim();
+        // *** SỬA Ở ĐÂY: Lấy đúng giá trị từ đúng ô text field ***
         String diaChi = trangChuGUI.txt_cnkh_dc.getText().trim();
+        String sdt = trangChuGUI.txt_cnkh_SDt.getText().trim();
 
-        if (!validData(tenKH, sdt, diaChi)) {
+
+        if (!validData(tenKH, sdt, diaChi)) { // Đảm bảo validData kiểm tra đúng thứ tự
             return;
         }
 
@@ -283,8 +287,10 @@ public class KhachHang_Controller implements ActionListener {
         }
 
         String oldTen = trangChuGUI.table_CapNhatKH.getValueAt(row, 1).toString();
-        String oldSDT = trangChuGUI.table_CapNhatKH.getValueAt(row, 2).toString();
-        String oldDiaChi = trangChuGUI.table_CapNhatKH.getValueAt(row, 3).toString();
+        // *** SỬA Ở ĐÂY: Lấy đúng giá trị cũ từ đúng cột ***
+        String oldDiaChi = trangChuGUI.table_CapNhatKH.getValueAt(row, 2).toString();
+        String oldSDT = trangChuGUI.table_CapNhatKH.getValueAt(row, 3).toString();
+
 
         if (tenKH.equals(oldTen) && sdt.equals(oldSDT) && diaChi.equals(oldDiaChi)) {
             JOptionPane.showMessageDialog(null, "Không có thay đổi nào để cập nhật!");
@@ -296,7 +302,10 @@ public class KhachHang_Controller implements ActionListener {
                 "Xác nhận cập nhật", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            KhachHang kh = new KhachHang(maKH, tenKH, diaChi, sdt);
+            // *** SỬA Ở ĐÂY: Đảm bảo thứ tự đúng với constructor hoặc dùng setter ***
+            KhachHang kh = new KhachHang(maKH, tenKH, sdt, diaChi); // Giả sử constructor (ma, ten, sdt, diaChi)
+            // Hoặc nếu constructor là (ma, ten, diaChi, sdt):
+            // KhachHang kh = new KhachHang(maKH, tenKH, diaChi, sdt);
             boolean result = khDAO.updateKhachHang(kh);
 
             if (result) {

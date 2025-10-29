@@ -3252,23 +3252,7 @@ public class TrangChu_GUI extends JFrame{
                 maincontent.add(panel_ThemNV, "themNV");
                 panel_ThemNV.setLayout(null);
                 panel_ThemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
-                panel_ThemNV.addComponentListener(new java.awt.event.ComponentAdapter() {
-                    @Override
-                    public void componentShown(java.awt.event.ComponentEvent e) {
-                        loadDataToTableNV(table_TNV);
-                        try {
-                            nhanVien_DAO nvDAO = new nhanVien_DAO();
-                            if (tempListNV == null) { 
-                                tempListNV = new ArrayList<>();
-                            }
-                            String nextMa = nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV);
-                            txtMaNV_TNV.setText(nextMa);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            txtMaNV_TNV.setText("Lỗi!");
-                        }
-                    }
-                });
+                
 
                 // Panel tiêu đề (Dùng màu gốc của Đại Ca)
                 JPanel panel_title_ThemNV = new JPanel();
@@ -3430,7 +3414,11 @@ public class TrangChu_GUI extends JFrame{
                 cboChucVu_TNV.setFont(FONT_TEXT_FIELD);
                 cboChucVu_TNV.setBounds(190, 324, 390, 33);
                 panelThongTinNV_TNV.add(cboChucVu_TNV);
-
+                chucVu_DAO cv_dao_TNV = new chucVu_DAO();
+                List<ChucVu> dsChucVu = cv_dao_TNV.getAllChucVu();
+                for (ChucVu cv : dsChucVu) {
+                	cboChucVu_TNV.addItem(cv);
+                }
                 JLabel lblTaiKhoan_TNV = new JLabel("Tài khoản:");
                 lblTaiKhoan_TNV.setFont(FONT_LABEL_BOLD);
                 lblTaiKhoan_TNV.setForeground(COLOR_TEXT_DARK);
@@ -3442,17 +3430,7 @@ public class TrangChu_GUI extends JFrame{
                 cboTaiKhoan_TNV.setBounds(733, 324, 439, 33);
                 panelThongTinNV_TNV.add(cboTaiKhoan_TNV);
 
-                chucVu_DAO cv_dao_TNV = new chucVu_DAO();
-                List<ChucVu> dsChucVu = cv_dao_TNV.getAllChucVu();
-                for (ChucVu cv : dsChucVu) {
-                	cboChucVu_TNV.addItem(cv);
-                }
-                taiKhoan_DAO tk_dao_TNV = new taiKhoan_DAO();
-                List<TaiKhoan> dsTaiKhoan = tk_dao_TNV.getAllTaiKhoan();
-                for (TaiKhoan tk : dsTaiKhoan) {
-                    cboTaiKhoan_TNV.addItem(tk);
-                 }
-
+               
                 JPanel panelDiaChi_TNV = new JPanel();
                 panelDiaChi_TNV.setBackground(COLOR_CARD_BACKGROUND);
                 panelDiaChi_TNV.setBorder(BorderFactory.createTitledBorder(
@@ -3769,6 +3747,30 @@ public class TrangChu_GUI extends JFrame{
                 });
 
                 panel_ThemNV.add(btnLuu_TNV);
+                panel_ThemNV.addComponentListener(new java.awt.event.ComponentAdapter() {
+                    @Override
+                    public void componentShown(java.awt.event.ComponentEvent e) {
+                        loadDataToTableNV(table_TNV);
+
+                        taiKhoan_DAO tk_dao_TNV = new taiKhoan_DAO();
+                        List<TaiKhoan> dsTaiKhoan = tk_dao_TNV.getAllTaiKhoan();
+                        for (TaiKhoan tk : dsTaiKhoan) {
+                            cboTaiKhoan_TNV.addItem(tk);
+                         }
+
+                        try {
+                            nhanVien_DAO nvDAO = new nhanVien_DAO();
+                            if (tempListNV == null) { 
+                                tempListNV = new ArrayList<>();
+                            }
+                            String nextMa = nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV);
+                            txtMaNV_TNV.setText(nextMa);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            txtMaNV_TNV.setText("Lỗi!");
+                        }
+                    }
+                });
 
 
         // ===== KẾT THÚC KHỐI CODE THÊM NHÂN VIÊN =====
@@ -3778,13 +3780,7 @@ public class TrangChu_GUI extends JFrame{
                 maincontent.add(panel_TimKiemNV, "timkiemnv");
                 panel_TimKiemNV.setLayout(null);
                 panel_TimKiemNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
-    	        panel_TimKiemNV.addComponentListener(new ComponentAdapter() {
-    	            @Override
-    	            public void componentShown(ComponentEvent e) {
-    	                loadDataToTableNV(table_CNNV);
-    	            }
-    	        });
-
+    	        
                 // Panel tiêu đề
                 JPanel panel_title_TKNV = new JPanel();
                 panel_title_TKNV.setLayout(null);
@@ -4019,6 +4015,13 @@ public class TrangChu_GUI extends JFrame{
                 scrollPane_TKNV.setViewportView(table_TKNV);
                 loadDataToTableNV(table_TKNV); // load toàn bộ ban đầu
                 addLocSuKien(txt_TenNV_TKNV, txtSDT_TKNV, txtTinh_TKNV, txtHuyen_TKNV, cboGioiTinh_TKNV, cboVaiTro_TKNV, table_TKNV);
+                panel_TimKiemNV.addComponentListener(new ComponentAdapter() {
+    	            @Override
+    	            public void componentShown(ComponentEvent e) {
+    	                loadDataToTableNV(table_CNNV);
+
+    	            }
+    	        });
 
         // ===== KẾT THÚC KHỐI CODE TÌM KIẾM NHÂN VIÊN =====
         
@@ -4027,12 +4030,7 @@ public class TrangChu_GUI extends JFrame{
 	        maincontent.add(panel_CapNhatNV, "capnhatnv");
 	        panel_CapNhatNV.setLayout(null);
 	        panel_CapNhatNV.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
-	        panel_CapNhatNV.addComponentListener(new ComponentAdapter() {
-	            @Override
-	            public void componentShown(ComponentEvent e) {
-	                loadDataToTableNV(table_CNNV);
-	            }
-	        });
+	       
 	
 	        // Panel tiêu đề
 	        JPanel panel_title_TKNV_1 = new JPanel(); // Giữ nguyên tên biến
@@ -4288,8 +4286,7 @@ public class TrangChu_GUI extends JFrame{
 	        JComboBox<ChucVu> cboChucVu_TK_CNNV = new JComboBox<ChucVu>();
 	        cboChucVu_TK_CNNV.setFont(FONT_TEXT_FIELD);
 	        cboChucVu_TK_CNNV.setBounds(825, 29, 441, 33);
-
-	        // Thêm item "Tất cả" (null) để bỏ lọc theo chức vụ khi cần
+ 	        // Thêm item "Tất cả" (null) để bỏ lọc theo chức vụ khi cần
 	        cboChucVu_TK_CNNV.addItem(null);
 	        chucVu_DAO cv_dao_tk_CNNV = new chucVu_DAO();
 	        List<ChucVu> dsChucVu_tk_CNNV = cv_dao_tk_CNNV.getAllChucVu();
@@ -4821,7 +4818,14 @@ public class TrangChu_GUI extends JFrame{
             }
         });
         scrollPane_CNNV.setViewportView(table_CNNV);
+        panel_CapNhatNV.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                loadDataToTableNV(table_CNNV);
 
+   
+            }
+        });
 
         // ===== KẾT THÚC KHỐI CODE CẬP NHẬT NHÂN VIÊN =====
         
@@ -7501,32 +7505,31 @@ public class TrangChu_GUI extends JFrame{
     
     
     public void loadDataTableKH() {
-        // gọi DAO để lấy danh sách khách hàng mới nhất
         khachHang_DAO khDAO = new khachHang_DAO();
         List<KhachHang> list = khDAO.getAllKhachHang();
 
-        // xóa toàn bộ dữ liệu cũ trên JTable
         DefaultTableModel model = (DefaultTableModel) table_CapNhatKH.getModel();
-        model.setRowCount(0);
-        DefaultTableModel model_TK = (DefaultTableModel) table_tkkh.getModel();
-        model.setRowCount(0);
+        model.setRowCount(0); // Xóa bảng 1
 
-        // thêm lại dữ liệu mới
+        DefaultTableModel model_TK = (DefaultTableModel) table_tkkh.getModel();
+        model_TK.setRowCount(0); // <<< SỬA Ở ĐÂY: Dùng đúng biến model_TK
+
+        // Thêm dữ liệu vào bảng 1 (model)
         for (KhachHang kh : list) {
             model.addRow(new Object[]{
                 kh.getMaKH(),
                 kh.getTenKH(),
-                kh.getDiaChi(),
-                kh.getSoDienThoai()
+                kh.getDiaChi(),     // Đảm bảo thứ tự đúng: Địa chỉ
+                kh.getSoDienThoai() // Rồi đến SĐT
             });
         }
-     // thêm lại dữ liệu mới
+        // Thêm dữ liệu vào bảng 2 (model_TK)
         for (KhachHang kh : list) {
-        	model_TK.addRow(new Object[]{
+            model_TK.addRow(new Object[]{
                 kh.getMaKH(),
                 kh.getTenKH(),
-                kh.getDiaChi(),
-                kh.getSoDienThoai()
+                kh.getDiaChi(),     // Đảm bảo thứ tự đúng: Địa chỉ
+                kh.getSoDienThoai() // Rồi đến SĐT
             });
         }
     }

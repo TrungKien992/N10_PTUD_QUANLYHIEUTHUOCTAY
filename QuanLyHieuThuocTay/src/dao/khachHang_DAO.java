@@ -16,77 +16,80 @@ public class khachHang_DAO {
     /**
      * Lấy danh sách tất cả khách hàng từ CSDL
      */
-    public List<KhachHang> getAllKhachHang() {
-        List<KhachHang> dsKH = new ArrayList<>();
-        String sql = "SELECT * FROM KhachHang";
-        try (Connection con = ConnectDB.getConnection();
-             Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            
-            while (rs.next()) {
-                KhachHang kh = new KhachHang(
-                    rs.getString("maKH"),
-                    rs.getString("tenKH"),
-                    rs.getString("diaChi"),
-                    rs.getString("sdt")
-                );
-                dsKH.add(kh);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return dsKH;
-    }
+	public List<KhachHang> getAllKhachHang() {
+	    List<KhachHang> dsKH = new ArrayList<>();
+	    String sql = "SELECT * FROM KhachHang";
+	    try (Connection con = ConnectDB.getConnection();
+	         Statement stmt = con.createStatement();
+	         ResultSet rs = stmt.executeQuery(sql)) {
+
+	        while (rs.next()) {
+	            // *** SỬA Ở ĐÂY: Đổi vị trí rs.getString("sdt") và rs.getString("diaChi") ***
+	            KhachHang kh = new KhachHang(
+	                rs.getString("maKH"),
+	                rs.getString("tenKH"),
+	                rs.getString("sdt"),      // Lấy sdt trước
+	                rs.getString("diaChi")    // Lấy diaChi sau
+	            );
+	            dsKH.add(kh);
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return dsKH;
+	}
 
     /**
      * Lấy thông tin khách hàng dựa vào mã
      */
-    public KhachHang getKhachHangTheoMa(String maKH) {
-        String sql = "SELECT * FROM KhachHang WHERE maKH = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
-            ps.setString(1, maKH);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new KhachHang(
-                        rs.getString("maKH"),
-                        rs.getString("tenKH"),
-                        rs.getString("diaChi"),
-                        rs.getString("sdt")
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+	public KhachHang getKhachHangTheoMa(String maKH) {
+	    String sql = "SELECT * FROM KhachHang WHERE maKH = ?";
+	    try (Connection con = ConnectDB.getConnection();
+	         PreparedStatement ps = con.prepareStatement(sql)) {
+
+	        ps.setString(1, maKH);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) {
+	                // *** SỬA Ở ĐÂY: Đổi vị trí rs.getString("sdt") và rs.getString("diaChi") ***
+	                return new KhachHang(
+	                    rs.getString("maKH"),
+	                    rs.getString("tenKH"),
+	                    rs.getString("sdt"),      // Lấy sdt trước
+	                    rs.getString("diaChi")    // Lấy diaChi sau
+	                );
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return null;
+	}
     
     /**
      * Lấy thông tin khách hàng dựa vào số điện thoại
      */
-    public KhachHang getKhachHangTheoSDT(String sdt) {
-        String sql = "SELECT * FROM KhachHang WHERE sdt = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
-            ps.setString(1, sdt);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                     return new KhachHang(
-                        rs.getString("maKH"),
-                        rs.getString("tenKH"),
-                        rs.getString("diaChi"),
-                        rs.getString("sdt")
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+	public KhachHang getKhachHangTheoSDT(String sdt) {
+	    String sql = "SELECT * FROM KhachHang WHERE sdt = ?";
+	    try (Connection con = ConnectDB.getConnection();
+	         PreparedStatement ps = con.prepareStatement(sql)) {
+
+	        ps.setString(1, sdt);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) {
+	                 // *** SỬA Ở ĐÂY: Đổi vị trí rs.getString("sdt") và rs.getString("diaChi") ***
+	                 return new KhachHang(
+	                    rs.getString("maKH"),
+	                    rs.getString("tenKH"),
+	                    rs.getString("sdt"),      // Lấy sdt trước
+	                    rs.getString("diaChi")    // Lấy diaChi sau
+	                );
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return null;
+	}
 
     /**
      * Thêm một khách hàng mới vào CSDL
@@ -112,15 +115,17 @@ public class khachHang_DAO {
      * Cập nhật thông tin một khách hàng
      */
     public boolean updateKhachHang(KhachHang kh) {
+        // SQL: SET tenKH = ?, diaChi = ?, sdt = ? WHERE maKH = ?
         String sql = "UPDATE KhachHang SET tenKH = ?, diaChi = ?, sdt = ? WHERE maKH = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            
+
             ps.setString(1, kh.getTenKH());
-            ps.setString(2, kh.getDiaChi());
-            ps.setString(3, kh.getSoDienThoai());
-            ps.setString(4, kh.getMaKH()); // Tham số cuối cùng
-            
+            // Lấy đúng giá trị từ object KH (sau khi đã sửa các hàm get/search)
+            ps.setString(2, kh.getDiaChi()); // tham số thứ 2 là diaChi
+            ps.setString(3, kh.getSoDienThoai()); // tham số thứ 3 là sdt
+            ps.setString(4, kh.getMaKH());
+
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -151,11 +156,12 @@ public class khachHang_DAO {
  // === BỔ SUNG HÀM TÌM KIẾM KHÁCH HÀNG (REQ 2) ===
     public List<KhachHang> searchKhachHang(String maKH, String tenKH, String sdt, String diaChi) {
         List<KhachHang> dsKH = new ArrayList<>();
+        // SQL query giữ nguyên
         String sql = "SELECT * FROM KhachHang WHERE maKH LIKE ? AND tenKH LIKE ? AND sdt LIKE ? AND diaChi LIKE ?";
-        
+
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            
+
             ps.setString(1, "%" + maKH + "%");
             ps.setString(2, "%" + tenKH + "%");
             ps.setString(3, "%" + sdt + "%");
@@ -163,11 +169,12 @@ public class khachHang_DAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
+                     // *** SỬA Ở ĐÂY: Đổi vị trí rs.getString("sdt") và rs.getString("diaChi") ***
                     KhachHang kh = new KhachHang(
                         rs.getString("maKH"),
                         rs.getString("tenKH"),
-                        rs.getString("diaChi"),
-                        rs.getString("sdt")
+                        rs.getString("sdt"),      // Lấy sdt trước
+                        rs.getString("diaChi")    // Lấy diaChi sau
                     );
                     dsKH.add(kh);
                 }

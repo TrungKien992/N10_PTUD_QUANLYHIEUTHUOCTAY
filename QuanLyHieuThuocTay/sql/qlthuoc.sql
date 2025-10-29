@@ -45,11 +45,12 @@ CREATE TABLE NhanVien (
     diaChi NVARCHAR(255),
     anh NVARCHAR(255),
     maTK VARCHAR(20) UNIQUE,
-    
+    trangThai NVARCHAR(20) CHECK (trangThai IN (N'Còn làm việc', N'Nghỉ việc')),
     FOREIGN KEY (maTK) REFERENCES TaiKhoan(maTK),
     FOREIGN KEY (chucVu) REFERENCES ChucVu(maChucVu)
 );
 GO
+
 
 --------------------------------------------------
 -- BẢNG KHÁCH HÀNG
@@ -257,26 +258,26 @@ GO
 INSERT INTO TaiKhoan VALUES
 ('TK01', 'admin', '123', N'Quản lý'),
 ('TK02', 'nvbh01', '123', N'Nhân viên bán hàng'),
-('TK03', 'nvkho01', '123', N'Nhân viên kho');
+('TK03', 'nvbh02', '123', N'Nhân viên bán hàng');
 GO
 
 -- CHUC VU
 INSERT INTO ChucVu VALUES
 ('CV01', N'Quản lý', N'Quản lý toàn bộ hệ thống'),
-('CV02', N'Nhân viên bán hàng', N'Phụ trách bán thuốc và lập hóa đơn'),
-('CV03', N'Nhân viên kho', N'Quản lý nhập - xuất thuốc trong kho');
+('CV02', N'Nhân viên bán hàng', N'Phụ trách bán thuốc và lập hóa đơn');
 GO
 
 -- NHAN VIÊN
 INSERT INTO NhanVien VALUES
-('NV001', N'Nguyễn Văn An', '1990-05-15', N'Nam', 'CV01', '0912345678', N'Quận 1, TP.HCM', NULL, 'TK01'),
-('NV002', N'Trần Thị Bích', '1995-08-10', N'Nữ', 'CV02', '0987654321', N'Quận 5, TP.HCM', NULL, 'TK02'),
-('NV003', N'Lê Văn Cường', '1993-03-20', N'Nam', 'CV03', '0901234567', N'Gò Vấp, TP.HCM', NULL, 'TK03');
+('NV001', N'Nguyễn Văn An', '1990-05-15', N'Nam', 'CV01', '0912345678', N'Quận 1, TP.HCM', NULL, 'TK01', N'Còn làm việc'),
+('NV002', N'Trần Thị Bích', '1995-08-10', N'Nữ', 'CV02', '0987654321', N'Quận 5, TP.HCM', NULL, 'TK02', N'Còn làm việc'),
+('NV003', N'Lê Văn Cường', '1993-03-20', N'Nam', 'CV02', '0901234567', N'Gò Vấp, TP.HCM', NULL, 'TK03', N'Nghỉ việc');
 GO
+
 
 -- KHÁCH HÀNG
 INSERT INTO KhachHang VALUES
-('KH0000001', N'Phạm Minh Dũng', '0911222333', N'Quận 3, TP.HCM'),
+('KH0000001', N'Phạm Minh Dũng', '0911222333' ,N'Quận 3, TP.HCM'),
 ('KH0000002', N'Nguyễn Thu Trang', '0988776655', N'Quận 7, TP.HCM'),
 ('KH0000003', N'Đỗ Văn Phúc', '0977998877', N'TP. Thủ Đức');
 GO
