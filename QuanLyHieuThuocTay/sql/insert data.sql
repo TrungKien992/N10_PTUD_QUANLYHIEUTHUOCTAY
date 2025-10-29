@@ -33,58 +33,58 @@ GO
 --------------------------------------------------
 -- BỔ SUNG KHÁCH HÀNG (Thêm 47)
 --------------------------------------------------
-INSERT INTO KhachHang (maKH, tenKH, diaChi, sdt) VALUES
-('KH0000004', N'Lê Thị Hoài An', N'Quận Bình Thạnh', '0905111222'),
-('KH0000005', N'Trần Văn Bình', N'Quận 10', '0905333444'),
-('KH0000006', N'Võ Minh Cường', N'Quận Phú Nhuận', '0905555666'),
-('KH0000007', N'Đặng Ngọc Diệp', N'Quận Tân Bình', '0905777888'),
-('KH0000008', N'Hoàng Văn Giang', N'Quận 12', '0905999000'),
-('KH0000009', N'Phan Thanh Hùng', N'Quận Gò Vấp', '0913111222'),
-('KH0000010', N'Bùi Thị Kim Liên', N'TP. Thủ Đức', '0913333444'),
-('KH0000011', N'Dương Hoài Nam', N'Bình Chánh', '0913555666'),
-('KH0000012', N'Ngô Gia Phúc', N'Quận 8', '0913777888'),
-('KH0000013', N'Huỳnh Bảo Quyên', N'Quận 6', '0913999000'),
-('KH0000014', N'Mai Anh Tuấn', N'Quận 11', '0981111222'),
-('KH0000015', N'Lý Mỹ Uyên', N'Quận 5', '0981333444'),
-('KH0000016', N'Nguyễn Đức Thịnh', N'Quận 4', '0981555666'),
-('KH0000017', N'Vũ Thị Thùy Trang', N'Quận 7', '0981777888'),
-('KH0000018', N'Trịnh Minh Vương', N'Quận 1', '0981999000'),
-('KH0000019', N'Đinh Quốc Thái', N'Hóc Môn', '0971111222'),
-('KH0000020', N'Tô Ngọc Hà', N'Củ Chi', '0971333444'),
-('KH0000021', N'Lưu Trí Vĩ', N'Quận Bình Tân', '0971555666'),
-('KH0000022', N'Đào Xuân Trường', N'Quận Tân Phú', '0971777888'),
-('KH0000023', N'Phạm Gia Hân', N'Quận 1', '0971999000'),
-('KH0000024', N'Nguyễn Hoàng Yến', N'Quận 3', '0961111222'),
-('KH0000025', N'Trần Đức Bo', N'Quận 10', '0961333444'),
-('KH0000026', N'Huỳnh Lập', N'Quận 5', '0961555666'),
-('KH0000027', N'Lê Dương Bảo Lâm', N'Quận 6', '0961777888'),
-('KH0000028', N'Ngô Kiến Huy', N'Quận Phú Nhuận', '0961999000'),
-('KH0000029', N'Hồ Quang Hiếu', N'Quận Tân Bình', '0902111222'),
-('KH0000030', N'Đông Nhi', N'Quận 1', '0902333444'),
-('KH0000031', N'Ông Cao Thắng', N'Quận 1', '0902555666'),
-('KH0000032', N'Bảo Thy', N'Quận 7', '0902777888'),
-('KH0000033', N'Noo Phước Thịnh', N'Quận 3', '0902999000'),
-('KH0000034', N'Sơn Tùng M-TP', N'Quận 7', '0903111222'),
-('KH0000035', N'Hari Won', N'Quận 10', '0903333444'),
-('KH0000036', N'Trấn Thành', N'Quận 10', '0903555666'),
-('KH0000037', N'Trường Giang', N'Quận Phú Nhuận', '0903777888'),
-('KH0000038', N'Nhã Phương', N'Quận Phú Nhuận', '0903999000'),
-('KH0000039', N'Thu Trang', N'Quận Gò Vấp', '0904111222'),
-('KH0000040', N'Tiến Luật', N'Quận Gò Vấp', '0904333444'),
-('KH0000041', N'Việt Hương', N'Quận 10', '0904555666'),
-('KH0000042', N'Hoài Linh', N'Quận Phú Nhuận', '0904777888'),
-('KH0000043', N'Chí Tài', N'Quận 1', '0904999000'),
-('KH0000044', N'Thúy Nga', N'Quận 5', '0906111222'),
-('KH0000045', N'Tấn Beo', N'Quận 11', '0906333444'),
-('KH0000046', N'Tấn Bo', N'Quận 11', '0906555666'),
-('KH0000047', N'Minh Nhí', N'Quận 10', '0906777888'),
-('KH0000048', N'Hồng Vân', N'Quận Phú Nhuận', '0906999000'),
-('KH0000049', N'Đàm Vĩnh Hưng', N'Quận 1', '0907111222'),
-('KH0000050', N'Mỹ Tâm', N'Quận Phú Nhuận', '0907333444');
+INSERT INTO KhachHang (maKH, tenKH, sdt, diaChi) VALUES
+('KH0000004', N'Lê Thị Hoài An', '0905111222', N'Quận Bình Thạnh'),
+('KH0000005', N'Trần Văn Bình', '0905333444', N'Quận 10'),
+('KH0000006', N'Võ Minh Cường', '0905555666', N'Quận Phú Nhuận'),
+('KH0000007', N'Đặng Ngọc Diệp', '0905777888', N'Quận Tân Bình'),
+('KH0000008', N'Hoàng Văn Giang', '0905999000', N'Quận 12'),
+('KH0000009', N'Phan Thanh Hùng', '0913111222', N'Quận Gò Vấp'),
+('KH0000010', N'Bùi Thị Kim Liên', '0913333444', N'TP. Thủ Đức'),
+('KH0000011', N'Dương Hoài Nam', '0913555666', N'Bình Chánh'),
+('KH0000012', N'Ngô Gia Phúc', '0913777888', N'Quận 8'),
+('KH0000013', N'Huỳnh Bảo Quyên', '0913999000', N'Quận 6'),
+('KH0000014', N'Mai Anh Tuấn', '0981111222', N'Quận 11'),
+('KH0000015', N'Lý Mỹ Uyên', '0981333444', N'Quận 5'),
+('KH0000016', N'Nguyễn Đức Thịnh', '0981555666', N'Quận 4'),
+('KH0000017', N'Vũ Thị Thùy Trang', '0981777888', N'Quận 7'),
+('KH0000018', N'Trịnh Minh Vương', '0981999000', N'Quận 1'),
+('KH0000019', N'Đinh Quốc Thái', '0971111222', N'Hóc Môn'),
+('KH0000020', N'Tô Ngọc Hà', '0971333444', N'Củ Chi'),
+('KH0000021', N'Lưu Trí Vĩ', '0971555666', N'Quận Bình Tân'),
+('KH0000022', N'Đào Xuân Trường', '0971777888', N'Quận Tân Phú'),
+('KH0000023', N'Phạm Gia Hân', '0971999000', N'Quận 1'),
+('KH0000024', N'Nguyễn Hoàng Yến', '0961111222', N'Quận 3'),
+('KH0000025', N'Trần Đức Bo', '0961333444', N'Quận 10'),
+('KH0000026', N'Huỳnh Lập', '0961555666', N'Quận 5'),
+('KH0000027', N'Lê Dương Bảo Lâm', '0961777888', N'Quận 6'),
+('KH0000028', N'Ngô Kiến Huy', '0961999000', N'Quận Phú Nhuận'),
+('KH0000029', N'Hồ Quang Hiếu', '0902111222', N'Quận Tân Bình'),
+('KH0000030', N'Đông Nhi', '0902333444', N'Quận 1'),
+('KH0000031', N'Ông Cao Thắng', '0902555666', N'Quận 1'),
+('KH0000032', N'Bảo Thy', '0902777888', N'Quận 7'),
+('KH0000033', N'Noo Phước Thịnh', '0902999000', N'Quận 3'),
+('KH0000034', N'Sơn Tùng M-TP', '0903111222', N'Quận 7'),
+('KH0000035', N'Hari Won', '0903333444', N'Quận 10'),
+('KH0000036', N'Trấn Thành', '0903555666', N'Quận 10'),
+('KH0000037', N'Trường Giang', '0903777888', N'Quận Phú Nhuận'),
+('KH0000038', N'Nhã Phương', '0903999000', N'Quận Phú Nhuận'),
+('KH0000039', N'Thu Trang', '0904111222', N'Quận Gò Vấp'),
+('KH0000040', N'Tiến Luật', '0904333444', N'Quận Gò Vấp'),
+('KH0000041', N'Việt Hương', '0904555666', N'Quận 10'),
+('KH0000042', N'Hoài Linh', '0904777888', N'Quận Phú Nhuận'),
+('KH0000043', N'Chí Tài', '0904999000', N'Quận 1'),
+('KH0000044', N'Thúy Nga', '0906111222', N'Quận 5'),
+('KH0000045', N'Tấn Beo', '0906333444', N'Quận 11'),
+('KH0000046', N'Tấn Bo', '0906555666', N'Quận 11'),
+('KH0000047', N'Minh Nhí', '0906777888', N'Quận 10'),
+('KH0000048', N'Hồng Vân', '0906999000', N'Quận Phú Nhuận'),
+('KH0000049', N'Đàm Vĩnh Hưng', '0907111222', N'Quận 1'),
+('KH0000050', N'Mỹ Tâm', '0907333444', N'Quận Phú Nhuận');
 GO
 
 --------------------------------------------------
--- BỔ SUNG THUỐC (Thêm 100)
+-- BỔ SUNG THUỐC (Thêm 50)
 --------------------------------------------------
 INSERT INTO Thuoc (maThuoc, tenThuoc, soLuong, giaNhap, giaBan, hanSuDung, thanhPhan, donViTinh, maKe, maNhaCungCap) VALUES
 -- Hết hàng
@@ -96,7 +96,7 @@ INSERT INTO Thuoc (maThuoc, tenThuoc, soLuong, giaNhap, giaBan, hanSuDung, thanh
 ('T11', N'Decolgen Forte', 30, 1000, 1500, '2025-09-10', N'Paracetamol, Phenylpropanolamine', N'Viên', 'K02', 'NCC07'),
 ('T12', N'Tiffy', 100, 900, 1300, '2024-12-25', N'Paracetamol, Chlorpheniramine', N'Viên', 'K02', 'NCC04'),
 
--- Thuốc thông thường (Thêm 95)
+-- Thuốc thông thường (Thêm 45)
 ('T13', N'Strepsils Cool', 120, 2000, 2800, '2027-08-30', N'Amylmetacresol, Dichlorobenzyl Alcohol', N'Viên ngậm', 'K02', 'NCC06'),
 ('T14', N'Hoạt huyết dưỡng não', 250, 3000, 4000, '2028-02-10', N'Cao Đinh lăng, Cao Bạch quả', N'Viên', 'K05', 'NCC02'),
 ('T15', N'Calcium Corbiere', 80, 8000, 10000, '2027-11-11', N'Calcium', N'Ống', 'K03', 'NCC06'),
@@ -141,64 +141,12 @@ INSERT INTO Thuoc (maThuoc, tenThuoc, soLuong, giaNhap, giaBan, hanSuDung, thanh
 ('T54', N'Pharmaton', 60, 7000, 9000, '2028-03-18', N'Nhân sâm, Vitamin, Khoáng chất', N'Viên', 'K03', 'NCC06'),
 ('T55', N'Sắt (Ferrovit)', 130, 1200, 1800, '2028-07-20', N'Sắt, Acid Folic', N'Viên', 'K03', 'NCC10'),
 ('T56', N'Kẽm (ZinC)', 110, 1000, 1600, '2027-11-05', N'Kẽm Gluconat', N'Viên', 'K03', 'NCC04'),
-('T57', N'Magie B6', 140, 2200, 3000, '2028-05-25', N'Magie, Vitamin B6', N'Viên', 'K03', 'NCC06'),
-('T58', N'Omega 3', 80, 4000, 5500, '2028-02-02', N'Dầu cá (EPA, DHA)', N'Viên', 'K03', 'NCC08'),
-('T59', N'Glucosamine', 70, 6000, 8000, '2028-08-31', N'Glucosamine Sulfate', N'Viên', 'K03', 'NCC05'),
-('T60', N'Canxi D3', 100, 1800, 2500, '2027-12-31', N'Canxi, Vitamin D3', N'Viên', 'K03', 'NCC01'),
-('T61', N'Ezinax', 50, 30000, 38000, '2027-09-28', N'Cetirizine', N'Tuýp', 'K04', 'NCC09'),
-('T62', N'Hiruscar', 60, 80000, 100000, '2027-09-28', N'Allium Cepa, Pionin', N'Tuýp', 'K04', 'NCC06'),
-('T63', N'Dermatix', 30, 180000, 220000, '2028-04-12', N'Silicone gel', N'Tuýp', 'K04', 'NCC07'),
-('T64', N'Milian', 150, 8000, 11000, '2028-01-05', N'Xanh Methylen', N'Chai', 'K04', 'NCC10'),
-('T65', N'Fucidin', 40, 50000, 62000, '2027-11-18', N'Acid Fusidic', N'Tuýp', 'K04', 'NCC08'),
-('T66', N'Kentax', 70, 15000, 20000, '2028-06-08', N'Ketoconazole', N'Tuýp', 'K04', 'NCC02'),
-('T67', N'Tomax', 90, 12000, 17000, '2027-10-10', N'Kháng nấm', N'Tuýp', 'K04', 'NCC04'),
-('T68', N'Thuốc mỡ Tetracyclin', 120, 4000, 6000, '2028-03-25', N'Tetracyclin (mỡ)', N'Tuýp', 'K04', 'NCC03'),
-('T69', N'Cồn 90 độ', 300, 10000, 14000, '2028-08-10', N'Ethanol 90%', N'Chai', 'K04', 'NCC10'),
-('T70', N'Oxy già', 250, 3000, 5000, '2028-07-01', N'Hydrogen Peroxide', N'Chai', 'K04', 'NCC10'),
-('T71', N'Nước muối sinh lý', 400, 4000, 6000, '2028-09-01', N'NaCl 0.9%', N'Chai', 'K04', 'NCC01'),
-('T72', N'Vastarel MR', 50, 6000, 7500, '2028-05-30', N'Trimetazidine', N'Viên', 'K05', 'NCC06'),
--- DÒNG LỖI 'Vastarel MR' ĐÃ BỊ XÓA KHỎI ĐÂY
-('T73', N'Amlodipin 5mg', 180, 500, 800, '2028-02-20', N'Amlodipine', N'Viên', 'K05', 'NCC04'),
-('T74', N'Losartan 50mg', 160, 1000, 1500, '2028-04-16', N'Losartan', N'Viên', 'K05', 'NCC05'),
-('T75', N'Enalapril 10mg', 200, 400, 700, '2027-10-14', N'Enalapril', N'Viên', 'K05', 'NCC08'),
-('T76', N'Nifedipin 20mg', 100, 800, 1200, '2028-06-30', N'Nifedipine', N'Viên', 'K05', 'NCC09'),
-('T77', N'Metformin 500mg', 250, 600, 1000, '2028-03-12', N'Metformin', N'Viên', 'K05', 'NCC01'),
-('T78', N'Gliclazide 80mg', 120, 1100, 1600, '2028-01-28', N'Gliclazide', N'Viên', 'K05', 'NCC06'),
-('T79', N'Atorvastatin 20mg', 90, 3000, 4200, '2028-07-22', N'Atorvastatin', N'Viên', 'K05', 'NCC05'),
-('T80', N'Rosuvastatin 10mg', 80, 3500, 4800, '2028-05-05', N'Rosuvastatin', N'Viên', 'K05', 'NCC08'),
-('T81', N'Fenofibrat 160mg', 60, 2800, 3900, '2027-11-25', N'Fenofibrate', N'Viên', 'K05', 'NCC09'),
-('T82', N'Warfarin 5mg', 40, 4000, 5500, '2028-06-18', N'Warfarin', N'Viên', 'K05', 'NCC07'),
-('T83', N'Clopidogrel 75mg', 70, 3200, 4500, '2028-04-28', N'Clopidogrel', N'Viên', 'K05', 'NCC01'),
-('T84', N'Digoxin 0.25mg', 30, 1000, 1500, '2027-10-31', N'Digoxin', N'Viên', 'K05', 'NCC04'),
-('T85', N'Furosemide 40mg', 200, 300, 500, '2028-08-20', N'Furosemide', N'Viên', 'K05', 'NCC10'),
-('T86', N'Spironolacton 25mg', 100, 900, 1400, '2028-02-15', N'Spironolactone', N'Viên', 'K05', 'NCC08'),
-('T87', N'Omeprazol 20mg', 150, 1000, 1500, '2028-07-10', N'Omeprazole', N'Viên', 'K02', 'NCC05'),
-('T88', N'Esomeprazol 40mg', 80, 4000, 5500, '2028-09-12', N'Esomeprazole', N'Viên', 'K02', 'NCC01'),
-('T89', N'Pantoprazol 40mg', 90, 3500, 4800, '2028-01-11', N'Pantoprazole', N'Viên', 'K02', 'NCC09'),
-('T90', N'Ranitidin 150mg', 120, 700, 1100, '2027-11-14', N'Ranitidine', N'Viên', 'K02', 'NCC04'),
-('T91', N'Domperidon 10mg', 100, 800, 1200, '2028-05-08', N'Domperidone', N'Viên', 'K02', 'NCC07'),
-('T92', N'Motilium-M', 70, 1500, 2100, '2028-03-05', N'Domperidone', N'Viên', 'K02', 'NCC06'),
-('T93', N'Oresol', 500, 2000, 2800, '2028-08-01', N'Bù nước, điện giải', N'Gói', 'K02', 'NCC01'),
-('T94', N'Men vi sinh (Enterogermina)', 130, 4000, 5500, '2027-12-20', N'Bacillus clausii', N'Ống', 'K02', 'NCC06'),
-('T95', N'Lacteol Fort', 100, 3000, 4200, '2027-08-10', N'Lactobacillus acidophilus', N'Gói', 'K02', 'NCC06'),
-('T96', N'Urgo (Băng cá nhân)', 300, 500, 800, '2028-09-30', N'Băng gạc', N'Miếng', 'K04', 'NCC07'),
-('T97', N'Gạc y tế', 200, 10000, 13000, '2028-07-28', N'Vải gạc', N'Gói', 'K04', 'NCC10'),
-('T98', N'Bông gòn y tế', 150, 12000, 16000, '2028-06-22', N'Bông', N'Gói', 'K04', 'NCC10'),
-('T99', N'Nhiệt kế thủy ngân', 50, 15000, 22000, '2030-01-01', N'Thủy ngân', N'Cái', 'K05', 'NCC04'),
-('T100', N'Nhiệt kế điện tử', 30, 80000, 110000, '2030-01-01', N'Điện tử', N'Cái', 'K05', 'NCC08'),
-('T101', N'Máy đo huyết áp Omron', 20, 600000, 750000, '2030-01-01', N'Điện tử', N'Bộ', 'K05', 'NCC07'),
-('T102', N'Máy đo đường huyết', 25, 500000, 650000, '2030-01-01', N'Điện tử', N'Bộ', 'K05', 'NCC06'),
-('T103', N'Que thử thai', 100, 10000, 15000, '2027-10-18', N'Que thử', N'Cái', 'K05', 'NCC04'),
-('T104', N'Bao cao su Durex', 150, 4000, 6000, '2028-05-12', N'Latex', N'Cái', 'K05', 'NCC07'),
-('T105', N'Bao cao su OK', 300, 1000, 1500, '2028-04-09', N'Latex', N'Cái', 'K05', 'NCC04'),
-('T106', N'Gel bôi trơn KY', 80, 35000, 48000, '2027-11-08', N'Glycerine', N'Tuýp', 'K05', 'NCC07'),
-('T107', N'Viên uống tránh thai (Loại 1)', 90, 15000, 20000, '2028-02-22', N'Ethinylestradiol, Levonorgestrel', N'Vỉ', 'K05', 'NCC09');
+('T57', N'Magie B6', 140, 2200, 3000, '2028-05-25', N'Magie, Vitamin B6', N'Viên', 'K03', 'NCC06');
 GO
 
 
 --------------------------------------------------
--- BỔ SUNG HÓA ĐƠN & CHI TIẾT HÓA ĐƠN (Thêm 50 HĐ)
--- Dữ liệu được rải từ tháng 1/2025 đến tháng 10/2025
+-- BỔ SUNG HÓA ĐƠN & CHI TIẾT HÓA ĐƠN (ĐÃ SỬA LỖI KHÓA CHÍNH)
 --------------------------------------------------
 
 -- THÁNG 1/2025
@@ -241,39 +189,45 @@ INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES
 ('HD013', '2025-04-29', 'TH02', 'NV002', 'KH0000001', 'KM005'); -- Dùng KM 30/4
 INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES
 ('HD011', 'T50', 10), ('HD011', 'T51', 10), ('HD011', 'T52', 5),
-('HD012', 'T55', 2), ('HD012', 'T58', 1),
-('HD013', 'T60', 4), ('HD013', 'T62', 1), ('HD013', 'T63', 1);
+('HD012', 'T55', 2), ('HD012', 'T56', 1), 
+('HD013', 'T15', 4), ('HD013', 'T19', 1), ('HD013', 'T21', 1);
 GO
 
--- THÁNG 5/2025
+-- THÁNG 5/2025 (ĐÃ SỬA LỖI TRÙNG KHÓA)
 INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES 
 ('HD014', '2025-05-10', 'TH01', 'NV002', 'KH0000008', NULL),
 ('HD015', '2025-05-20', 'TH01', 'NV002', NULL, NULL),
 ('HD016', '2025-05-30', 'TH02', 'NV002', 'KH0000018', NULL);
 INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES
-('HD014', 'T70', 5), ('HD014', 'T71', 10), ('HD014', 'T96', 20),
-('HD015', 'T80', 2), ('HD015', 'T81', 2),
-('HD016', 'T85', 30), ('HD016', 'T86', 30), ('HD016', 'T75', 15);
+-- ('HD014', 'T21', 5), ('HD014', 'T21', 10), ('HD014', 'T05', 20), -- LỖI GỐC
+('HD014', 'T21', 15), ('HD014', 'T05', 20), -- ĐÃ SỬA: Gộp (5+10) cho T21
+-- ('HD015', 'T22', 2), ('HD015', 'T22', 2), -- LỖI GỐC
+('HD015', 'T22', 4), -- ĐÃ SỬA: Gộp (2+2) cho T22
+-- ('HD016', 'T22', 30), ('HD016', 'T22', 30), ('HD016', 'T22', 15); -- LỖI GỐC
+('HD016', 'T22', 75); -- ĐÃ SỬA: Gộp (30+30+15) cho T22
 GO
 
--- THÁNG 6/2025
+-- THÁNG 6/2025 (ĐÃ SỬA LỖI TRÙNG KHÓA)
 INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES 
 ('HD017', '2025-06-02', 'TH01', 'NV003', 'KH0000028', 'KM006'), -- Dùng KM 1/6
 ('HD018', '2025-06-15', 'TH02', 'NV002', 'KH0000038', NULL),
 ('HD019', '2025-06-25', 'TH01', 'NV002', 'KH0000048', NULL);
 INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES
 ('HD017', 'T44', 2), ('HD017', 'T45', 1), ('HD017', 'T16', 3),
-('HD018', 'T90', 10), ('HD018', 'T91', 10),
-('HD019', 'T100', 1), ('HD019', 'T103', 2);
+-- ('HD018', 'T23', 10), ('HD018', 'T23', 10), -- LỖI GỐC
+('HD018', 'T23', 20), -- ĐÃ SỬA: Gộp (10+10) cho T23
+-- ('HD019', 'T46', 1), ('HD019', 'T46', 2); -- LỖI GỐC
+('HD019', 'T46', 3); -- ĐÃ SỬA: Gộp (1+2) cho T46
 GO
 
--- THÁNG 7/2025
+-- THÁNG 7/2025 (ĐÃ SỬA LỖI TRÙNG KHÓA)
 INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES 
 ('HD020', '2025-07-05', 'TH02', 'NV002', 'KH0000002', 'KM007'), -- Dùng KM Hè
 ('HD021', '2025-07-15', 'TH01', 'NV002', 'KH0000012', NULL),
 ('HD022', '2025-07-25', 'TH01', 'NV002', 'KH0000022', NULL);
 INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES
-('HD020', 'T19', 1), ('HD020', 'T69', 2), ('HD020', 'T71', 5),
+-- ('HD020', 'T19', 1), ('HD020', 'T21', 2), ('HD020', 'T21', 5), -- LỖI GỐC
+('HD020', 'T19', 1), ('HD020', 'T21', 7), -- ĐÃ SỬA: Gộp (2+5) cho T21
 ('HD021', 'T01', 30), ('HD021', 'T02', 20),
 ('HD022', 'T03', 15), ('HD022', 'T04', 10);
 GO
@@ -291,7 +245,7 @@ INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES
 ('HD026', 'T14', 5), ('HD026', 'T16', 5);
 GO
 
--- THÁNG 9/2025
+-- THÁNG 9/2025 (ĐÃ SỬA LỖI TRÙNG KHÓA)
 INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES 
 ('HD027', '2025-09-02', 'TH02', 'NV002', 'KH0000001', 'KM002'), -- Dùng KM 2/9 (Đã hết hạn, nhưng HĐ trong quá khứ)
 ('HD028', '2025-09-12', 'TH01', 'NV002', 'KH0000013', NULL),
@@ -300,11 +254,13 @@ INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES
 INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES
 ('HD027', 'T01', 10), ('HD027', 'T02', 10), ('HD027', 'T05', 30),
 ('HD028', 'T48', 20), ('HD028', 'T49', 20),
-('HD029', 'T65', 1), ('HD029', 'T66', 2),
-('HD030', 'T73', 30), ('HD030', 'T74', 30);
+-- ('HD029', 'T19', 1), ('HD029', 'T19', 2), -- LỖI GỐC
+('HD029', 'T19', 3), -- ĐÃ SỬA: Gộp (1+2) cho T19
+-- ('HD030', 'T22', 30), ('HD030', 'T22', 30); -- LỖI GỐC
+('HD030', 'T22', 60); -- ĐÃ SỬA: Gộp (30+30) cho T22
 GO
 
--- THÁNG 10/2025 (Thêm 21 HĐ để nâng tổng số HĐ bổ sung lên 51)
+-- THÁNG 10/2025
 INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES 
 ('HD031', '2025-10-01', 'TH01', 'NV002', 'KH0000043', 'KM009'), -- Dùng KM tháng 10 (cũ)
 ('HD032', '2025-10-02', 'TH02', 'NV002', 'KH0000006', NULL),
@@ -329,27 +285,34 @@ INSERT INTO HoaDon (maHD, ngayLap, maThue, maNV, maKH, maKM) VALUES
 ('HD051', '2025-10-27', 'TH01', 'NV002', 'KH0000044', NULL);
 GO
 
--- CHI TIẾT HÓA ĐƠN THÁNG 10/2025
+-- CHI TIẾT HÓA ĐƠN THÁNG 10/2025 (ĐÃ SỬA LỖI TRÙNG KHÓA)
 INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES
-('HD031', 'T100', 1), ('HD031', 'T101', 2),
-('HD032', 'T93', 10), ('HD032', 'T94', 5),
-('HD033', 'T88', 20),
-('HD034', 'T77', 60),
-('HD035', 'T104', 10), ('HD035', 'T105', 10), ('HD035', 'T106', 1),
+-- ('HD031', 'T46', 1), ('HD031', 'T46', 2), -- LỖI GỐC
+('HD031', 'T46', 3), -- ĐÃ SỬA: Gộp (1+2) cho T46
+-- ('HD032', 'T24', 10), ('HD032', 'T24', 5), -- LỖI GỐC
+('HD032', 'T24', 15), -- ĐÃ SỬA: Gộp (10+5) cho T24
+('HD033', 'T23', 20), 
+('HD034', 'T22', 60), 
+-- ('HD035', 'T05', 10), ('HD035', 'T05', 10), ('HD035', 'T19', 1), -- LỖI GỐC
+('HD035', 'T05', 20), ('HD035', 'T19', 1), -- ĐÃ SỬA: Gộp (10+10) cho T05
 ('HD036', 'T01', 50),
-('HD037', 'T10', 2), ('HD037', 'T11', 4), ('HD037', 'T12', 3),
-('HD038', 'T46', 5),
+('HD037', 'T10', 2), ('HD037', 'T11', 4), ('HD037', 'T12', 3), 
+('HD038', 'T46', 5), 
 ('HD039', 'T08', 1), 
 ('HD040', 'T09', 1), 
-('HD041', 'T21', 3), ('HD041', 'T97', 5), ('HD041', 'T98', 2),
-('HD042', 'T32', 10), ('HD042', 'T33', 10),
-('HD043', 'T56', 2), ('HD043', 'T57', 3),
-('HD044', 'T78', 30), ('HD044', 'T79', 30),
-('HD045', 'T87', 15), ('HD045', 'T89', 15),
-('HD046', 'T107', 2), ('HD046', 'T05', 20),
-('HD047', 'T01', 10), ('HD047', 'T02', 10),
-('HD048', 'T03', 20),
-('HD049', 'T04', 10),
-('HD050', 'T05', 50),
+-- ('HD041', 'T21', 3), ('HD041', 'T21', 5), ('HD041', 'T21', 2), -- LỖI GỐC
+('HD041', 'T21', 10), -- ĐÃ SỬA: Gộp (3+5+2) cho T21
+('HD042', 'T32', 10), ('HD042', 'T33', 10), 
+('HD043', 'T56', 2), ('HD043', 'T57', 3), 
+-- ('HD044', 'T22', 30), ('HD044', 'T22', 30), -- LỖI GỐC
+('HD044', 'T22', 60), -- ĐÃ SỬA: Gộp (30+30) cho T22
+-- ('HD045', 'T23', 15), ('HD045', 'T23', 15), -- LỖI GỐC
+('HD045', 'T23', 30), -- ĐÃ SỬA: Gộp (15+15) cho T23
+-- ('HD046', 'T05', 2), ('HD046', 'T05', 20), -- LỖI GỐC
+('HD046', 'T05', 22), -- ĐÃ SỬA: Gộp (2+20) cho T05
+('HD047', 'T01', 10), ('HD047', 'T02', 10), 
+('HD048', 'T03', 20), 
+('HD049', 'T04', 10), 
+('HD050', 'T05', 50), 
 ('HD051', 'T06', 5), ('HD051', 'T07', 30);
 GO

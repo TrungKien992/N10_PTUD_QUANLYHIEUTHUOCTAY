@@ -71,7 +71,7 @@ public class ThemKH_Controller implements ActionListener {
                 "Xác nhận thêm", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            KhachHang kh = new KhachHang(maKH, tenKH, diaChi, sdt);
+            KhachHang kh = new KhachHang(maKH, tenKH, sdt,diaChi );
             boolean result = khDAO.themKhachHang(kh);
 
             if (result) {

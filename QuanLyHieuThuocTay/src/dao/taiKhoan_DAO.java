@@ -184,16 +184,22 @@ public class taiKhoan_DAO {
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, maTK);
-            return ps.executeUpdate() > 0;
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0; // Trả về true nếu có dòng bị xóa
         } catch (SQLException e) {
             // Bắt lỗi khóa ngoại nếu tài khoản đang được sử dụng bởi nhân viên
             if (e.getMessage().contains("The DELETE statement conflicted with the REFERENCE constraint")) {
-                System.err.println("Lỗi: Không thể xóa tài khoản '" + maTK + "' vì đang được sử dụng bởi một nhân viên.");
+                 // <<< THAY ĐỔI: HIỂN THỊ JOPTIONPANE >>>
+                 JOptionPane.showMessageDialog(null, // null để dialog hiện giữa màn hình
+                    "Không thể xóa tài khoản '" + maTK + "' vì đang được sử dụng bởi một nhân viên.",
+                    "Lỗi Ràng Buộc", JOptionPane.ERROR_MESSAGE);
+                 System.err.println("Lỗi khóa ngoại khi xóa TK: " + maTK); // Vẫn in ra console để debug
             } else {
-                e.printStackTrace();
+                 JOptionPane.showMessageDialog(null, "Lỗi SQL khi xóa tài khoản:\n" + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
+                 e.printStackTrace(); // In lỗi khác ra console
             }
         }
-        return false;
+        return false; // Trả về false nếu có lỗi xảy ra
     }
 
     // (Optional: Hàm đổi mật khẩu)

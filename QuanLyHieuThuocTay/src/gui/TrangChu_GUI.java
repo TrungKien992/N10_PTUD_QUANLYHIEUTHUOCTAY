@@ -1468,12 +1468,12 @@ public class TrangChu_GUI extends JFrame{
         };
         applyCommonTableStyling(table_tkkh); // Áp dụng style chung (font, header, row height...)
         table_tkkh.setModel(new DefaultTableModel(
-        	new Object[][] {}, // Bỏ dữ liệu mẫu null
+        	new Object[][] {
+        	},
         	new String[] {
-        		"Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Địa chỉ"
+        		"M\u00E3 kh\u00E1ch h\u00E0ng", "T\u00EAn kh\u00E1ch h\u00E0ng", "\u0110\u1ECBa ch\u1EC9", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i"
         	}
         ));
-        // Giữ lại setPreferredWidth nếu cần thiết
         table_tkkh.getColumnModel().getColumn(0).setPreferredWidth(99);
         table_tkkh.getColumnModel().getColumn(1).setPreferredWidth(92);
 
@@ -1632,9 +1632,10 @@ public class TrangChu_GUI extends JFrame{
         };
         applyCommonTableStyling(table_CapNhatKH);
         table_CapNhatKH.setModel(new DefaultTableModel(
-        	new Object[][] {},
+        	new Object[][] {
+        	},
         	new String[] {
-        		"Mã khách hàng", "Tên Khách hàng", "Số điện thoại", "Địa chỉ"
+        		"M\u00E3 kh\u00E1ch h\u00E0ng", "T\u00EAn Kh\u00E1ch h\u00E0ng", "\u0110\u1ECBa ch\u1EC9", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i"
         	}
         ));
         scrollPane_CapNhatKH.setViewportView(table_CapNhatKH);
@@ -5740,8 +5741,6 @@ public class TrangChu_GUI extends JFrame{
         JComboBox<String> cboQuyenHan_QL = new JComboBox<>(new String[]{
             "Quản lý",
             "Nhân viên bán hàng",
-            "Nhân viên kho",
-            "(Chưa cấp)" // Lựa chọn cho NULL
         });
         cboQuyenHan_QL.setFont(FONT_TEXT_FIELD);
         pnlChucNangQLTK.add(cboQuyenHan_QL);
@@ -5750,6 +5749,11 @@ public class TrangChu_GUI extends JFrame{
         btnThemTK.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnThemTK, COLOR_SUCCESS_GREEN); // Style nút thêm
         pnlChucNangQLTK.add(btnThemTK);
+        
+        JButton btnXoaTK = new JButton("Xóa Tài Khoản");
+        btnXoaTK.setFont(FONT_BUTTON_STANDARD);
+        styleButton(btnXoaTK, COLOR_DANGER_RED); // Màu đỏ cho nút xóa
+        pnlChucNangQLTK.add(btnXoaTK);
 
         JButton btnXoaTrangQLTK = new JButton("Xóa Trắng Form");
         btnXoaTrangQLTK.setFont(FONT_BUTTON_STANDARD);
@@ -5788,58 +5792,92 @@ public class TrangChu_GUI extends JFrame{
              txtMaTK_QL.requestFocus(); // Focus vào ô mã TK
         });
 
-        // Nút Thêm Tài Khoản (Admin)
+     // Nút Thêm Tài Khoản (Admin)
         btnThemTK.addActionListener(e -> {
             String maTK = txtMaTK_QL.getText().trim();
             String tenTK = txtTenTK_QL.getText().trim();
             String matKhau = new String(txtMatKhau_QL.getPassword());
             String quyen = cboQuyenHan_QL.getSelectedItem().toString();
 
-            // Kiểm tra nhập liệu
+            // Kiểm tra nhập liệu cơ bản (giữ nguyên)
             if (maTK.isEmpty() || tenTK.isEmpty() || matKhau.isEmpty()) {
                 JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Vui lòng nhập đầy đủ Mã TK, Tên TK và Mật khẩu!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                txtMaTK_QL.requestFocus(); // Focus vào ô Mã TK nếu rỗng
+                txtMaTK_QL.requestFocus();
                 return;
             }
-            // (Thêm kiểm tra định dạng maTK nếu muốn, ví dụ: phải bắt đầu bằng TK...)
+            TaiKhoan tkChuaLuu = new TaiKhoan(); // Tạo đối tượng TK nhưng chưa lưu DB
+            tkChuaLuu.setMaTK(maTK);
+            tkChuaLuu.setTenTK(tenTK);
+            tkChuaLuu.setMatKhau(matKhau); // !!! Nhớ mã hóa mật khẩu ở DAO !!!
+            tkChuaLuu.setQuyenHan(quyen.equals("(Chưa cấp)") ? null : quyen);
 
-            TaiKhoan tkMoi = new TaiKhoan();
-            tkMoi.setMaTK(maTK); // Dùng mã TK người dùng nhập
-            tkMoi.setTenTK(tenTK);
-            tkMoi.setMatKhau(matKhau); // !!! Nhớ mã hóa mật khẩu ở DAO !!!
-            tkMoi.setQuyenHan(quyen.equals("(Chưa cấp)") ? null : quyen); // Xử lý "(Chưa cấp)" thành NULL
+            // Tạo mã NV mới (có thể giữ nguyên cách tạo cũ hoặc dùng hàm generate từ DAO)
+            nhanVien_DAO nvDAO_moi = new nhanVien_DAO();
+            String maNV_moi = nvDAO_moi.generateNewMaNV_FromTable(tableQLTK, null); // Hoặc dùng generateNewMaNV() đơn giản hơn nếu không cần check table QLTK
 
-            // Gọi hàm addTaiKhoan từ DAO (đã có kiểm tra trùng mã/tên bên trong)
-            if (tkDAO_QL.addTaiKhoan(tkMoi)) {
-                JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Thêm tài khoản '" + maTK + "' thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            // Mở dialog và truyền thông tin TK chưa lưu + mã NV mới sang
+            ThemNhanVienSauKhiTaoTK_GUI themNVDialog = new ThemNhanVienSauKhiTaoTK_GUI(
+                QuanLyHieuThuocTay, // Frame cha
+                tkChuaLuu,         // Tài khoản CHƯA LƯU
+                maNV_moi           // Mã NV mới
+            );
+            themNVDialog.setVisible(true); // Hiển thị dialog
 
-                // Load lại bảng tài khoản (gọi trực tiếp)
-                try {
-                    DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
-                    model.setRowCount(0);
-                    List<TaiKhoan> list = tkDAO_QL.getAllTaiKhoan();
-                    for (TaiKhoan tk : list) {
-                         model.addRow(new Object[]{tk.getMaTK(), tk.getTenTK(), tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()});
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace(); // In lỗi nếu load lại bảng thất bại
+            // Sau khi dialog đóng, load lại bảng tài khoản để cập nhật (nếu dialog đã thêm thành công)
+            try {
+                DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
+                model.setRowCount(0);
+                List<TaiKhoan> list = tkDAO_QL.getAllTaiKhoan(); // tkDAO_QL đã khởi tạo ở trên
+                for (TaiKhoan tk : list) {
+                    model.addRow(new Object[]{tk.getMaTK(), tk.getTenTK(), tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()});
                 }
-
-                btnXoaTrangQLTK.doClick(); // Xóa trắng form sau khi thêm thành công
-
-                // HIỆN DIALOG THÊM NHÂN VIÊN
-                nhanVien_DAO nvDAO_moi = new nhanVien_DAO();
-                String maNV_moi = nvDAO_moi.generateNewMaNV(); // Tạo mã NV mới
-                ThemNhanVienSauKhiTaoTK_GUI themNVDialog = new ThemNhanVienSauKhiTaoTK_GUI(
-                    QuanLyHieuThuocTay, // Frame cha
-                    tkMoi,             // Tài khoản vừa tạo
-                    maNV_moi           // Mã NV mới
-                );
-                themNVDialog.setVisible(true); // Hiển thị dialog
-
+            } catch (Exception ex) {
+                ex.printStackTrace(); // In lỗi nếu load lại bảng thất bại
             }
-            // else { // Không cần else vì DAO đã hiện JOptionPane lỗi trùng lặp }
+             btnXoaTrangQLTK.doClick(); // Xóa trắng form QLTK sau khi mở dialog
         });
+        
+     // <<< THÊM ActionListener CHO NÚT XÓA >>>
+        btnXoaTK.addActionListener(e -> {
+            String maTKCanXoa = txtMaTK_QL.getText().trim(); // Lấy mã TK từ ô input
+
+            if (maTKCanXoa.isEmpty()) {
+                JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Vui lòng nhập hoặc chọn Mã Tài Khoản cần xóa.", "Chưa chọn tài khoản", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Hỏi xác nhận
+            int confirm = JOptionPane.showConfirmDialog(pn_QuanLyTaiKhoan,
+                "Bạn có chắc muốn xóa tài khoản '" + maTKCanXoa + "'?\nLưu ý: Không thể xóa nếu tài khoản đang được nhân viên sử dụng.",
+                "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean xoaThanhCong = tkDAO_QL.deleteTaiKhoan(maTKCanXoa); // Gọi hàm delete từ DAO
+
+                if (xoaThanhCong) {
+                    JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Đã xóa tài khoản '" + maTKCanXoa + "'.", "Xóa thành công", JOptionPane.INFORMATION_MESSAGE);
+
+                    // Load lại bảng và xóa trắng form
+                    try {
+                        DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
+                        model.setRowCount(0);
+                        List<TaiKhoan> list = tkDAO_QL.getAllTaiKhoan();
+                        for (TaiKhoan tk : list) {
+                             model.addRow(new Object[]{tk.getMaTK(), tk.getTenTK(), tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()});
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    btnXoaTrangQLTK.doClick(); // Gọi sự kiện xóa trắng form
+
+                } else {
+                    // DAO đã xử lý việc hiển thị lỗi khóa ngoại rồi,
+                    // nhưng có thể thêm thông báo chung nếu muốn.
+                    JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Xóa tài khoản thất bại.\nCó thể do tài khoản đang được sử dụng hoặc lỗi khác.", "Lỗi Xóa", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        // <<< KẾT THÚC ActionListener CHO NÚT XÓA >>>
 
         // ===== KẾT THÚC PANEL QUẢN LÝ TÀI KHOẢN =====
         

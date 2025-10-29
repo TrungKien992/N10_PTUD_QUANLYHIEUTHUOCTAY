@@ -15,11 +15,12 @@ public class KhachHang {
         this.maKH = maKH;
     }
 
-    public KhachHang(String maKH, String tenKH, String diaChi, String soDienThoai) {
+    public KhachHang(String maKH, String tenKH, String soDienThoai,String diaChi) {
         this.maKH = maKH;
         this.tenKH = tenKH;
-        this.diaChi = diaChi;
         this.soDienThoai = soDienThoai;
+        this.diaChi = diaChi;
+        
     }
 
     // Getters and Setters

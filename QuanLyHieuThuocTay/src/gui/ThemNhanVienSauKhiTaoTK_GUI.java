@@ -17,9 +17,11 @@ import com.toedter.calendar.JDateChooser; // Import JDateChooser
 
 import dao.chucVu_DAO; // Import DAO
 import dao.nhanVien_DAO; // Import DAO
+import dao.taiKhoan_DAO;
 import entity.ChucVu; // Import Entity
 import entity.NhanVien; // Import Entity
 import entity.TaiKhoan; // Import Entity
+
 
 public class ThemNhanVienSauKhiTaoTK_GUI extends JDialog {
 
@@ -53,6 +55,7 @@ public class ThemNhanVienSauKhiTaoTK_GUI extends JDialog {
     private String maNVMoi;
     private nhanVien_DAO nvDAO_Dialog;
     private chucVu_DAO cvDAO_Dialog;
+    private taiKhoan_DAO tkDAO_Dialog;
 
     public ThemNhanVienSauKhiTaoTK_GUI(JFrame parent, TaiKhoan tkMoi, String maNV) {
         super(parent, "Thêm Thông Tin Nhân Viên Tương Ứng", true);
@@ -60,7 +63,7 @@ public class ThemNhanVienSauKhiTaoTK_GUI extends JDialog {
         this.maNVMoi = maNV;
         this.nvDAO_Dialog = new nhanVien_DAO();
         this.cvDAO_Dialog = new chucVu_DAO();
-
+        this.tkDAO_Dialog = new taiKhoan_DAO();
         initialize(); // Gọi hàm khởi tạo giao diện
         setLocationRelativeTo(parent);
     }
@@ -236,64 +239,66 @@ public class ThemNhanVienSauKhiTaoTK_GUI extends JDialog {
         getContentPane().add(btnLuuNV);
 
         btnLuuNV.addActionListener(e -> {
-             // Lấy dữ liệu từ dialog
+            // --- Lấy dữ liệu NV từ form và kiểm tra (giữ nguyên code cũ) ---
             String tenNV = txtTenNV_Dialog.getText().trim();
             java.util.Date ngaySinh = dateNgaySinh_Dialog.getDate();
             String gioiTinh = cboGioiTinh_Dialog.getSelectedItem().toString();
             String sdt = txtSDT_Dialog.getText().trim();
             String tinh = txtTinh_Dialog.getText().trim();
             String huyen = txtHuyen_Dialog.getText().trim();
-            String anh = duongDanAnh_Dialog; // Lấy đường dẫn ảnh
+            String anh = duongDanAnh_Dialog;
 
-             // Kiểm tra nhập liệu
-             if (tenNV.isEmpty() || ngaySinh == null || sdt.isEmpty() || tinh.isEmpty() || huyen.isEmpty() || anh == null) {
-                  JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin bắt buộc (*) và chọn ảnh!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                  return;
-             }
-             if (!sdt.matches("^0\\d{9}$")) {
-                 JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+            if (tenNV.isEmpty() || ngaySinh == null || sdt.isEmpty() || tinh.isEmpty() || huyen.isEmpty() || anh == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin bắt buộc (*) và chọn ảnh!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (!sdt.matches("^0\\d{9}$")) {
+                JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            LocalDate ngaySinhLocal = ngaySinh.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            // Tìm ChucVu (giữ nguyên code cũ)
+            ChucVu chucVuNV = cvDAO_Dialog.getChucVuByTen(taiKhoanMoi.getQuyenHan()); // taiKhoanMoi là tk chưa lưu
+            if (chucVuNV == null && taiKhoanMoi.getQuyenHan() != null && !taiKhoanMoi.getQuyenHan().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy Chức vụ phù hợp ("+taiKhoanMoi.getQuyenHan()+")!", "Lỗi Dữ Liệu", JOptionPane.ERROR_MESSAGE);
+                return;
+            } else if (chucVuNV == null) {
+                 JOptionPane.showMessageDialog(this, "Tài khoản chưa được cấp quyền, không thể xác định chức vụ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                  return;
-             }
+            }
 
-             // Chuyển ngày
-             LocalDate ngaySinhLocal = ngaySinh.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            // --- BẮT ĐẦU LOGIC THÊM MỚI ---
+            // BƯỚC 1: Thử thêm TÀI KHOẢN trước
+            boolean themTKThanhCong = tkDAO_Dialog.addTaiKhoan(this.taiKhoanMoi); // Dùng tkDAO_Dialog và tk chưa lưu
 
-             // Tìm đối tượng ChucVu tương ứng với quyenHan của TaiKhoan
-             ChucVu chucVuNV = cvDAO_Dialog.getChucVuByTen(taiKhoanMoi.getQuyenHan());
-             if (chucVuNV == null && taiKhoanMoi.getQuyenHan() != null && !taiKhoanMoi.getQuyenHan().isEmpty()) {
-                 // Nếu có quyền hạn nhưng không tìm thấy chức vụ -> báo lỗi
-                 JOptionPane.showMessageDialog(this, "Không tìm thấy Chức vụ phù hợp ("+taiKhoanMoi.getQuyenHan()+")!", "Lỗi Dữ Liệu", JOptionPane.ERROR_MESSAGE);
-                 return;
-             } else if (chucVuNV == null) {
-                 // Nếu tài khoản chưa có quyền hạn -> Gán chức vụ mặc định hoặc báo lỗi tùy logic
-                 // Ví dụ: Gán chức vụ mặc định (cần có hàm getChucVuMacDinh() trong DAO)
-                 // chucVuNV = cvDAO_Dialog.getChucVuMacDinh();
-                 // Hoặc báo lỗi:
-                  JOptionPane.showMessageDialog(this, "Tài khoản chưa được cấp quyền, không thể xác định chức vụ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                  return;
-             }
+            if (themTKThanhCong) {
+                // BƯỚC 2: Nếu thêm TK thành công, thử thêm NHÂN VIÊN
+                NhanVien nvMoi = new NhanVien();
+                nvMoi.setMaNV(maNVMoi); // Dùng mã NV đã tạo trước đó
+                nvMoi.setTenNV(tenNV);
+                nvMoi.setNgaySinh(ngaySinhLocal);
+                nvMoi.setGioiTinh(gioiTinh);
+                nvMoi.setSoDienThoai(sdt);
+                nvMoi.setDiaChi(tinh + ", " + huyen);
+                nvMoi.setAnh(anh);
+                nvMoi.setTaiKhoan(this.taiKhoanMoi); // Gán đối tượng TaiKhoan đã có (giờ đã được lưu)
+                nvMoi.setChucVu(chucVuNV);
+                // nvMoi.setTrangThai("Còn làm việc"); // DAO sẽ tự gán nếu cần
 
+                boolean themNVThanhCong = nvDAO_Dialog.insertNhanVien(nvMoi);
 
-             // Tạo đối tượng NhanVien
-             NhanVien nvMoi = new NhanVien();
-             nvMoi.setMaNV(maNVMoi);
-             nvMoi.setTenNV(tenNV);
-             nvMoi.setNgaySinh(ngaySinhLocal);
-             nvMoi.setGioiTinh(gioiTinh);
-             nvMoi.setSoDienThoai(sdt);
-             nvMoi.setDiaChi(tinh + ", " + huyen);
-             nvMoi.setAnh(anh);
-             nvMoi.setTaiKhoan(taiKhoanMoi);
-             nvMoi.setChucVu(chucVuNV);
+                if (themNVThanhCong) {
+                    JOptionPane.showMessageDialog(this, "Thêm tài khoản và thông tin nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    dispose(); // Đóng dialog
+                } else {
+                    // Nếu thêm NV thất bại -> Báo lỗi
+                    JOptionPane.showMessageDialog(this, "Đã thêm tài khoản nhưng thêm thông tin nhân viên thất bại!\nVui lòng kiểm tra lại.", "Lỗi Thêm Nhân Viên", JOptionPane.ERROR_MESSAGE);
+                }
+            }
 
-             // Gọi DAO để thêm nhân viên
-             if (nvDAO_Dialog.insertNhanVien(nvMoi)) {
-                 JOptionPane.showMessageDialog(this, "Thêm thông tin nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                 dispose(); // Đóng dialog sau khi thêm thành công
-             } else {
-                 JOptionPane.showMessageDialog(this, "Thêm thông tin nhân viên thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-             }
         });
+        
     } // Kết thúc initialize()
 
     // Hàm styleButton nội bộ (Copy từ TrangChu_GUI)
