@@ -185,21 +185,21 @@ import com.toedter.calendar.JDateChooser; // Thêm import JDateChooser
 import java.awt.Color; // Thêm import
 import javax.swing.DefaultComboBoxModel; // Thêm import
 
-// Đổi tên các biến mặc định thành tên có ý nghĩa
+
 public class DialogChiTietPhieuDatHangNCC extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 	
-	// Khai báo các component để Controller có thể truy cập
+
 	public JTextField txtMaPhieu;
 	public JComboBox<String> cboNhaCungCap;
-	public JDateChooser dateChooserNgayDat; // Sửa thành JDateChooser
+	public JDateChooser dateChooserNgayDat;
 	public JTable tableChiTietDatHang;
 	public JTextField txtTongTien;
 	public JTextArea txtGhiChu;
-	public JScrollPane scrollPaneGhiChu; // Thêm JScrollPane cho Ghi chú
+	public JScrollPane scrollPaneGhiChu; 
 	
-	// Panel Thêm thuốc (MỚI)
+	
 	public JComboBox<String> cboChonThuoc;
 	public JTextField txtSoLuongThuoc;
 	public JTextField txtDonGiaThuoc;
@@ -214,7 +214,7 @@ public class DialogChiTietPhieuDatHangNCC extends JDialog {
 	 * Sửa lại Constructor: Thêm "JFrame parent" để nó là 1 dialog modal
 	 */
 	public DialogChiTietPhieuDatHangNCC(JFrame parent) {
-		super(parent, "Chi tiết Phiếu Đặt Hàng", true); // Đặt tiêu đề và set modal
+		super(parent, "Chi tiết Phiếu Đặt Hàng", true); 
 		
 		setResizable(false); // Không cho phép đổi kích thước
 		setBounds(100, 100, 850, 650); // Tăng chiều cao 
@@ -222,18 +222,16 @@ public class DialogChiTietPhieuDatHangNCC extends JDialog {
 		
 		getContentPane().setLayout(new BorderLayout());
 		
-		// --- Panel Chính (Chứa 3 phần: Thông tin chung, Chi tiết, Tổng kết) ---
+		
 		JPanel contentPanel = new JPanel();
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new BorderLayout(10, 10)); // Dùng BorderLayout
+		contentPanel.setLayout(new BorderLayout(10, 10));
 		
 		
-		// --- 1. Panel Thông Tin Chung (Mã, NCC, Ngày) ---
 		JPanel panelThongTinChung = new JPanel();
 		panelThongTinChung.setBorder(new TitledBorder(null, "Th\u00F4ng tin chung", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(59, 59, 59)));
 		contentPanel.add(panelThongTinChung, BorderLayout.NORTH);
-		// Dùng GridBagLayout để căn chỉnh (WindowBuilder-compatible)
 		GridBagLayout gbl_panelThongTinChung = new GridBagLayout();
 		gbl_panelThongTinChung.columnWidths = new int[]{100, 0};
 		gbl_panelThongTinChung.columnWeights = new double[]{0.0, 1.0};

@@ -34,72 +34,58 @@ public class ThuocSapHetHang_Controller implements ActionListener {
 
     private TrangChu_GUI trangChuGUI;
     private thuoc_DAO thuoc_DAO;
-    private nhaCungCap_DAO ncc_DAO; // Thêm DAO nhà cung cấp
+    private nhaCungCap_DAO ncc_DAO; 
 
-    // Danh sách này dùng để lưu trữ dữ liệu gốc, giúp lọc nhanh không cần gọi CSDL
     private List<Thuoc> dsThuocGoc; 
 
     public ThuocSapHetHang_Controller(TrangChu_GUI trangChuGUI) {
         this.trangChuGUI = trangChuGUI;
         this.thuoc_DAO = new thuoc_DAO();
-        this.ncc_DAO = new nhaCungCap_DAO(); // Khởi tạo DAO
-        this.dsThuocGoc = new ArrayList<>(); // Khởi tạo danh sách
+        this.ncc_DAO = new nhaCungCap_DAO(); 
+        this.dsThuocGoc = new ArrayList<>(); 
 
-        // 1. Tải dữ liệu gốc từ CSDL và hiển thị lên bảng
         taiLaiDuLieuGocVaHienThi();
 
-        // 2. Gán sự kiện cho tất cả các nút
         trangChuGUI.btn_tshhan_xuatfile.addActionListener(this);
         trangChuGUI.btn_tshhan_loc.addActionListener(this);
         trangChuGUI.btn_tshhan_lammoi.addActionListener(this);
-        
-        // Gán sự kiện cho menu chuột phải
+ 
         trangChuGUI.item_tshhan_xemchitiet.addActionListener(this);
         trangChuGUI.item_tshhan_xemncc.addActionListener(this);
 
-        // 3. Gán sự kiện cho ô tìm kiếm (lọc ngay khi gõ)
         trangChuGUI.text_tshhan_timkiem.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                // Mỗi khi gõ phím, gọi hàm lọc và hiển thị lại
+                
                 locVaHienThiLenBang();
             }
         });
     }
 
-    /**
-     * Lấy dữ liệu mới nhất từ CSDL, lưu vào dsThuocGoc và hiển thị lên bảng
-     */
+   
     private void taiLaiDuLieuGocVaHienThi() {
-        // Lấy dữ liệu mới nhất
+     
         this.dsThuocGoc = thuoc_DAO.getAllThuoc();
-        // Hiển thị (với bộ lọc hiện tại)
+       
         locVaHienThiLenBang();
     }
     
-    /**
-     * Hàm chính: Lọc danh sách dsThuocGoc dựa trên các tiêu chí
-     * và cập nhật dữ liệu lên table_tshhan
-     */
+    
     private void locVaHienThiLenBang() {
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_tshhan.getModel();
-        model.setRowCount(0); // Xóa dữ liệu cũ
+        model.setRowCount(0); 
 
-        // Lấy các giá trị từ bộ lọc
         int nguongTon = (Integer) trangChuGUI.spinner_tshhan_nguong.getValue();
         String tuKhoa = trangChuGUI.text_tshhan_timkiem.getText().trim().toLowerCase();
 
-        for (Thuoc t : dsThuocGoc) { // Lọc trên danh sách đã tải
-            
-            // 1. Kiểm tra điều kiện ngưỡng
+        for (Thuoc t : dsThuocGoc) { 
+ 
             boolean matchNguong = t.getSoLuong() <= nguongTon;
-            
-            // 2. Kiểm tra điều kiện tìm kiếm (theo mã hoặc tên)
+
             boolean matchTimKiem = tuKhoa.isEmpty() || 
                                    t.getMaThuoc().toLowerCase().contains(tuKhoa) ||
                                    t.getTenThuoc().toLowerCase().contains(tuKhoa);
 
-            // Nếu thỏa mãn cả 2 điều kiện
             if (matchNguong && matchTimKiem) {
                 
                 String tenNCC = (t.getNhaCungCap() != null) ? t.getNhaCungCap().getTenNhaCungCap() : "N/A";
@@ -117,9 +103,6 @@ public class ThuocSapHetHang_Controller implements ActionListener {
         }
     }
 
-    /**
-     * Xử lý sự kiện khi nhấn nút
-     */
     @Override
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
@@ -128,7 +111,7 @@ public class ThuocSapHetHang_Controller implements ActionListener {
             xuLyXuatFile();
         } 
         else if (o.equals(trangChuGUI.btn_tshhan_loc)) {
-            // Khi nhấn "Lọc", chỉ cần gọi lại hàm lọc và hiển thị
+       
             locVaHienThiLenBang();
         } 
         else if (o.equals(trangChuGUI.btn_tshhan_lammoi)) {
@@ -142,21 +125,15 @@ public class ThuocSapHetHang_Controller implements ActionListener {
         }
     }
 
-    /**
-     * Xử lý nút Làm Mới
-     */
     private void xuLyLamMoi() {
-        // 1. Reset các bộ lọc về mặc định
-        trangChuGUI.text_tshhan_timkiem.setText("");
-        trangChuGUI.spinner_tshhan_nguong.setValue(20); // Set về giá trị mặc định
         
-        // 2. Tải lại dữ liệu mới từ CSDL và hiển thị
+        trangChuGUI.text_tshhan_timkiem.setText("");
+        trangChuGUI.spinner_tshhan_nguong.setValue(20); 
+        
         taiLaiDuLieuGocVaHienThi();
     }
 
-    /**
-     * Xử lý menu chuột phải "Xem chi tiết thuốc"
-     */
+    
     private void xuLyXemChiTiet() {
         int viewRow = trangChuGUI.table_tshhan.getSelectedRow();
         if (viewRow < 0) {
@@ -164,13 +141,12 @@ public class ThuocSapHetHang_Controller implements ActionListener {
             return;
         }
         
-        // Chuyển đổi index của view sang model (quan trọng vì bảng có sắp xếp)
         int modelRow = trangChuGUI.table_tshhan.convertRowIndexToModel(viewRow);
         String maThuoc = (String) trangChuGUI.table_tshhan.getModel().getValueAt(modelRow, 0);
 
         Thuoc t = thuoc_DAO.getThuocTheoMa(maThuoc);
         if (t != null) {
-            // Lấy JFrame cha một cách an toàn
+            
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(trangChuGUI);
             ChiTietThuoc_GUI chitiet = new ChiTietThuoc_GUI(parentFrame);
             chitiet.loadThuoc(t);
@@ -178,9 +154,6 @@ public class ThuocSapHetHang_Controller implements ActionListener {
         }
     }
     
-    /**
-     * Xử lý menu chuột phải "Xem thông tin nhà cung cấp"
-     */
     private void xuLyXemNCC() {
         int viewRow = trangChuGUI.table_tshhan.getSelectedRow();
         if (viewRow < 0) {
@@ -191,14 +164,12 @@ public class ThuocSapHetHang_Controller implements ActionListener {
         int modelRow = trangChuGUI.table_tshhan.convertRowIndexToModel(viewRow);
         String maThuoc = (String) trangChuGUI.table_tshhan.getModel().getValueAt(modelRow, 0);
 
-        // Lấy Thuoc từ CSDL để đảm bảo có maNCC
         Thuoc t = thuoc_DAO.getThuocTheoMa(maThuoc); 
         if (t == null || t.getNhaCungCap() == null) {
             JOptionPane.showMessageDialog(trangChuGUI, "Không tìm thấy thông tin nhà cung cấp cho thuốc này.");
             return;
         }
 
-        // Dùng maNCC để lấy đầy đủ thông tin NCC
         String maNCC = t.getNhaCungCap().getMaNhaCungCap();
         NhaCungCap ncc = ncc_DAO.getNhaCungCapTheoMa(maNCC);
 
@@ -207,7 +178,6 @@ public class ThuocSapHetHang_Controller implements ActionListener {
             return;
         }
 
-        // Hiển thị thông tin NCC bằng JOptionPane
         String message = String.format(
             "<html><b>THÔNG TIN NHÀ CUNG CẤP</b><br>" +
             "<hr>" +
@@ -224,10 +194,6 @@ public class ThuocSapHetHang_Controller implements ActionListener {
         JOptionPane.showMessageDialog(trangChuGUI, message, "Thông tin Nhà Cung Cấp", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Logic xử lý khi nhấn nút "Xuất File"
-     * (Không thay đổi, hoạt động tốt vì nó xuất từ model của bảng)
-     */
     private void xuLyXuatFile() {
         if (trangChuGUI.table_tshhan.getRowCount() == 0) {
             JOptionPane.showMessageDialog(trangChuGUI, "Không có dữ liệu để xuất file.", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
@@ -260,18 +226,16 @@ public class ThuocSapHetHang_Controller implements ActionListener {
             Sheet sheet = workbook.createSheet("ThuocSapHetHang");
             DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_tshhan.getModel();
 
-            // 1. Tạo hàng tiêu đề
             Row headerRow = sheet.createRow(0);
             for (int i = 0; i < model.getColumnCount(); i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(model.getColumnName(i));
             }
 
-            // 2. Thêm dữ liệu
             for (int i = 0; i < model.getRowCount(); i++) {
                 Row dataRow = sheet.createRow(i + 1); 
                 for (int j = 0; j < model.getColumnCount(); j++) {
-                    // Lấy giá trị từ model (đã được lọc)
+                 
                     Object value = model.getValueAt(i, j); 
                     Cell cell = dataRow.createCell(j);
 
@@ -283,12 +247,12 @@ public class ThuocSapHetHang_Controller implements ActionListener {
                 }
             }
 
-            // 3. Tự động điều chỉnh độ rộng cột
+          
             for (int i = 0; i < model.getColumnCount(); i++) {
                 sheet.autoSizeColumn(i);
             }
 
-            // 4. Ghi file
+            
             workbook.write(fos);
             
             JOptionPane.showMessageDialog(trangChuGUI, "Xuất file thành công!\nĐã lưu tại: " + file.getAbsolutePath(), "Thành công", JOptionPane.INFORMATION_MESSAGE);

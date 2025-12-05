@@ -28,25 +28,18 @@ public class NhaCungCap_Controller {
         this.trangChuGUI = trangChuGUI;
         this.dao = new nhaCungCap_DAO();
 
-        // Tải dữ liệu ban đầu
         reloadAllTables();
         
-        // Đăng ký sự kiện
         registerThemNhaCungCapEvents();
         registerCapNhatNhaCungCapEvents();
         registerTimKiemNhaCungCapEvents();
         
-        // Tải mã NCC mới
         loadNewMaNccLenFormThem();
     }
 
-    // =========================================================================
-    // SECTION: TẢI DỮ LIỆU (DATA LOADING) - Phiên bản gốc (gọi DAO nhiều lần)
-    // =========================================================================
 
-    /** Tải dữ liệu lên bảng ở tab "Thêm" (gọi DAO) */
     public void loadDataToTableThemNCC() { 
-        List<NhaCungCap> ds = dao.getAllNhaCungCap(); // Gọi DAO
+        List<NhaCungCap> ds = dao.getAllNhaCungCap();
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_ThemNCC.getModel();
         model.setRowCount(0); 
         for (NhaCungCap ncc : ds) {
@@ -64,7 +57,7 @@ public class NhaCungCap_Controller {
     
     /** Tải dữ liệu lên bảng ở tab "Cập nhật" (gọi DAO) */
     public void loadDataToTableCapNhatNCC() { 
-        List<NhaCungCap> ds = dao.getAllNhaCungCap(); // Gọi DAO
+        List<NhaCungCap> ds = dao.getAllNhaCungCap(); 
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_CNNCC.getModel();
         model.setRowCount(0);
         for (NhaCungCap ncc : ds) {
@@ -80,9 +73,9 @@ public class NhaCungCap_Controller {
         }
     }
     
-    /** Tải dữ liệu lên bảng ở tab "Tìm kiếm" (gọi DAO) */
+
     public void loadDataToTableTimKiemNCC() { 
-          List<NhaCungCap> ds = dao.getAllNhaCungCap(); // Gọi DAO
+          List<NhaCungCap> ds = dao.getAllNhaCungCap();
           DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_TKNCC.getModel();
           model.setRowCount(0); 
           for (NhaCungCap ncc : ds) {
@@ -97,28 +90,23 @@ public class NhaCungCap_Controller {
               });
           }
     }
-    
-    /** Hàm tải lại dữ liệu trên tất cả các bảng (phiên bản gốc) */
+
     private void reloadAllTables() {
         loadDataToTableThemNCC();
         loadDataToTableCapNhatNCC();
         loadDataToTableTimKiemNCC();
     }
 
-    // =========================================================================
-    // SECTION: TAB THÊM NHÀ CUNG CẤP
-    // =========================================================================
 
-    /** Đăng ký sự kiện cho các nút ở tab Thêm NCC */
+
+ 
     public void registerThemNhaCungCapEvents() {
         trangChuGUI.btnThem_TNCC.addActionListener(e -> themNhaCungCap());
         trangChuGUI.btnLamMoi_TNCC.addActionListener(e -> lamMoiFormThem());
     }
 
-    /** Xử lý logic Thêm nhà cung cấp mới */
     private void themNhaCungCap() {
         try {
-            // ... (code lấy dữ liệu và validate như cũ) ...
             String maNCC = trangChuGUI.txtMaNCC_TNCC.getText().trim();
             String tenNCC = trangChuGUI.txtTenNCC_TNCC.getText().trim();
             String sdt = trangChuGUI.txtSDT_TNCC.getText().trim();
@@ -146,7 +134,7 @@ public class NhaCungCap_Controller {
 
             if (result) {
                 JOptionPane.showMessageDialog(trangChuGUI, "Thêm nhà cung cấp thành công!");
-                reloadAllTables(); // Gọi reloadAllTables phiên bản gốc
+                reloadAllTables();
                 lamMoiFormThem();
             } else {
                 JOptionPane.showMessageDialog(trangChuGUI, "Thêm nhà cung cấp thất bại! (Có thể trùng Mã NCC).", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -157,7 +145,6 @@ public class NhaCungCap_Controller {
         }
     }
 
-    /** Làm mới các trường nhập liệu trên tab Thêm NCC */
     private void lamMoiFormThem() {
         trangChuGUI.txtTenNCC_TNCC.setText("");
         trangChuGUI.txtSDT_TNCC.setText("");
@@ -173,17 +160,12 @@ public class NhaCungCap_Controller {
         trangChuGUI.txtMaNCC_TNCC.setText(dao.generateNewMaNCC());
     }
 
-    // =========================================================================
-    // SECTION: TAB CẬP NHẬT NHÀ CUNG CẤP
-    // =========================================================================
 
     /** Đăng ký sự kiện cho các component trên tab Cập nhật NCC */
     private void registerCapNhatNhaCungCapEvents() {
-        // Sự kiện click chuột vào bảng
         trangChuGUI.table_CNNCC.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Giữ nguyên hàm cũ (gọi DAO)
                 hienThiThongTinLenFormCapNhat(); 
             }
         });
@@ -204,7 +186,7 @@ public class NhaCungCap_Controller {
         }
 
         String maNCC = trangChuGUI.table_CNNCC.getValueAt(selectedRow, 0).toString();
-        NhaCungCap ncc = dao.getNhaCungCapTheoMa(maNCC); // Gọi DAO
+        NhaCungCap ncc = dao.getNhaCungCapTheoMa(maNCC);
         
         if (ncc != null) {
             trangChuGUI.txtMaNCC_CNNCC.setText(ncc.getMaNhaCungCap());
@@ -222,7 +204,6 @@ public class NhaCungCap_Controller {
     /** Xử lý logic Cập nhật nhà cung cấp */
     private void capNhatNhaCungCap() {
         try {
-            // ... (code lấy dữ liệu và validate như cũ) ...
              String maNCC = trangChuGUI.txtMaNCC_CNNCC.getText().trim();
             if (maNCC.isEmpty()) {
                 JOptionPane.showMessageDialog(trangChuGUI, "Vui lòng chọn một nhà cung cấp từ bảng để cập nhật.", "Chưa chọn NCC", JOptionPane.WARNING_MESSAGE);
@@ -256,7 +237,7 @@ public class NhaCungCap_Controller {
 
             if (result) {
                 JOptionPane.showMessageDialog(trangChuGUI, "Cập nhật nhà cung cấp thành công!");
-                reloadAllTables(); // Gọi reloadAllTables phiên bản gốc
+                reloadAllTables();
                 lamMoiFormCapNhat();
             } else {
                 JOptionPane.showMessageDialog(trangChuGUI, "Cập nhật nhà cung cấp thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -268,7 +249,6 @@ public class NhaCungCap_Controller {
         }
     }
 
-    /** Khôi phục dữ liệu gốc của NCC đang chọn trên form (gọi DAO) */
     private void khoiPhucFormCapNhat() {
         String maNCC = trangChuGUI.txtMaNCC_CNNCC.getText().trim();
         if (maNCC.isEmpty()) {
@@ -307,7 +287,6 @@ public class NhaCungCap_Controller {
     
     /** Xử lý nút "Xóa" (Ngừng hợp tác) (gọi DAO) */
     private void ngungHopTacNhaCungCap() {
-        // ... (code lấy maNCC và tenNCC như cũ) ...
         String maNCC = trangChuGUI.txtMaNCC_CNNCC.getText().trim();
         String tenNCC = trangChuGUI.txtTenNCC_CNNCC.getText().trim();
         int selectedRow = trangChuGUI.table_CNNCC.getSelectedRow();
@@ -345,12 +324,7 @@ public class NhaCungCap_Controller {
             JOptionPane.showMessageDialog(trangChuGUI, "Không tìm thấy nhà cung cấp " + maNCC, "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    // =========================================================================
-    // SECTION: TAB TÌM KIẾM NHÀ CUNG CẤP
-    // =========================================================================
 
-    /** Đăng ký sự kiện cho các component trên tab Tìm kiếm NCC */
     private void registerTimKiemNhaCungCapEvents() {
         
         trangChuGUI.btnLamMoi_TKNCC.addActionListener(e -> lamMoiBoLocTimKiem());
@@ -359,7 +333,7 @@ public class NhaCungCap_Controller {
         KeyAdapter filterKeyListener = new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                timKiemNhaCungCap(); // Gọi hàm tìm kiếm phiên bản gốc (gọi DAO)
+                timKiemNhaCungCap();
             }
         };
         
@@ -372,7 +346,7 @@ public class NhaCungCap_Controller {
         
         trangChuGUI.cboTrangThai_TKNCC.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                timKiemNhaCungCap(); // Gọi hàm tìm kiếm phiên bản gốc (gọi DAO)
+                timKiemNhaCungCap();
             }
         });
     }
@@ -392,18 +366,16 @@ public class NhaCungCap_Controller {
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_TKNCC.getModel();
         model.setRowCount(0);
         
-        List<NhaCungCap> ds = dao.getAllNhaCungCap(); // Gọi DAO
+        List<NhaCungCap> ds = dao.getAllNhaCungCap();
 
         for (NhaCungCap ncc : ds) { 
             
-            // Sửa lỗi NullPointerException khi gọi toLowerCase()
             String dbTen = (ncc.getTenNhaCungCap() == null) ? "" : ncc.getTenNhaCungCap().toLowerCase();
             String dbSdt = (ncc.getSoDienThoai() == null) ? "" : ncc.getSoDienThoai().toLowerCase();
             String dbEmail = (ncc.getEmail() == null) ? "" : ncc.getEmail().toLowerCase();
             String dbDiaChi = (ncc.getDiaChi() == null) ? "" : ncc.getDiaChi().toLowerCase();
             String dbGhiChu = (ncc.getGhiChu() == null) ? "" : ncc.getGhiChu().toLowerCase();
 
-            // ... (phần logic match... như cũ) ...
             boolean matchMa = ma.isEmpty() || ncc.getMaNhaCungCap().toLowerCase().contains(ma);
             boolean matchTen = ten.isEmpty() || dbTen.contains(ten);
             boolean matchSdt = sdt.isEmpty() || dbSdt.contains(sdt);
@@ -434,9 +406,7 @@ public class NhaCungCap_Controller {
         }
     }
 
-    /**
-     * [ĐÃ SỬA] Xử lý nút "Xem chi tiết" (gọi DAO)
-     */
+
     private void xemChiTietNhaCungCap() {
     	int selectedRow = trangChuGUI.table_TKNCC.getSelectedRow();
     	if (selectedRow < 0) {
@@ -444,16 +414,12 @@ public class NhaCungCap_Controller {
     		return;
     	}
 
-        // 1. Lấy mã NCC từ bảng
     	String maNCC = trangChuGUI.table_TKNCC.getValueAt(selectedRow, 0).toString();
     	
-        // 2. Gọi DAO để lấy đối tượng NCC
     	NhaCungCap nccCanXem = dao.getNhaCungCapTheoMa(maNCC); 
      
     	if (nccCanXem != null) {
-            // 3. Tạo dialog mới
     		Dialog_ChiTietNCC dialog = new Dialog_ChiTietNCC(trangChuGUI, nccCanXem);
-            // 4. Hiển thị dialog
     		dialog.setVisible(true);
          
     	} else {
@@ -461,9 +427,7 @@ public class NhaCungCap_Controller {
     	}
     }
     
-    /** Xử lý nút "Làm mới bộ lọc" (phiên bản gốc) */
     private void lamMoiBoLocTimKiem() {
-        // Xóa trắng các ô lọc
         trangChuGUI.txtMaNCC_TKNCC.setText("");
         trangChuGUI.txtTenNCC_TKNCC.setText("");
         trangChuGUI.txtSDT_TKNCC.setText("");
@@ -471,10 +435,6 @@ public class NhaCungCap_Controller {
         trangChuGUI.txtDiaChi_TKNCC.setText("");
         trangChuGUI.txtGhiChu_TKNCC.setText("");
         trangChuGUI.cboTrangThai_TKNCC.setSelectedIndex(0);
-        
-        // Tải lại toàn bộ dữ liệu (gọi DAO)
         loadDataToTableTimKiemNCC(); 
     }
-    
-    // Đã xóa hàm tiện ích timNCCTheoMaTuDanhSach() vì không cần nữa
 }

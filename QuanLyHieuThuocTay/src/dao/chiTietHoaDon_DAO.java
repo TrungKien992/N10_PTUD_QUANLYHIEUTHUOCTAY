@@ -83,7 +83,6 @@ public class chiTietHoaDon_DAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            // Có thể throw exception hoặc trả về map rỗng tùy xử lý lỗi mong muốn
         }
         return thongKe;
     }

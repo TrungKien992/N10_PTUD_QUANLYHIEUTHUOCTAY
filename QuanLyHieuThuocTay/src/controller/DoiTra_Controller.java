@@ -49,17 +49,15 @@ public class DoiTra_Controller implements ActionListener {
         tempCTPhieuDoiTraList = new ArrayList<>();
         tempCTPhieuTraList = new ArrayList<>();
 
-        // Initialize currentNhanVien
         if (trangChuGUI.currentUser != null) {
             this.currentNhanVien = nhanVienDAO.getNhanVienByMaTK(trangChuGUI.currentUser.getMaTK());
         }
         if (this.currentNhanVien == null) {
             this.currentNhanVien = new NhanVien();
             this.currentNhanVien.setMaNV("NV000");
-            this.currentNhanVien.setTenNV("Admin"); // Always set a non-null tenNV
+            this.currentNhanVien.setTenNV("Admin"); 
         }
 
-        // Register action listeners
         this.trangChuGUI.btn_trathuoc_lammoi.addActionListener(this);
         this.trangChuGUI.btn_doithuoc_lammoi.addActionListener(this);
         this.trangChuGUI.btn_trathuoc_LM.addActionListener(this);
@@ -73,7 +71,6 @@ public class DoiTra_Controller implements ActionListener {
         this.trangChuGUI.btn_trathuoc_xuathd.addActionListener(this);
         this.trangChuGUI.btn_doithuoc_xuathd.addActionListener(this);
 
-        // Key listeners for search
         this.trangChuGUI.txt_trathuoc_tkhd_maHD.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -93,7 +90,6 @@ public class DoiTra_Controller implements ActionListener {
             }
         });
 
-        // Table mouse listener for return invoice selection
         trangChuGUI.table_trathuoc_tkhd.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -120,7 +116,6 @@ public class DoiTra_Controller implements ActionListener {
             }
         });
 
-        // Key listeners for exchange invoice search
         this.trangChuGUI.txt_doithuoc_tkhd_mahd.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -140,7 +135,6 @@ public class DoiTra_Controller implements ActionListener {
             }
         });
 
-        // Table mouse listener for exchange invoice selection
         trangChuGUI.table_doithuoc_hd.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -339,15 +333,12 @@ public class DoiTra_Controller implements ActionListener {
                 }
                 JOptionPane.showMessageDialog(null, "Lưu phiếu trả thuốc thành công! Mã phiếu: " + maPDT);
                 daLuuPhieuTraThuoc = true;
-                // không xóa dữ liệu, giữ nguyên form
             } else {
                 JOptionPane.showMessageDialog(null, "Không thể lưu phiếu trả thuốc!");
             }
         }
 
-        // =============================
         // Xuất file PDF
-        // =============================
         if (o == trangChuGUI.btn_trathuoc_xuathd) {
         	
         	if (!daLuuPhieuTraThuoc) {
@@ -457,7 +448,6 @@ public class DoiTra_Controller implements ActionListener {
             StringBuilder confirmationMessage = new StringBuilder();
             boolean valid = true;
 
-            // Lấy danh sách thuốc trong hóa đơn để lấy giá và đơn vị
             List<Thuoc> dsThuoc = hoaDonDAO.getDSThuocTheoHoaDon(trangChuGUI.lbl_doithuoc_hienmahd.getText().trim());
 
             for (int row : selectedRows) {
@@ -501,9 +491,7 @@ public class DoiTra_Controller implements ActionListener {
             }
         }
 
-        // =======================================
         // LƯU PHIẾU ĐỔI THUỐC
-        // =======================================
         if (o == trangChuGUI.btn_doithuoc_luu) {
             if (trangChuGUI.currentUser == null) {
                 JOptionPane.showMessageDialog(null, "Vui lòng đăng nhập trước khi lưu phiếu đổi!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -600,7 +588,6 @@ public class DoiTra_Controller implements ActionListener {
 
             try {
                 DoiThuoc_PDFExporter.exportPhieuDoiThuocToPdf(pdt, new ArrayList<>(tempCTPhieuDoiTraList), filePath);
-                // reset lại sau khi xuất
                 daLuuPhieuDoiThuoc = false;
                 lamMoiBangHoaDonDoiThuoc();
                 tempCTPhieuDoiTraList.clear();
@@ -649,7 +636,6 @@ public class DoiTra_Controller implements ActionListener {
             }
             trangChuGUI.table_trathuoc_thuoc.setEnabled(true);
 
-            // Update refund amount display only
             double tienHoanLai = tempCTPhieuTraList.stream()
                 .mapToDouble(ct -> {
                     String maThuoc = ct.getThuoc().getMaThuoc();
@@ -845,11 +831,8 @@ public class DoiTra_Controller implements ActionListener {
         List<HoaDon> dsHD = hoaDonDAO.getAllHoaDon();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-     // [BẮT ĐẦU CODE ĐÃ SỬA]
         for (HoaDon hd : dsHD) {
-            KhachHang kh = null; // 1. Khởi tạo kh = null
-
-            // 2. Chỉ lấy thông tin khách hàng NẾU nó không null
+            KhachHang kh = null; 
             if (hd.getKhachHang() != null) {
                 kh = khachHangDAO.getKhachHangTheoMa(hd.getKhachHang().getMaKH());
             }
@@ -868,18 +851,16 @@ public class DoiTra_Controller implements ActionListener {
                 ngayLapFormatted = sdf.format(ngay);
             }
 
-            // 3. (Gợi ý) Thay vì để "", đại ca có thể hiển thị "Khách vãng lai" cho rõ
             model.addRow(new Object[]{
                     hd.getMaHD(),
-                    kh != null ? kh.getTenKH() : "Khách vãng lai", // Hiển thị rõ ràng
-                    kh != null ? kh.getSoDienThoai() : "N/A", // Hiển thị rõ ràng
+                    kh != null ? kh.getTenKH() : "Khách vãng lai",
+                    kh != null ? kh.getSoDienThoai() : "N/A",
                     nv != null ? nv.getTenNV() : "",
                     ngayLapFormatted,
                     km != null ? km.getTenChuongTrinh() : "Không có",
                     tongTien
             });
         }
-        // [KẾT THÚC CODE ĐÃ SỬA]
         tempCTPhieuTraList.clear();
         updateTraThuocTable();
         trangChuGUI.table_trathuoc_thuoc.clearSelection();
@@ -909,11 +890,9 @@ public class DoiTra_Controller implements ActionListener {
         List<HoaDon> dsHD = hoaDonDAO.getAllHoaDon();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-     // [BẮT ĐẦU CODE ĐÃ SỬA CHO DÒNG 913]
         for (HoaDon hd : dsHD) {
-            KhachHang kh = null; // 1. Khởi tạo kh = null
+            KhachHang kh = null; 
 
-            // 2. Chỉ lấy thông tin khách hàng NẾU nó không null
             if (hd.getKhachHang() != null) {
                 kh = khachHangDAO.getKhachHangTheoMa(hd.getKhachHang().getMaKH());
             }
@@ -931,8 +910,6 @@ public class DoiTra_Controller implements ActionListener {
             if (ngay != null) {
                 ngayLapFormatted = sdf.format(ngay);
             }
-
-            // 3. Sửa lại hiển thị cho đẹp
             model.addRow(new Object[]{
                     hd.getMaHD(),
                     kh != null ? kh.getTenKH() : "Khách vãng lai", 
@@ -943,7 +920,6 @@ public class DoiTra_Controller implements ActionListener {
                     tongTien
             });
         }
-        // [KẾT THÚC CODE ĐÃ SỬA]
         tempCTPhieuDoiTraList.clear();
         updateDoiThuocTable();
         trangChuGUI.table_doithuoc_thuoc.clearSelection();

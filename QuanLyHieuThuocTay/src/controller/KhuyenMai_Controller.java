@@ -33,24 +33,18 @@ public class KhuyenMai_Controller {
         this.view = view;
         this.kmDAO = new khuyenMai_DAO();
 
-        // Tải dữ liệu ban đầu
         loadDataToTable(view.table_ThemKM);
         loadDataToTable(view.table_CapNhatKM);
         loadDataToTable(view.table_TimKiemKM);
 
-        // Gắn sự kiện cho Panel Thêm KM
         addThemKMListeners();
         
-        // Gắn sự kiện cho Panel Cập Nhật KM
         addCapNhatKMListeners();
         
-        // Gắn sự kiện cho Panel Tìm Kiếm KM
         addTimKiemKMListeners();
-     // Tự động tải mã KM mới cho tab Thêm khi khởi động
         clearThemKMForm();
     }
 
-    // --- Phương thức chung ---
     private void loadDataToTable(JTable table) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
@@ -59,7 +53,7 @@ public class KhuyenMai_Controller {
             model.addRow(new Object[]{
                 km.getMaKM(),
                 km.getTenChuongTrinh(),
-                km.getGiaTri(), // Hiển thị số
+                km.getGiaTri(),
                 km.getNgayBatDau(),
                 km.getNgayKetThuc(),
                 km.getSoLuongToiDa() == 0 ? "Không giới hạn" : km.getSoLuongToiDa(),
@@ -67,11 +61,8 @@ public class KhuyenMai_Controller {
             });
         }
     }
-    
-    // (REQ 7) Cập nhật ComboBox Khuyến Mãi ở panel Thêm Hóa Đơn
     private void updateKhuyenMaiComboBox() {
         if (view.cb_Chonkhuyenmai != null) {
-            // Lấy model (phải ép kiểu đúng)
             DefaultComboBoxModel<KhuyenMai> model = (DefaultComboBoxModel<KhuyenMai>) view.cb_Chonkhuyenmai.getModel();
             model.removeAllElements();
             
@@ -83,13 +74,13 @@ public class KhuyenMai_Controller {
             List<KhuyenMai> dsKM = kmDAO.getAllKhuyenMai();
             for (KhuyenMai km : dsKM) {
                 if (km.getTrangThai() == 1 && (km.getNgayKetThuc().isAfter(LocalDate.now()) || km.getNgayKetThuc().isEqual(LocalDate.now()))) {
-                    model.addElement(km); // Chỉ thêm KM còn hạn và đang diễn ra
+                    model.addElement(km); 
                 }
             }
         }
     }
 
-    // --- Logic Panel Thêm KM (REQ 7) ---
+
     private void addThemKMListeners() {
         view.btnThem_ThemKM.addActionListener(e -> themKhuyenMai());
         view.btnLamMoi_ThemKM.addActionListener(e -> clearThemKMForm());
@@ -144,7 +135,7 @@ public class KhuyenMai_Controller {
                 loadDataToTable(view.table_ThemKM);
                 loadDataToTable(view.table_CapNhatKM);
                 loadDataToTable(view.table_TimKiemKM);
-                updateKhuyenMaiComboBox(); // (REQ 7) Cập nhật ComboBox
+                updateKhuyenMaiComboBox(); 
                 clearThemKMForm();
             } else {
                 JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Thêm thất bại! (Trùng mã KM?)");
@@ -154,9 +145,7 @@ public class KhuyenMai_Controller {
         }
     }
     
-    // --- Logic Panel Cập Nhật KM (REQ 7) ---
     private void addCapNhatKMListeners() {
-        // 1. Click bảng -> load data lên form
         view.table_CapNhatKM.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -180,13 +169,10 @@ public class KhuyenMai_Controller {
             }
         });
 
-        // 2. Nút Cập Nhật
         view.btnCapNhat_CapNhatKM.addActionListener(e -> capNhatKhuyenMai());
         
-        // 3. Nút Xóa
         view.btnXoa_CapNhatKM.addActionListener(e -> xoaKhuyenMai());
 
-        // 4. Nút Khôi Phục Form
         view.btnKhoiPhuc_CapNhatKM.addActionListener(e -> {
              int row = view.table_CapNhatKM.getSelectedRow();
              if(row != -1) {
@@ -202,7 +188,6 @@ public class KhuyenMai_Controller {
             JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng chọn khuyến mãi từ bảng!");
             return;
         }
-        // (Lấy thông tin tương tự hàm themKhuyenMai())
         String tenKM = view.txtTenKM_CapNhat.getText().trim();
         try {
             double giaTri = Double.parseDouble(view.txtGiaTri_CapNhat.getText());

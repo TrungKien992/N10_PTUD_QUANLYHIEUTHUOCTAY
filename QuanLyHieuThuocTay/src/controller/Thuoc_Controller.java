@@ -33,14 +33,12 @@ public class Thuoc_Controller {
         this.trangChuGUI = trangChuGUI;
         dao = new thuoc_DAO();
 
-        // hiển thị dữ liệu ban đầu
         hienThiThuoc();
         hienThiThuocLenCapNhat();
         hienThiThuocLenThemThuoc();
         hienThiThuocLenThemThuocFile();
         loadComboboxData();
 
-        // ======= SỰ KIỆN TAB TÌM KIẾM =======
 
         ItemListener filterListener = e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -67,7 +65,6 @@ public class Thuoc_Controller {
             }
         });
 
-        // nút làm mới tab tìm kiếm
         trangChuGUI.btn_tkt_Lammoi.addActionListener(e -> {
             trangChuGUI.cb_tkt_kethuoc.setSelectedIndex(0);
             trangChuGUI.cb_tkt_tenthuoc.setSelectedIndex(0);
@@ -75,36 +72,29 @@ public class Thuoc_Controller {
             hienThiThuoc();
         });
         
-        // nút làm mới tab thêm thuốc
         trangChuGUI.btn_ttLammoi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                // xóa dữ liệu các ô nhập
                 trangChuGUI.text_tttt.setText("");
                 trangChuGUI.text_ttsl.setText("");
                 trangChuGUI.text_ttgn.setText("");
                 trangChuGUI.text_ttgb.setText("");
                 trangChuGUI.textArea_tttp.setText("");
 
-                // reset combobox
                 trangChuGUI.cb_ttdvt.setSelectedIndex(0);
                 trangChuGUI.cb_ttncc.setSelectedIndex(0);
                 trangChuGUI.cb_tttkt.setSelectedIndex(0);
 
-                // reset ngày
                 trangChuGUI.date_tthsd.setDate(null);
 
-                // reset ảnh
                 trangChuGUI.lb_Chuaanh_tt.setIcon(null);
                 trangChuGUI.lb_Chuaanh_tt.setText("Chưa có ảnh");
 
-                // xóa chọn hàng trong bảng (nếu có)
                 trangChuGUI.table_themthuoc.clearSelection();
             }
         });
 
-        // ======= SỰ KIỆN TAB CẬP NHẬT =======
 
         trangChuGUI.btn_cnt_tk_lammoi.addActionListener(e -> {
             trangChuGUI.text_cnt_tkmt.setText("");
@@ -120,7 +110,6 @@ public class Thuoc_Controller {
         };
         trangChuGUI.cb_cnt_tktkt.addItemListener(filterCntListener);
 
-        // click vào bảng cập nhật để hiển thị dữ liệu lên form (gồm ảnh) cập nhật thuốc
         trangChuGUI.table_Capnhatthuoc.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -145,7 +134,6 @@ public class Thuoc_Controller {
                         trangChuGUI.cb_cnt_tkt.setSelectedItem(t.getKeThuoc().getLoaiKe());
                         trangChuGUI.textArea_cnttp.setText(t.getThanhPhan());
 
-                        // hiển thị ảnh (nếu có)
                         if (t.getAnh() != null && !t.getAnh().isEmpty()) {
                             ImageIcon icon = new ImageIcon(t.getAnh());
                             Image img = icon.getImage().getScaledInstance(
@@ -163,8 +151,6 @@ public class Thuoc_Controller {
             }
         });
         
-
-     // nút khôi phục
         trangChuGUI.btn_cntKhoiphuc.addActionListener(e -> {
             String maThuoc = trangChuGUI.text_cntmt.getText().trim();
 
@@ -173,11 +159,9 @@ public class Thuoc_Controller {
                 return;
             }
 
-            // lấy lại thuốc gốc từ database
             Thuoc thuocGoc = dao.getThuocTheoMa(maThuoc);
 
             if (thuocGoc != null) {
-                // hiển thị lại dữ liệu lên form
                 trangChuGUI.text_cntmt.setText(thuocGoc.getMaThuoc());
                 trangChuGUI.text_cnttt.setText(thuocGoc.getTenThuoc());
                 trangChuGUI.text_cntsl.setText(String.valueOf(thuocGoc.getSoLuong()));
@@ -218,7 +202,6 @@ public class Thuoc_Controller {
 
 
 
-        // nút chọn file
         trangChuGUI.btn_ttf_chonfile.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Chọn file Excel");
@@ -251,7 +234,6 @@ public class Thuoc_Controller {
                     }
                     workbook.close();
 
-                    // hiển thị lên label
                     trangChuGUI.lbl_ttfile_hienthitongsothuoc.setText(""+tongSoThuoc);
 
                     System.out.println("Đã chọn file: " + filePath);
@@ -263,13 +245,8 @@ public class Thuoc_Controller {
                 }
             }
         });
-         
-        // nút làm mới file
         trangChuGUI.btn_ttf_lammoi.addActionListener(e -> {
-            // xóa label hiển thị tổng số thuốc
             trangChuGUI.lbl_ttfile_hienthitongsothuoc.setText("0");
-
-            // reset file
             selectedFile = null;
             filePath = null;
 
@@ -279,8 +256,7 @@ public class Thuoc_Controller {
 
 
 
-        
-     // nút chọn ảnh cập nhật thuốc
+
         trangChuGUI.btn_cnt_ChonAnh.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Chọn ảnh đại diện thuốc");
@@ -299,7 +275,6 @@ public class Thuoc_Controller {
                 trangChuGUI.lb_Chuaanh.setIcon(new ImageIcon(img));
                 trangChuGUI.lb_Chuaanh.setText("");
 
-                // lưu đường dẫn ảnh vào label để lấy lại khi cập nhật
                 trangChuGUI.lb_Chuaanh.setToolTipText(path);
             }
         });
@@ -328,7 +303,6 @@ public class Thuoc_Controller {
             }
         });
 
-        // nút cập nhật thuốc
         trangChuGUI.btn_cntCapnhat.addActionListener(e -> {
             try {
                 String maThuoc = trangChuGUI.text_cntmt.getText().trim();
@@ -391,7 +365,6 @@ public class Thuoc_Controller {
                 ncc.setMaNhaCungCap(maNCC);
                 t.setNhaCungCap(ncc);
 
-                // thêm đường dẫn ảnh
                 if (trangChuGUI.lb_Chuaanh.getToolTipText() != null) {
                     t.setAnh(trangChuGUI.lb_Chuaanh.getToolTipText());
                 }
@@ -415,7 +388,6 @@ public class Thuoc_Controller {
             }
         });
 
-        // tìm kiếm trong tab cập nhật
         trangChuGUI.text_cnt_tkmt.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -432,12 +404,10 @@ public class Thuoc_Controller {
 
         trangChuGUI.cb_cnt_tktkt.addActionListener(e -> timKiemThuoc_TK());
         
-        // thêm thuốc
         trangChuGUI.btn_ttThem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    // lấy dữ liệu từ form
                     String maThuoc = trangChuGUI.text_ttmt.getText().trim();
                     String tenThuoc = trangChuGUI.text_tttt.getText().trim();
                     String donViTinh = trangChuGUI.cb_ttdvt.getSelectedItem().toString();
@@ -448,7 +418,7 @@ public class Thuoc_Controller {
                             ? trangChuGUI.lb_Chuaanh_tt.getToolTipText() // giả sử bạn lưu đường dẫn ảnh vào tooltip
                             : null;
 
-                    // kiểm tra dữ liệu
+
                     if (tenThuoc.isEmpty() || trangChuGUI.text_ttsl.getText().isEmpty() ||
                         trangChuGUI.text_ttgn.getText().isEmpty() || trangChuGUI.text_ttgb.getText().isEmpty()) {
                         JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin thuốc!", "Thiếu dữ liệu", JOptionPane.WARNING_MESSAGE);
@@ -466,7 +436,6 @@ public class Thuoc_Controller {
                     }
                     java.sql.Date hanSuDung = new java.sql.Date(date.getTime());
 
-                    // lấy mã NCC và mã Kệ từ dao
                     String maNCC = dao.getMaNCCTheoTen(tenNCC);  
                     String maKe = dao.getMaKeTheoTen(loaiKe);     
 
@@ -475,7 +444,6 @@ public class Thuoc_Controller {
                         return;
                     }
 
-                    // tạo đối tượng Thuoc
                     Thuoc t = new Thuoc();
                     t.setMaThuoc(maThuoc);
                     t.setTenThuoc(tenThuoc);
@@ -492,21 +460,17 @@ public class Thuoc_Controller {
                     t.setKeThuoc(ke);
                     t.setNhaCungCap(ncc);
 
-                    // thêm thuốc
                     boolean result = dao.themThuoc(t);
                     if (result) {
                         JOptionPane.showMessageDialog(null, "Thêm thuốc thành công!");
                         
-                        // load thuốc mới lên bảng
                         hienThiThuoc();
                         hienThiThuocLenCapNhat();
                         hienThiThuocLenThemThuoc();
                         hienThiThuocLenThemThuocFile();
                         
-                        // cập nhật mã thuốc mới để thêm tiếp
                         trangChuGUI.text_ttmt.setText(dao.getNextMaThuoc());
 
-                        // làm mới các ô nhập
                         trangChuGUI.text_tttt.setText("");
                         trangChuGUI.text_ttsl.setText("");
                         trangChuGUI.text_ttgn.setText("");
@@ -556,10 +520,6 @@ public class Thuoc_Controller {
                     Row row = sheet.getRow(i);
                     if (row == null) continue;
 
-                    // Cấu trúc file Excel (theo bạn mô tả):
-                    // A: tên thuốc, B: số lượng, C: giá nhập, D: giá bán,
-                    // E: hạn sử dụng, F: thành phần, G: đơn vị tính, 
-                    // H: ảnh, I: kệ thuốc, J: tên nhà cung cấp
                     String tenThuoc = getCellValue(row.getCell(0));
                     String soluong = getCellValue(row.getCell(1));
                     String giaNhap = getCellValue(row.getCell(2));
@@ -571,28 +531,24 @@ public class Thuoc_Controller {
                     String tenKeThuoc = getCellValue(row.getCell(8));
                     String tenNCC = getCellValue(row.getCell(9));
 
-                    if (tenThuoc.isEmpty()) continue; // bỏ dòng trống
-
-                    // === xử lý NhaCungCap ===
+                    if (tenThuoc.isEmpty()) continue; 
                     NhaCungCap ncc = nccDAO.getNhaCungCapTheoTen(tenNCC);
                     if (ncc == null) {
-                        // chưa có → tạo mã mới
+ 
                         String maNCC = nccDAO.generateNewMaNCC();
                         ncc = new NhaCungCap(maNCC, tenNCC, "", "", "", true,"");
                         nccDAO.themNhaCungCap(ncc);
                     }
 
-                    // === xử lý KeThuoc ===
                     KeThuoc ke = keThuocDAO.getKeThuocTheoTen(tenKeThuoc);
                     if (ke == null) {
                         JOptionPane.showMessageDialog(null,
                             "Kệ thuốc '" + tenKeThuoc + "' không tồn tại. Vui lòng chọn lại!",
                             "Lỗi kệ thuốc",
                             JOptionPane.ERROR_MESSAGE);
-                        return; // dừng lại, không thêm thuốc
+                        return; 
                     }
 
-                    // === tạo thuốc mới ===
                     String maThuoc = thuocDAO.getNextMaThuoc();
 
                     Thuoc thuoc = new Thuoc(
@@ -609,7 +565,6 @@ public class Thuoc_Controller {
                         ncc
                     );
                     
-                 // sau khi thêm thuốc xong
                     NhaCungCap_Controller nccController = new NhaCungCap_Controller(trangChuGUI);
                     nccController.loadDataToTableThemNCC();
 
@@ -644,7 +599,6 @@ public class Thuoc_Controller {
         return cell.getStringCellValue().trim();
     }
 
-    // ======= HIỂN THỊ DỮ LIỆU =======
 
     private void hienThiThuoc() {
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_tkt.getModel();
@@ -665,12 +619,10 @@ public class Thuoc_Controller {
 
         List<Thuoc> dsThuoc = dao.getAllThuoc();
 
-        // lấy giá trị được chọn, có thể null
         Object keObj = trangChuGUI.cb_tkt_kethuoc.getSelectedItem();
         Object tenObj = trangChuGUI.cb_tkt_tenthuoc.getSelectedItem();
         Object nccObj = trangChuGUI.cb_tkt_ncc.getSelectedItem();
 
-        // nếu 1 trong 3 combobox chưa chọn thì return luôn, tránh lỗi null
         if (keObj == null || tenObj == null || nccObj == null) {
             return;
         }
@@ -733,7 +685,6 @@ public class Thuoc_Controller {
         }
     }
 
-    // ======= BỘ LỌC TÌM KIẾM =======
 
     private void timKiemThuoc_TK() {
         String maTK = trangChuGUI.text_cnt_tkmt.getText().trim();
@@ -753,7 +704,6 @@ public class Thuoc_Controller {
             boolean matchTen = tenTK.isEmpty() || t.getTenThuoc().toLowerCase().contains(tenTK.toLowerCase());
             boolean matchKe = keTK.equals("Tất cả") || t.getKeThuoc().getLoaiKe().equalsIgnoreCase(keTK);
 
-            // hiển thị chỉ khi tất cả điều kiện đều thỏa
             if (matchMa && matchTen && matchKe) {
                 model.addRow(new Object[]{
                         t.getMaThuoc(), t.getTenThuoc(), t.getSoLuong(), t.getGiaNhap(), t.getGiaBan(),

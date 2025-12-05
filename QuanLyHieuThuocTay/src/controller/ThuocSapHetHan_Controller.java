@@ -21,9 +21,7 @@ public class ThuocSapHetHan_Controller {
         thuocDAO = new thuoc_DAO();
     }
 
-    /**
-     * Lấy danh sách thuốc hết hạn hoặc sắp hết hạn (<= 30 ngày)
-     */
+    
     public List<Thuoc> getDanhSachThuocHetHanVaSapHetHan() {
         List<Thuoc> dsThuoc = thuocDAO.getAllThuoc();
         LocalDate today = LocalDate.now();
@@ -34,9 +32,7 @@ public class ThuocSapHetHan_Controller {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Xuất danh sách ra Excel
-     */
+    
     public void exportToExcel(List<Thuoc> ds, String filePath) {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Thuốc hết hạn / sắp hết hạn");
@@ -89,16 +85,12 @@ public class ThuocSapHetHan_Controller {
         }
     }
 
-    /**
-     * Tính số ngày còn lại trước khi hết hạn
-     */
+    
     public long tinhSoNgayConLai(LocalDate hanSuDung) {
         return ChronoUnit.DAYS.between(LocalDate.now(), hanSuDung);
     }
 
-    /**
-     * Tạo dataset cho biểu đồ — chỉ hiển thị thuốc còn hạn và sắp hết hạn (<= 30 ngày)
-     */
+    
     public DefaultCategoryDataset taoDatasetBieuDo() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
@@ -112,7 +104,7 @@ public class ThuocSapHetHan_Controller {
             LocalDate hsd = thuoc.getHanSuDung();
             long daysLeft = ChronoUnit.DAYS.between(today, hsd);
 
-            // CHỈ lấy thuốc còn hạn và sắp hết hạn (<= 30 ngày)
+         
             if (daysLeft > 0 && daysLeft <= 30) {
                 dataset.addValue(daysLeft, "Số ngày còn lại", thuoc.getTenThuoc());
             }

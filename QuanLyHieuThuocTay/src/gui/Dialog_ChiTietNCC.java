@@ -6,29 +6,24 @@ import java.awt.*;
 
 public class Dialog_ChiTietNCC extends JDialog {
 
-    // Định nghĩa màu sắc và font chữ (Bạn có thể dùng các hằng số của bạn)
     private static final Color COLOR_DATA_RED = new Color(220, 53, 69);
     private static final Font FONT_LABEL = new Font("Segoe UI", Font.BOLD, 15);
     private static final Font FONT_DATA = new Font("Segoe UI", Font.PLAIN, 15);
     private static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 24);
     private static final Color COLOR_TITLE_BLUE = new Color(0, 123, 255);
 
-    /**
-     * Hàm khởi tạo JDialog
-     * @param parentFrame Frame cha (TrangChu_GUI của bạn)
-     * @param ncc Đối tượng NhaCungCap cần hiển thị
-     */
+   
     public Dialog_ChiTietNCC(JFrame parentFrame, NhaCungCap ncc) {
-        // --- Thiết lập cơ bản cho Dialog ---
-        super(parentFrame, "Chi Tiết Nhà Cung Cấp", true); // true = Modal (khóa cửa sổ cha)
         
-        setSize(700, 550); // Kích thước cửa sổ
-        setLocationRelativeTo(parentFrame); // Hiển thị ở giữa cửa sổ cha
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); // Chỉ đóng dialog này
-        setLayout(null); // Sử dụng layout null (giống code của bạn)
+        super(parentFrame, "Chi Tiết Nhà Cung Cấp", true); 
+        
+        setSize(700, 550); 
+        setLocationRelativeTo(parentFrame); 
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE); 
+        setLayout(null); 
         
         Container contentPane = getContentPane();
-        contentPane.setBackground(Color.WHITE); // Nền trắng
+        contentPane.setBackground(Color.WHITE); 
 
         // --- Tiêu đề ---
         JLabel lblTitle = new JLabel("CHI TIẾT NHÀ CUNG CẤP");
@@ -38,11 +33,11 @@ public class Dialog_ChiTietNCC extends JDialog {
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
         contentPane.add(lblTitle);
 
-        // --- Bố trí các trường thông tin ---
+       
         int startX_Label = 50;
         int startX_Data = 200;
         int startY = 80;
-        int vGap = 40; // Khoảng cách dọc
+        int vGap = 40;
         int height = 25;
         int labelWidth = 140;
         int dataWidth = 400;
@@ -102,7 +97,7 @@ public class Dialog_ChiTietNCC extends JDialog {
         contentPane.add(scrollGhiChu);
     }
 
-    // Hàm tiện ích tạo JLabel (Nhãn)
+    
     private JLabel createLabel(String text, int x, int y, int w, int h) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(FONT_LABEL);
@@ -110,11 +105,11 @@ public class Dialog_ChiTietNCC extends JDialog {
         return lbl;
     }
 
-    // Hàm tiện ích tạo JLabel (Dữ liệu)
+ 
     private JLabel createDataLabel(String text, int x, int y, int w, int h) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(FONT_DATA);
-        lbl.setForeground(COLOR_DATA_RED); // Màu đỏ cho dữ liệu
+        lbl.setForeground(COLOR_DATA_RED); 
         lbl.setBounds(x, y, w, h);
         return lbl;
     }

@@ -43,7 +43,6 @@ public class PhieuDatHang_Controller {
         this.thuocDAO = new thuoc_DAO();
         this.nhanVienDAO = new nhanVien_DAO();
 
-        // Tạm thời lấy NV001
         this.nhanVienHienTai = nhanVienDAO.getNhanVienTheoMa("NV001");
         if (this.nhanVienHienTai == null) {
              System.err.println("Lỗi: Không tìm thấy nhân viên mặc định NV001!");
@@ -58,13 +57,11 @@ public class PhieuDatHang_Controller {
     }
 
     private void registerPhieuDatHangEvents() {
-        // === NÚT NGOÀI BẢNG CHÍNH ===
         trangChuGUI.btnTaoMoiPhieu.addActionListener(e -> moDialogTaoMoi());
         trangChuGUI.btnXemSuaPhieu.addActionListener(e -> moDialogXemSua());
         trangChuGUI.btnHuyPhieu.addActionListener(e -> huyPhieuDatHang());
         trangChuGUI.btnLamMoiBoLoc_PDH.addActionListener(e -> lamMoiBoLocTimKiem());
 
-        // === SỰ KIỆN LỌC TỰ ĐỘNG ===
         KeyAdapter filterKeyListener = new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) { filterPhieuDatHangTable(); }
@@ -82,7 +79,6 @@ public class PhieuDatHang_Controller {
         trangChuGUI.dateChooserDenNgay_TKNCC.addPropertyChangeListener(dateChangeListener);
     }
 
-    // === MỞ DIALOG ===
 
     private void moDialogTaoMoi() {
         DialogChiTietPhieuDatHangNCC dialog = new DialogChiTietPhieuDatHangNCC(trangChuGUI);
@@ -90,10 +86,7 @@ public class PhieuDatHang_Controller {
         chiTietTamThoi.clear();
         phieuHienTai = new PhieuDatHang();
         
-        // --- ĐÃ SỬA ---
-        // Đổi tên hàm: generateNewMaPhieu -> taoMaPhieuMoi
         phieuHienTai.setMaPhieu(phieuDatHangDAO.taoMaPhieuMoi());
-        // --- HẾT SỬA ---
         
         phieuHienTai.setNgayDat(LocalDate.now());
         phieuHienTai.setTrangThai("Đã đặt hàng");
@@ -112,16 +105,11 @@ public class PhieuDatHang_Controller {
         }
         String maPhieu = trangChuGUI.table_DSPDDH.getValueAt(selectedRow, 0).toString();
 
-        // --- ĐÃ SỬA ---
-        // Đổi tên hàm: getPhieuDatHangTheoMa -> layPhieuDatHangTheoMa
         phieuHienTai = phieuDatHangDAO.layPhieuDatHangTheoMa(maPhieu);
-        // --- HẾT SỬA ---
         
         if (phieuHienTai != null) {
-            // --- ĐÃ SỬA ---
-            // Đổi tên hàm: getChiTietTheoMaPhieu -> layChiTietTheoMaPhieu
+
             chiTietTamThoi = phieuDatHangDAO.layChiTietTheoMaPhieu(maPhieu);
-            // --- HẾT SỬA ---
         } else {
              JOptionPane.showMessageDialog(trangChuGUI, "Không tìm thấy dữ liệu cho mã phiếu: " + maPhieu, "Lỗi", JOptionPane.ERROR_MESSAGE);
              return;
@@ -131,7 +119,6 @@ public class PhieuDatHang_Controller {
         loadDuLieuChoDialogSua(dialog);
         registerDialogEvents(dialog);
         
-        // Nâng cao: Vô hiệu hóa nút Lưu nếu phiếu đã bị hủy
         if (phieuHienTai.getTrangThai().equalsIgnoreCase("Đã hủy")) {
             dialog.btnLuu.setEnabled(false);
             dialog.btnThemThuocVaoBang.setEnabled(false);
@@ -180,8 +167,6 @@ public class PhieuDatHang_Controller {
 
     private void loadNhaCungCapComboBoxChoDialog(DialogChiTietPhieuDatHangNCC dialog) {
          try {
-             // Giả sử nhaCungCapDAO.getAllNhaCungCap() đã được đổi tên (nếu có)
-             // Tạm giữ tên này vì bạn chưa gửi file nhaCungCap_DAO
              List<NhaCungCap> dsNCC = nhaCungCapDAO.getAllNhaCungCap(); 
              dialog.cboNhaCungCap.removeAllItems();
              for (NhaCungCap ncc : dsNCC) {
@@ -195,8 +180,6 @@ public class PhieuDatHang_Controller {
 
     private void loadThuocComboBoxChoDialog(DialogChiTietPhieuDatHangNCC dialog) {
          try {
-             // Giả sử thuocDAO.getAllThuoc() đã được đổi tên (nếu có)
-             // Tạm giữ tên này vì bạn chưa gửi file thuoc_DAO
              List<Thuoc> dsThuoc = thuocDAO.getAllThuoc(); 
              dialog.cboChonThuoc.removeAllItems();
               for (Thuoc t : dsThuoc) {
@@ -217,8 +200,6 @@ public class PhieuDatHang_Controller {
         dialog.btnHuy.addActionListener(e -> dialog.dispose());
     }
 
-    // === XỬ LÝ LOGIC BÊN TRONG DIALOG ===
-    // (Không có thay đổi)
     private void themThuocVaoBangTam(DialogChiTietPhieuDatHangNCC dialog) {
         try {
             if (dialog.cboChonThuoc.getSelectedIndex() == -1) {
@@ -302,7 +283,7 @@ public class PhieuDatHang_Controller {
                      ct.getThuoc().getTenThuoc(),
                      ct.getSoLuong(),
                      currencyFormatter.format(ct.getDonGia()),
-                     currencyFormatter.format(ct.getThanhTien()) // Entity đã tự tính
+                     currencyFormatter.format(ct.getThanhTien())
                  });
                  tongTienMoi += ct.getThanhTien();
              }
@@ -325,7 +306,6 @@ public class PhieuDatHang_Controller {
                   return;
               }
              String tenNccChon = dialog.cboNhaCungCap.getSelectedItem().toString();
-             // Giả sử nhaCungCapDAO.getNhaCungCapTheoTen() đã được đổi tên (nếu có)
              NhaCungCap nccChon = nhaCungCapDAO.getNhaCungCapTheoTen(tenNccChon);
               if (nccChon == null) {
                   JOptionPane.showMessageDialog(dialog, "Nhà cung cấp không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -340,7 +320,6 @@ public class PhieuDatHang_Controller {
              phieuHienTai.setNhaCungCap(nccChon);
              phieuHienTai.setNgayDat(ngayDatUtil.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
              phieuHienTai.setGhiChu(dialog.txtGhiChu.getText().trim());
-             // Nhân viên đã được gán
 
              if (chiTietTamThoi.isEmpty()) {
                   JOptionPane.showMessageDialog(dialog, "Phiếu đặt hàng phải có ít nhất một chi tiết thuốc!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
@@ -351,17 +330,12 @@ public class PhieuDatHang_Controller {
              phieuHienTai.setTongTien(tinhTongTienTamThoi());
 
              boolean success = false;
-             
-             // --- ĐÃ SỬA ---
-             // Đổi tên hàm: getPhieuDatHangTheoMa -> layPhieuDatHangTheoMa
+
              boolean isUpdating = phieuDatHangDAO.layPhieuDatHangTheoMa(phieuHienTai.getMaPhieu()) != null;
 
               if (isUpdating) {
-                  // --- ĐÃ SỬA ---
-                  // Đã kích hoạt chức năng Cập nhật và đổi tên hàm
                   success = phieuDatHangDAO.capNhatPhieuDatHang(phieuHienTai); 
               } else {
-                  // Hàm themPhieuDatHang đã có tên tiếng Việt
                   success = phieuDatHangDAO.themPhieuDatHang(phieuHienTai);
               }
 
@@ -369,10 +343,9 @@ public class PhieuDatHang_Controller {
                  JOptionPane.showMessageDialog(dialog, (isUpdating ? "Cập nhật" : "Lưu") + " phiếu đặt hàng thành công!");
                  dialog.dispose();
                  loadDataToPhieuDatHangTable(); // Tải lại bảng chính
-             } else { // --- ĐÃ SỬA --- (Bắt lỗi cho cả Thêm và Cập nhật)
+             } else {
                  JOptionPane.showMessageDialog(dialog, (isUpdating ? "Cập nhật" : "Lưu") + " phiếu đặt hàng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
              }
-             // --- HẾT SỬA ---
 
         } catch (Exception ex) {
              ex.printStackTrace();
@@ -391,7 +364,6 @@ public class PhieuDatHang_Controller {
         String tenNCC = trangChuGUI.table_DSPDDH.getValueAt(selectedRow, 2).toString();
         String trangThai = trangChuGUI.table_DSPDDH.getValueAt(selectedRow, 5).toString();
 
-        // Kiểm tra xem phiếu đã bị hủy chưa
         if (trangThai.equalsIgnoreCase("Đã hủy")) {
             JOptionPane.showMessageDialog(trangChuGUI, "Phiếu này đã bị hủy trước đó.", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -403,7 +375,6 @@ public class PhieuDatHang_Controller {
             JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
-             // Hàm huyPhieuDatHang đã có tên tiếng Việt
              boolean result = phieuDatHangDAO.huyPhieuDatHang(maPhieu);
              if (result) {
                  JOptionPane.showMessageDialog(trangChuGUI, "Hủy phiếu '" + maPhieu + "' thành công.");
@@ -430,10 +401,7 @@ public class PhieuDatHang_Controller {
             DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_DSPDDH.getModel();
             model.setRowCount(0);
             
-            // --- ĐÃ SỬA ---
-            // Đổi tên hàm: getAllPhieuDatHang -> layTatCaPhieuDatHang
             List<PhieuDatHang> dsPhieu = phieuDatHangDAO.layTatCaPhieuDatHang(); 
-            // --- HẾT SỬA ---
 
             for (PhieuDatHang pdh : dsPhieu) {
                 model.addRow(new Object[]{
@@ -458,10 +426,7 @@ public class PhieuDatHang_Controller {
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_DSPDDH.getModel();
         model.setRowCount(0);
         
-        // --- ĐÃ SỬA ---
-        // Đổi tên hàm: getAllPhieuDatHang -> layTatCaPhieuDatHang
         List<PhieuDatHang> dsPhieu = phieuDatHangDAO.layTatCaPhieuDatHang();
-        // --- HẾT SỬA ---
 
         String maPhieuFilter = trangChuGUI.txtMaPhieu_TKNCC.getText().trim().toLowerCase();
         String tenNccFilter = trangChuGUI.cboNCC_TKNCC.getSelectedItem().toString();
@@ -478,32 +443,27 @@ public class PhieuDatHang_Controller {
             if (!tongTienStr.isEmpty()) {
                 tongTienFilter = Double.parseDouble(tongTienStr.replace(",", "").replace(" VNĐ", "")); 
             }
-        } catch (NumberFormatException e) { /* Bỏ qua */ }
+        } catch (NumberFormatException e) { }
 
         for (PhieuDatHang pdh : dsPhieu) {
             boolean match = true;
 
-            // Lọc Mã phiếu
             if (match && !maPhieuFilter.isEmpty() && (pdh.getMaPhieu() == null || !pdh.getMaPhieu().toLowerCase().contains(maPhieuFilter))) {
                 match = false;
             }
-            // Lọc NCC
+
             if (match && !tenNccFilter.equals("Tất cả") && (pdh.getNhaCungCap() == null || !pdh.getNhaCungCap().getTenNhaCungCap().equals(tenNccFilter))) {
                 match = false;
             }
-            // Lọc Trạng thái
             if (match && !trangThaiFilter.equals("Tất cả") && (pdh.getTrangThai() == null || !pdh.getTrangThai().equals(trangThaiFilter))) {
                 match = false;
             }
-            // Lọc Từ ngày
             if (match && tuNgay != null && (pdh.getNgayDat() == null || pdh.getNgayDat().isBefore(tuNgay))) {
                 match = false;
             }
-            // Lọc Đến ngày
              if (match && denNgay != null && (pdh.getNgayDat() == null || pdh.getNgayDat().isAfter(denNgay))) {
                 match = false;
             }
-            // Lọc Tổng tiền
             if (match && tongTienFilter != null) {
                  if (loaiTongTienFilter.equals("Bằng") && pdh.getTongTien() != tongTienFilter) match = false;
                  else if (loaiTongTienFilter.equals("Lớn hơn") && pdh.getTongTien() <= tongTienFilter) match = false;
@@ -525,7 +485,6 @@ public class PhieuDatHang_Controller {
 
     private void loadNccToFilterComboBox() {
         try {
-             // Giả sử nhaCungCapDAO.getAllNhaCungCap() đã được đổi tên (nếu có)
              List<NhaCungCap> dsNCC = nhaCungCapDAO.getAllNhaCungCap();
              trangChuGUI.cboNCC_TKNCC.removeAllItems();
              trangChuGUI.cboNCC_TKNCC.addItem("Tất cả");

@@ -105,7 +105,7 @@ public class KhachHang_Controller implements ActionListener {
         modelCN.setRowCount(0);
         modelTK.setRowCount(0);
         for (KhachHang kh : dsKH) {
-            // *** SỬA Ở ĐÂY: Đổi vị trí getDiaChi() và getSoDienThoai() ***
+            
             Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
             modelCN.addRow(row);
             modelTK.addRow(row);
@@ -120,9 +120,9 @@ public class KhachHang_Controller implements ActionListener {
         if (row >= 0) {
             String maKH = trangChuGUI.table_CapNhatKH.getValueAt(row, 0).toString();
             String tenKH = trangChuGUI.table_CapNhatKH.getValueAt(row, 1).toString();
-            // *** SỬA Ở ĐÂY: Lấy đúng cột và gán đúng ô text field ***
-            String diaChi = trangChuGUI.table_CapNhatKH.getValueAt(row, 2).toString(); // Cột 2 là Địa chỉ
-            String sdt = trangChuGUI.table_CapNhatKH.getValueAt(row, 3).toString();    // Cột 3 là SĐT
+       
+            String diaChi = trangChuGUI.table_CapNhatKH.getValueAt(row, 2).toString(); 
+            String sdt = trangChuGUI.table_CapNhatKH.getValueAt(row, 3).toString();   
 
             trangChuGUI.txt_cnkh_MaKh.setText(maKH);
             trangChuGUI.txt_cnkh_tenkh.setText(tenKH);
