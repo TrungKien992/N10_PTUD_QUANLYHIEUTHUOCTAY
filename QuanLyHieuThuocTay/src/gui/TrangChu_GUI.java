@@ -5582,12 +5582,12 @@ public class TrangChu_GUI extends JFrame{
 
         btnTaoMoiPhieu = new JButton("Tạo mới");
         btnTaoMoiPhieu.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btnTaoMoiPhieu, COLOR_ACCENT_GREEN); 
+        styleButton(btnTaoMoiPhieu, COLOR_PRIMARY_BLUE); 
         panel_btnPhieuDatHangNCC.add(btnTaoMoiPhieu);
 
         btnXemSuaPhieu = new JButton("Xem/Sửa");
         btnXemSuaPhieu.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btnXemSuaPhieu, COLOR_PRIMARY_BLUE); 
+        styleButton(btnXemSuaPhieu, COLOR_SIDEBAR_BG_START); 
         panel_btnPhieuDatHangNCC.add(btnXemSuaPhieu);
 
         btnHuyPhieu = new JButton("Hủy phiếu"); 

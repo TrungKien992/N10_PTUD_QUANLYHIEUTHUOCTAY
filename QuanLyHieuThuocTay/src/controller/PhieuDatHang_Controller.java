@@ -130,7 +130,6 @@ public class PhieuDatHang_Controller {
     }
 
     // === HÀM LOAD DỮ LIỆU CHO DIALOG ===
-    // (Không có thay đổi ở các hàm này)
     private void loadDuLieuChoDialogMoi(DialogChiTietPhieuDatHangNCC dialog) {
         dialog.txtMaPhieu.setText(phieuHienTai.getMaPhieu());
         dialog.dateChooserNgayDat.setDate(java.sql.Date.valueOf(phieuHienTai.getNgayDat()));
@@ -182,9 +181,11 @@ public class PhieuDatHang_Controller {
          try {
              List<Thuoc> dsThuoc = thuocDAO.getAllThuoc(); 
              dialog.cboChonThuoc.removeAllItems();
-              for (Thuoc t : dsThuoc) {
-                  dialog.cboChonThuoc.addItem(t.getTenThuoc() + " (" + t.getMaThuoc() + ")");
-              }
+             for (Thuoc t : dsThuoc) {
+                 dialog.cboChonThuoc.addItem(t.getTenThuoc() + " (" + t.getMaThuoc() + ")");
+             }
+             // Sau khi load xong, set giá trị null để sự kiện không kích hoạt nhầm lúc đầu
+             dialog.cboChonThuoc.setSelectedIndex(-1);
          } catch (Exception e) {
              e.printStackTrace();
              JOptionPane.showMessageDialog(dialog, "Lỗi tải danh sách Thuốc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -192,12 +193,39 @@ public class PhieuDatHang_Controller {
     }
 
     // === ĐĂNG KÝ SỰ KIỆN CHO CÁC NÚT BÊN TRONG DIALOG ===
-    // (Không có thay đổi)
     private void registerDialogEvents(DialogChiTietPhieuDatHangNCC dialog) {
         dialog.btnThemThuocVaoBang.addActionListener(e -> themThuocVaoBangTam(dialog));
         dialog.btnXoaThuocKhoiBang.addActionListener(e -> xoaThuocKhoiBangTam(dialog));
         dialog.btnLuu.addActionListener(e -> luuPhieuDatHang(dialog));
         dialog.btnHuy.addActionListener(e -> dialog.dispose());
+        
+        // --- THÊM MỚI: Sự kiện khi chọn thuốc trong ComboBox ---
+        dialog.cboChonThuoc.addActionListener(e -> capNhatGiaNhapKhiChonThuoc(dialog));
+    }
+    
+    // --- THÊM MỚI: Hàm xử lý lấy giá nhập ---
+    private void capNhatGiaNhapKhiChonThuoc(DialogChiTietPhieuDatHangNCC dialog) {
+        if (dialog.cboChonThuoc.getSelectedIndex() == -1 || dialog.cboChonThuoc.getSelectedItem() == null) {
+            return;
+        }
+        try {
+            String selectedThuocStr = dialog.cboChonThuoc.getSelectedItem().toString();
+            // Lấy mã thuốc trong ngoặc (...)
+            if (selectedThuocStr.contains("(") && selectedThuocStr.endsWith(")")) {
+                String maThuoc = selectedThuocStr.substring(selectedThuocStr.lastIndexOf("(") + 1, selectedThuocStr.lastIndexOf(")"));
+                
+                Thuoc thuoc = thuocDAO.getThuocTheoMa(maThuoc);
+                if (thuoc != null) {
+                    double giaNhap = thuoc.getGiaNhap();
+                    // Format giá nhập để hiển thị lên TextField (không kèm chữ VNĐ để dễ parse lại khi thêm)
+                    DecimalFormat dfInput = new DecimalFormat("###,###");
+                    dialog.txtDonGiaThuoc.setText(dfInput.format(giaNhap));
+                    dialog.txtSoLuongThuoc.requestFocus(); // Focus vào ô số lượng cho tiện
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("Lỗi tự động cập nhật giá: " + ex.getMessage());
+        }
     }
 
     private void themThuocVaoBangTam(DialogChiTietPhieuDatHangNCC dialog) {
@@ -229,7 +257,6 @@ public class PhieuDatHang_Controller {
             }
 
             String maThuoc = selectedThuocStr.substring(selectedThuocStr.lastIndexOf("(") + 1, selectedThuocStr.lastIndexOf(")"));
-            // Giả sử thuocDAO.getThuocTheoMa() đã được đổi tên (nếu có)
             Thuoc thuoc = thuocDAO.getThuocTheoMa(maThuoc); 
 
             if (thuoc == null) {
@@ -254,6 +281,7 @@ public class PhieuDatHang_Controller {
             capNhatBangChiTietDialog(dialog);
             dialog.txtSoLuongThuoc.setText("");
             dialog.txtDonGiaThuoc.setText("");
+            // dialog.cboChonThuoc.setSelectedIndex(-1); // Có thể bỏ comment dòng này nếu muốn reset combobox sau khi thêm
 
         } catch (Exception ex) {
              ex.printStackTrace();
@@ -307,11 +335,11 @@ public class PhieuDatHang_Controller {
               }
              String tenNccChon = dialog.cboNhaCungCap.getSelectedItem().toString();
              NhaCungCap nccChon = nhaCungCapDAO.getNhaCungCapTheoTen(tenNccChon);
-              if (nccChon == null) {
+             if (nccChon == null) {
                   JOptionPane.showMessageDialog(dialog, "Nhà cung cấp không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                   return;
-              }
-              Date ngayDatUtil = dialog.dateChooserNgayDat.getDate();
+             }
+             Date ngayDatUtil = dialog.dateChooserNgayDat.getDate();
              if (ngayDatUtil == null) {
                   JOptionPane.showMessageDialog(dialog, "Vui lòng chọn ngày đặt!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
                   return;
@@ -333,11 +361,11 @@ public class PhieuDatHang_Controller {
 
              boolean isUpdating = phieuDatHangDAO.layPhieuDatHangTheoMa(phieuHienTai.getMaPhieu()) != null;
 
-              if (isUpdating) {
-                  success = phieuDatHangDAO.capNhatPhieuDatHang(phieuHienTai); 
-              } else {
-                  success = phieuDatHangDAO.themPhieuDatHang(phieuHienTai);
-              }
+             if (isUpdating) {
+                 success = phieuDatHangDAO.capNhatPhieuDatHang(phieuHienTai); 
+             } else {
+                 success = phieuDatHangDAO.themPhieuDatHang(phieuHienTai);
+             }
 
              if (success) {
                  JOptionPane.showMessageDialog(dialog, (isUpdating ? "Cập nhật" : "Lưu") + " phiếu đặt hàng thành công!");
@@ -408,7 +436,7 @@ public class PhieuDatHang_Controller {
                     pdh.getMaPhieu(),
                     (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getMaNhaCungCap() : "",
                     (pdh.getNhaCungCap() != null) ? pdh.getNhaCungCap().getTenNhaCungCap() : "",
-                    (pdh.getNgayDat() != null) ? pdh.getNgayDat().toString() : "", // Có thể cần định dạng ngày dd/MM/yyyy
+                    (pdh.getNgayDat() != null) ? pdh.getNgayDat().toString() : "", 
                     currencyFormatter.format(pdh.getTongTien()),
                     pdh.getTrangThai()
                 });
