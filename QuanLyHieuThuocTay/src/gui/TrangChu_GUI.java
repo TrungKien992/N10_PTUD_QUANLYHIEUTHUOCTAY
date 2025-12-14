@@ -3581,6 +3581,17 @@ public class TrangChu_GUI extends JFrame{
                 JButton btnLuu_TNV = new JButton("Lưu");
                 btnLuu_TNV.setFont(new Font("Segoe UI", Font.BOLD, 14));
                 btnLuu_TNV.setBounds(1191, 650, 143, 40);
+                java.net.URL imgLuu_TNV = getClass().getResource("/save-icon.png");
+                if (imgLuu_TNV != null) {
+                    ImageIcon originalIcon = new ImageIcon(imgLuu_TNV);
+                    Image img = originalIcon.getImage().getScaledInstance(27, 27, Image.SCALE_SMOOTH);
+                    ImageIcon scaledIcon = new ImageIcon(img);
+                    btnLuu_TNV.setIcon(scaledIcon);
+                    btnLuu_TNV.setHorizontalAlignment(SwingConstants.LEFT);
+                    btnLuu_TNV.setIconTextGap(10);
+                } else {
+                    System.err.println("Lỗi: Không tìm thấy ảnh tại /icon-add.png");
+                }
                 btnLuu_TNV.addActionListener(e -> {
                     try {
                         DefaultTableModel model = (DefaultTableModel) table_TNV.getModel();
@@ -3860,7 +3871,7 @@ public class TrangChu_GUI extends JFrame{
                 if (imgLamMoi_TKNV != null) {
                     ImageIcon originalIcon = new ImageIcon(imgLamMoi_TKNV);
                     Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
-                    ImageIcon scaledIcon = new ImageIcon(img); // ✅ sửa ở đây: dùng ảnh đã scale
+                    ImageIcon scaledIcon = new ImageIcon(img);
                     btnLamMoi_TKNV.setIcon(scaledIcon);
                     btnLamMoi_TKNV.setHorizontalAlignment(SwingConstants.LEFT);
                     btnLamMoi_TKNV.setIconTextGap(10);
@@ -4414,7 +4425,17 @@ public class TrangChu_GUI extends JFrame{
 	                }
 	            }
 	        });
-
+	        java.net.URL imgXoa_CNNV = getClass().getResource("/delete-icon.png");
+	        if (imgXoa_CNNV != null) {
+	            ImageIcon originalIcon = new ImageIcon(imgXoa_CNNV);
+	            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+	            ImageIcon scaledIcon = new ImageIcon(img);
+	            btnXoa_CNNV.setIcon(scaledIcon);
+	            btnXoa_CNNV.setHorizontalAlignment(SwingConstants.LEFT);
+	            btnXoa_CNNV.setIconTextGap(10);
+	        } else {
+	            System.err.println("Lỗi: Không tìm thấy ảnh");
+	        }
 	        panel_CapNhatNV.add(btnXoa_CNNV);
 	
 	        JButton btnKhoiPhuc_CNNV = new JButton("Khôi phục Form");
@@ -4532,6 +4553,18 @@ public class TrangChu_GUI extends JFrame{
 	        btnCapNhat_CNNV.setFont(FONT_BUTTON_STANDARD);
 	        styleButton(btnCapNhat_CNNV, COLOR_SUCCESS_GREEN);
 	        btnCapNhat_CNNV.setBounds(1539, 499, 150, 40);
+	        java.net.URL imgCapNhat_CNNV = getClass().getResource("/update-icon.png");
+	        if (imgCapNhat_CNNV != null) {
+	            ImageIcon originalIcon = new ImageIcon(imgCapNhat_CNNV);
+	            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+	            ImageIcon scaledIcon = new ImageIcon(img);
+	            btnCapNhat_CNNV.setIcon(scaledIcon);
+	            btnCapNhat_CNNV.setHorizontalAlignment(SwingConstants.LEFT);
+	            btnCapNhat_CNNV.setIconTextGap(10);
+	        } else {
+	            System.err.println("Lỗi: Không tìm thấy ảnh");
+	        }
+	
 	        panel_CapNhatNV.add(btnCapNhat_CNNV);
 	        btnCapNhat_CNNV.addActionListener(new ActionListener() {
 	            @Override
@@ -4903,6 +4936,17 @@ public class TrangChu_GUI extends JFrame{
         btnLamMoi_TNCC.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnLamMoi_TNCC, COLOR_TEXT_MUTED);
         btnLamMoi_TNCC.setBounds(1320, 489, 140, 40);
+        java.net.URL imgLamMoiTNCC = getClass().getResource("/icon-refresh.png");
+        if (imgLamMoiTNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgLamMoiTNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnLamMoi_TNCC.setIcon(scaledIcon);
+            btnLamMoi_TNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnLamMoi_TNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_themNCC.add(btnLamMoi_TNCC);
 
         btnThem_TNCC = new JButton("Thêm NCC"); 
@@ -4913,6 +4957,17 @@ public class TrangChu_GUI extends JFrame{
         btnThem_TNCC.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnThem_TNCC, COLOR_SUCCESS_GREEN);
         btnThem_TNCC.setBounds(1549, 489, 140, 40); // Điều chỉnh
+        java.net.URL imgThem_TNCC = getClass().getResource("/icon-add.png");
+        if (imgThem_TNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgThem_TNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnThem_TNCC.setIcon(scaledIcon);
+            btnThem_TNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnThem_TNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_themNCC.add(btnThem_TNCC);
 
 
@@ -5075,22 +5130,55 @@ public class TrangChu_GUI extends JFrame{
         scrollPaneGhiChuCNNCC.setViewportView(txtGhiChu_CNNCC);
 
         // Các nút chức năng
-        btnLamMoi_CNNCC = new JButton("Làm mới Form");
+        btnLamMoi_CNNCC = new JButton("Làm mới");
         btnLamMoi_CNNCC.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnLamMoi_CNNCC, COLOR_TEXT_MUTED);
         btnLamMoi_CNNCC.setBounds(968, 469, 150, 40); // Điều chỉnh
+        java.net.URL imgLamMoi_CNNCC = getClass().getResource("/icon-refresh.png");
+        if (imgLamMoi_CNNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgLamMoi_CNNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnLamMoi_CNNCC.setIcon(scaledIcon);
+            btnLamMoi_CNNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnLamMoi_CNNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_capNhatNCC.add(btnLamMoi_CNNCC);
 
         btnKhoiPhuc_CNNCC = new JButton("Khôi phục");
         btnKhoiPhuc_CNNCC.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnKhoiPhuc_CNNCC, COLOR_TEXT_MUTED);
         btnKhoiPhuc_CNNCC.setBounds(1138, 469, 150, 40); // Điều chỉnh
+        java.net.URL imgKhoiPhuc_CNNCC = getClass().getResource("/back-icon.png");
+        if (imgKhoiPhuc_CNNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgKhoiPhuc_CNNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnKhoiPhuc_CNNCC.setIcon(scaledIcon);
+            btnKhoiPhuc_CNNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnKhoiPhuc_CNNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_capNhatNCC.add(btnKhoiPhuc_CNNCC);
 
         btnCapNhat_CNNCC = new JButton("Cập nhật");
         btnCapNhat_CNNCC.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnCapNhat_CNNCC, COLOR_SUCCESS_GREEN);
         btnCapNhat_CNNCC.setBounds(1308, 469, 150, 40); // Điều chỉnh
+        java.net.URL imgCapNhat_CNNCC = getClass().getResource("/update-icon.png");
+        if (imgCapNhat_CNNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgCapNhat_CNNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnCapNhat_CNNCC.setIcon(scaledIcon);
+            btnCapNhat_CNNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnCapNhat_CNNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_capNhatNCC.add(btnCapNhat_CNNCC);
 
 
@@ -5128,6 +5216,17 @@ public class TrangChu_GUI extends JFrame{
         btnXoa_CNNCC = new JButton("Xóa");
         btnXoa_CNNCC.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnXoa_CNNCC.setBounds(1482, 469, 150, 40);
+        java.net.URL imgXoa_CNNCC = getClass().getResource("/delete-icon.png");
+        if (imgXoa_CNNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgXoa_CNNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnXoa_CNNCC.setIcon(scaledIcon);
+            btnXoa_CNNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnXoa_CNNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_capNhatNCC.add(btnXoa_CNNCC);
 
         // ===== KẾT THÚC KHỐI CODE CẬP NHẬT NHÀ CUNG CẤP =====
@@ -5231,6 +5330,17 @@ public class TrangChu_GUI extends JFrame{
         btnLamMoi_TKNCC.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnLamMoi_TKNCC, COLOR_TEXT_MUTED);
         btnLamMoi_TKNCC.setBounds(1472, 237, 160, 40); // Điều chỉnh vị trí ngoài panel lọc
+        java.net.URL imgLamMoi_TKNCC = getClass().getResource("/icon-refresh.png");
+        if (imgLamMoi_TKNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgLamMoi_TKNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnLamMoi_TKNCC.setIcon(scaledIcon);
+            btnLamMoi_TKNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnLamMoi_TKNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_ThongTinTKNCC.add(btnLamMoi_TKNCC);
         
         JLabel lblDC_DCNCC = new JLabel("Địa chỉ:");
@@ -5261,6 +5371,17 @@ public class TrangChu_GUI extends JFrame{
         btnXemChiTiet_TKNCC = new JButton("Xem chi tiết");
         btnXemChiTiet_TKNCC.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnXemChiTiet_TKNCC.setBounds(1287, 237, 160, 40);
+        java.net.URL imgXem_TKNCC = getClass().getResource("/search-icon.png");
+        if (imgXem_TKNCC != null) {
+            ImageIcon originalIcon = new ImageIcon(imgXem_TKNCC);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnXemChiTiet_TKNCC.setIcon(scaledIcon);
+            btnXemChiTiet_TKNCC.setHorizontalAlignment(SwingConstants.LEFT);
+            btnXemChiTiet_TKNCC.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         panel_ThongTinTKNCC.add(btnXemChiTiet_TKNCC);
 
 
@@ -5940,12 +6061,34 @@ public class TrangChu_GUI extends JFrame{
         btnLamMoi_ThemKM.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnLamMoi_ThemKM, COLOR_TEXT_MUTED);
         btnLamMoi_ThemKM.setBounds(1276, 238, 150, 40);
+        java.net.URL imgLamMoi_ThemKM = getClass().getResource("/icon-refresh.png");
+        if (imgLamMoi_ThemKM != null) {
+            ImageIcon originalIcon = new ImageIcon(imgLamMoi_ThemKM);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnLamMoi_ThemKM.setIcon(scaledIcon);
+            btnLamMoi_ThemKM.setHorizontalAlignment(SwingConstants.LEFT);
+            btnLamMoi_ThemKM.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         pnlForm_ThemKM.add(btnLamMoi_ThemKM);
 
         btnThem_ThemKM = new JButton("Thêm Khuyến Mãi");
         btnThem_ThemKM.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnThem_ThemKM, COLOR_SUCCESS_GREEN);
         btnThem_ThemKM.setBounds(1446, 238, 170, 40);
+        java.net.URL imgThem_ThemKM = getClass().getResource("/icon-add.png");
+        if (imgThem_ThemKM != null) {
+            ImageIcon originalIcon = new ImageIcon(imgThem_ThemKM);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnThem_ThemKM.setIcon(scaledIcon);
+            btnThem_ThemKM.setHorizontalAlignment(SwingConstants.LEFT);
+            btnThem_ThemKM.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         pnlForm_ThemKM.add(btnThem_ThemKM);
 
         // --- Bảng Hiển Thị ---
@@ -6091,22 +6234,55 @@ public class TrangChu_GUI extends JFrame{
         cboTrangThai_CapNhat.setBounds(976, 146, 643, 33);
         pnlForm_CapNhatKM.add(cboTrangThai_CapNhat);
 
-        btnKhoiPhuc_CapNhatKM = new JButton("Khôi Phục Form");
+        btnKhoiPhuc_CapNhatKM = new JButton("Khôi Phục");
         btnKhoiPhuc_CapNhatKM.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnKhoiPhuc_CapNhatKM, COLOR_TEXT_MUTED);
         btnKhoiPhuc_CapNhatKM.setBounds(1209, 240, 150, 40);
+        java.net.URL imgKhoiPhuc_CapNhatKM = getClass().getResource("/back-icon.png");
+        if (imgKhoiPhuc_CapNhatKM != null) {
+            ImageIcon originalIcon = new ImageIcon(imgKhoiPhuc_CapNhatKM);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnKhoiPhuc_CapNhatKM.setIcon(scaledIcon);
+            btnKhoiPhuc_CapNhatKM.setHorizontalAlignment(SwingConstants.LEFT);
+            btnKhoiPhuc_CapNhatKM.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         pnlForm_CapNhatKM.add(btnKhoiPhuc_CapNhatKM);
 
         btnXoa_CapNhatKM = new JButton("Xóa");
         btnXoa_CapNhatKM.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnXoa_CapNhatKM, COLOR_DANGER_RED);
         btnXoa_CapNhatKM.setBounds(1379, 240, 130, 40);
+        java.net.URL imgXoa_CapNhatKM = getClass().getResource("/delete-icon.png");
+        if (imgXoa_CapNhatKM != null) {
+            ImageIcon originalIcon = new ImageIcon(imgXoa_CapNhatKM);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnXoa_CapNhatKM.setIcon(scaledIcon);
+            btnXoa_CapNhatKM.setHorizontalAlignment(SwingConstants.LEFT);
+            btnXoa_CapNhatKM.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         pnlForm_CapNhatKM.add(btnXoa_CapNhatKM);
 
         btnCapNhat_CapNhatKM = new JButton("Cập Nhật");
         btnCapNhat_CapNhatKM.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnCapNhat_CapNhatKM, COLOR_SUCCESS_GREEN);
         btnCapNhat_CapNhatKM.setBounds(1529, 240, 140, 40);
+        java.net.URL imgCapNhat_CapNhatKM = getClass().getResource("/update-icon.png");
+        if (imgCapNhat_CapNhatKM != null) {
+            ImageIcon originalIcon = new ImageIcon(imgCapNhat_CapNhatKM);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnCapNhat_CapNhatKM.setIcon(scaledIcon);
+            btnCapNhat_CapNhatKM.setHorizontalAlignment(SwingConstants.LEFT);
+            btnCapNhat_CapNhatKM.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         pnlForm_CapNhatKM.add(btnCapNhat_CapNhatKM);
 
         // --- Panel Tìm Kiếm ---
@@ -6248,10 +6424,21 @@ public class TrangChu_GUI extends JFrame{
         cboTrangThai_TK.setBounds(1200, 30, 442, 33);
         pnlFilter_TimKiemKM.add(cboTrangThai_TK);
 
-        btnLamMoi_TK = new JButton("Làm Mới Bộ Lọc");
+        btnLamMoi_TK = new JButton("Làm Mới");
         btnLamMoi_TK.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnLamMoi_TK, COLOR_TEXT_MUTED);
         btnLamMoi_TK.setBounds(1482, 80, 160, 40);
+        java.net.URL imgLamMoi_TK= getClass().getResource("/icon-refresh.png");
+        if (imgLamMoi_TK != null) {
+            ImageIcon originalIcon = new ImageIcon(imgLamMoi_TK);
+            Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(img);
+            btnLamMoi_TK.setIcon(scaledIcon);
+            btnLamMoi_TK.setHorizontalAlignment(SwingConstants.LEFT);
+            btnLamMoi_TK.setIconTextGap(10);
+        } else {
+            System.err.println("Lỗi: Không tìm thấy ảnh");
+        }
         pnlFilter_TimKiemKM.add(btnLamMoi_TK);
 
         // --- Bảng Hiển Thị ---
