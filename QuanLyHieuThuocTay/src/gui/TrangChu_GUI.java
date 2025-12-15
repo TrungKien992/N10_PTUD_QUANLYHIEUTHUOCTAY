@@ -427,6 +427,8 @@ public class TrangChu_GUI extends JFrame{
 	public JPopupMenu popup_tshhan_table;
 	public JMenuItem item_tshhan_xemchitiet;
 	public JMenuItem item_tshhan_xemncc;
+	public JButton btn_cnkh_xoa;
+	public JButton btn_cntXoa;
 	
 	
 	
@@ -475,7 +477,8 @@ public class TrangChu_GUI extends JFrame{
         
         ImageIcon icon = new ImageIcon("image/z7068801445103_7be0ebb233e8a4eceb10c3aceb500455.jpg");
         QuanLyHieuThuocTay.setIconImage(Toolkit.getDefaultToolkit().getImage("img/icon_tieude.png"));
-        QuanLyHieuThuocTay.setExtendedState(JFrame.MAXIMIZED_BOTH);
+//        QuanLyHieuThuocTay.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        QuanLyHieuThuocTay.setSize(1500, 2600);
         QuanLyHieuThuocTay.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         QuanLyHieuThuocTay.setLocationRelativeTo(null);
 
@@ -1484,17 +1487,22 @@ public class TrangChu_GUI extends JFrame{
         txt_cnkh_dc.setBounds(955, 87, 550, 33);
         pnlNorth.add(txt_cnkh_dc);
 
-        btn_cnkh_Khoiphuc = new JButton("Khôi phục");
+        btn_cnkh_Khoiphuc = new JButton("Khôi phục form");
         btn_cnkh_Khoiphuc.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cnkh_Khoiphuc, COLOR_TEXT_MUTED);
-        btn_cnkh_Khoiphuc.setBounds(1225, 179, 130, 40);
+        btn_cnkh_Khoiphuc.setBounds(955, 179, 155, 40);
         pnlNorth.add(btn_cnkh_Khoiphuc);
 
         btn_cnkh_CapNhat = new JButton("Cập nhật");
         btn_cnkh_CapNhat.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cnkh_CapNhat, COLOR_SUCCESS_GREEN);
-        btn_cnkh_CapNhat.setBounds(1375, 179, 130, 40);
+        btn_cnkh_CapNhat.setBounds(1150, 179, 130, 40);
         pnlNorth.add(btn_cnkh_CapNhat);
+        
+        btn_cnkh_xoa = new JButton("Xoá");
+        btn_cnkh_xoa.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn_cnkh_xoa.setBounds(1318, 179, 130, 40);
+        pnlNorth.add(btn_cnkh_xoa);
 
         JPanel pnlTimkiem = new JPanel();
         pnlTimkiem.setBackground(COLOR_CARD_BACKGROUND);
@@ -1749,17 +1757,22 @@ public class TrangChu_GUI extends JFrame{
                 textArea_cnttp.setLineWrap(true);
                 textArea_cnttp.setFont(FONT_TEXT_FIELD);
 
-        btn_cntKhoiphuc = new JButton("Khôi Phục");
+        btn_cntKhoiphuc = new JButton("Khôi Phục form");
         btn_cntKhoiphuc.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cntKhoiphuc, COLOR_TEXT_MUTED);
-        btn_cntKhoiphuc.setBounds(1260, 350, 132, 40); // Điều chỉnh vị trí
+        btn_cntKhoiphuc.setBounds(1069, 351, 150, 40); // Điều chỉnh vị trí
         pn_Capnhatthuoc_nhaptt.add(btn_cntKhoiphuc);
 
         btn_cntCapnhat  = new JButton("Cập Nhật");
         btn_cntCapnhat.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_cntCapnhat, COLOR_SUCCESS_GREEN);
-        btn_cntCapnhat.setBounds(1412, 350, 132, 40); // Điều chỉnh vị trí
+        btn_cntCapnhat.setBounds(1248, 351, 132, 40); // Điều chỉnh vị trí
         pn_Capnhatthuoc_nhaptt.add(btn_cntCapnhat);
+        
+         btn_cntXoa = new JButton("Xoá");
+        btn_cntXoa.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn_cntXoa.setBounds(1411, 351, 132, 40);
+        pn_Capnhatthuoc_nhaptt.add(btn_cntXoa);
 
         // Panel chứa bộ lọc tìm kiếm thuốc cần cập nhật
         JPanel pn_Capnhatthuoc_tk = new JPanel();
@@ -2130,13 +2143,13 @@ public class TrangChu_GUI extends JFrame{
         btn_ttf_lammoi = new JButton("Làm Mới");
         btn_ttf_lammoi.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_ttf_lammoi, COLOR_TEXT_MUTED);
-        btn_ttf_lammoi.setBounds(1286, 73, 139, 38);
+        btn_ttf_lammoi.setBounds(1094, 74, 139, 38);
         pn_ttf.add(btn_ttf_lammoi);
 
         btn_ttf_them = new JButton("Thêm");
         btn_ttf_them.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_ttf_them, COLOR_PRIMARY_BLUE);
-        btn_ttf_them.setBounds(1473, 74, 139, 38);
+        btn_ttf_them.setBounds(1254, 74, 139, 38);
         pn_ttf.add(btn_ttf_them);
 
         // ScrollPane chứa bảng hiển thị thuốc từ file

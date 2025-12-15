@@ -15,12 +15,15 @@ import entity.NhaCungCap;
 import entity.Thuoc;
 
 public class thuoc_DAO {
+	
+	// Hằng số cho trạng thái
+    private static final String TRANG_THAI_KINH_DOANH = "Đang kinh doanh";
+    private static final String TRANG_THAI_NGUNG_KINH_DOANH = "Ngừng kinh doanh";
     
     /**
-     * Lấy thông tin thuốc theo mã
+     * Lấy thông tin thuốc theo mã (Lấy cả trạng thái)
      */
     public Thuoc getThuocTheoMa(String maThuoc) {
-        // Giả định bảng Thuoc đã có cột maNhaCungCap
         String sql = "SELECT t.*, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
                      "JOIN KeThuoc k ON t.maKe = k.maKe " +
                      "JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
@@ -41,10 +44,11 @@ public class thuoc_DAO {
     }
 
     /**
-     * Lấy danh sách tất cả các loại thuốc
+     * Lấy danh sách tất cả các loại thuốc (Tất cả trạng thái)
      */
     public List<Thuoc> getAllThuoc() {
         List<Thuoc> dsThuoc = new ArrayList<>();
+        // Cập nhật câu SQL để lấy trangThai
         String sql = "SELECT t.*, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
                      "JOIN KeThuoc k ON t.maKe = k.maKe " +
                      "JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap";
@@ -62,13 +66,22 @@ public class thuoc_DAO {
     }
     
     /**
-     * Thêm một loại thuốc mới
+     * Thêm một loại thuốc mới (Cập nhật: Thêm cột trangThai)
+     */
+    /**
+     * Thêm một loại thuốc mới (Cập nhật: Thêm cột trangThai và logic COMMIT)
      */
     public boolean themThuoc(Thuoc t) {
-        String sql = "INSERT INTO Thuoc(maThuoc, tenThuoc, giaNhap, giaBan, soLuong, hanSuDung, thanhPhan, donViTinh, anh, maKe, maNhaCungCap) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        String sql = "INSERT INTO Thuoc(maThuoc, tenThuoc, giaNhap, giaBan, soLuong, hanSuDung, thanhPhan, donViTinh, anh, maKe, maNhaCungCap, trangThai) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 12 tham số
+        
+        Connection con = null;
+        PreparedStatement ps = null;
+        boolean result = false;
+
+        try {
+            con = ConnectDB.getConnection();
+            ps = con.prepareStatement(sql);
             
             ps.setString(1, t.getMaThuoc());
             ps.setString(2, t.getTenThuoc());
@@ -81,20 +94,48 @@ public class thuoc_DAO {
             ps.setString(9, t.getAnh());
             ps.setString(10, t.getKeThuoc().getMaKe());
             ps.setString(11, t.getNhaCungCap().getMaNhaCungCap());
+            ps.setString(12, t.getTrangThai() != null ? t.getTrangThai() : TRANG_THAI_KINH_DOANH);
             
-            return ps.executeUpdate() > 0;
+            int rowsAffected = ps.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                result = true;
+                
+                // === BỔ SUNG LOGIC COMMIT ===
+                // Nếu kết nối không ở chế độ Auto-Commit, phải tự gọi commit()
+                if (!con.getAutoCommit()) {
+                    con.commit();
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+            
+            // Nếu có lỗi SQL và không ở chế độ Auto-Commit, phải gọi rollback
+            try {
+                if (con != null && !con.getAutoCommit()) {
+                    con.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        } finally {
+            // Đóng tài nguyên
+            try {
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        return false;
+        return result;
     }
 
     /**
-     * Cập nhật thông tin thuốc
+     * Cập nhật thông tin thuốc (Cập nhật: Thêm cột trangThai)
      */
     public boolean updateThuoc(Thuoc t) {
         String sql = "UPDATE Thuoc SET tenThuoc = ?, giaNhap = ?, giaBan = ?, soLuong = ?, hanSuDung = ?, " +
-                     "thanhPhan = ?, donViTinh = ?, anh = ?, maKe = ?, maNhaCungCap = ? WHERE maThuoc = ?";
+                     "thanhPhan = ?, donViTinh = ?, anh = ?, maKe = ?, maNhaCungCap = ?, trangThai = ? WHERE maThuoc = ?"; // Thêm trangThai
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             
@@ -108,7 +149,8 @@ public class thuoc_DAO {
             ps.setString(8, t.getAnh());
             ps.setString(9, t.getKeThuoc().getMaKe());
             ps.setString(10, t.getNhaCungCap().getMaNhaCungCap());
-            ps.setString(11, t.getMaThuoc());
+            ps.setString(11, t.getTrangThai()); // CẬP NHẬT TRẠNG THÁI
+            ps.setString(12, t.getMaThuoc());
             
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -131,15 +173,16 @@ public class thuoc_DAO {
         t.setThanhPhan(rs.getString("thanhPhan"));
         t.setDonViTinh(rs.getString("donViTinh"));
         t.setAnh(rs.getString("anh"));
+        t.setTrangThai(rs.getString("trangThai")); // THÊM TRẠNG THÁI
         
         KeThuoc ke = new KeThuoc();
         ke.setMaKe(rs.getString("maKe"));
-        ke.setLoaiKe(rs.getString("loaiKe")); // Lấy từ join
+        ke.setLoaiKe(rs.getString("loaiKe"));
         t.setKeThuoc(ke);
         
         NhaCungCap ncc = new NhaCungCap();
         ncc.setMaNhaCungCap(rs.getString("maNhaCungCap"));
-        ncc.setTenNhaCungCap(rs.getString("tenNhaCungCap")); // Lấy từ join
+        ncc.setTenNhaCungCap(rs.getString("tenNhaCungCap"));
         t.setNhaCungCap(ncc);
         
         return t;
@@ -256,53 +299,41 @@ public class thuoc_DAO {
      * - Sắp xếp theo số lượng (thấp -> cao)
      * - Sắp xếp theo HSD (gần -> xa)
      */
+ // === HÀM TÌM KIẾM CHO BÁN HÀNG (Sửa để chỉ tìm thuốc active) ===
     public List<Thuoc> searchThuoc(String maThuoc, String tenThuoc, String loaiKe) {
         List<Thuoc> dsThuoc = new ArrayList<>();
         
-        // 1. Dùng SELECT và JOINs giống hàm search cũ
-        //    vì mapRowToThuoc cần "loaiKe" và "tenNhaCungCap"
         StringBuilder sqlBuilder = new StringBuilder(
-            "SELECT t.*, k.viTri, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
+            "SELECT t.*, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
             "LEFT JOIN KeThuoc k ON t.maKe = k.maKe " +
             "LEFT JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
             "WHERE t.maThuoc LIKE ? " +
-            "AND t.tenThuoc LIKE ? "
+            "AND t.tenThuoc LIKE ? " +
+            "AND t.trangThai = N'" + TRANG_THAI_KINH_DOANH + "'" // CHỈ TÌM THUỐC ĐANG KINH DOANH
         );
         
         List<Object> params = new ArrayList<>();
         params.add("%" + maThuoc + "%");
         params.add("%" + tenThuoc + "%");
 
-        // 2. Lọc theo loại kệ
-        // Logic này lấy từ HoaDon_Controller
         if (loaiKe != null && !loaiKe.isEmpty() && !"Tất cả".equals(loaiKe)) {
-            sqlBuilder.append(" AND k.loaiKe = ? "); // Lọc chính xác tên kệ
+            sqlBuilder.append(" AND k.loaiKe = ? ");
             params.add(loaiKe);
         }
         
-        // === BẮT ĐẦU LOGIC MỚI CHO BÁN HÀNG ===
-        
-        // 3. Lọc thuốc hết hạn (sử dụng GETDATE() của SQL Server)
         sqlBuilder.append(" AND t.hanSuDung > GETDATE() ");
-        
-        // 4. Lọc thuốc hết hàng
         sqlBuilder.append(" AND t.soLuong > 0 ");
 
-        // 5. Sắp xếp theo yêu cầu
         sqlBuilder.append(" ORDER BY t.soLuong ASC, t.hanSuDung ASC ");
         
-        // === KẾT THÚC LOGIC MỚI ===
-
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sqlBuilder.toString())) {
 
-            // Set các tham số
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
 
             try (ResultSet rs = ps.executeQuery()) {
-                // 6. Dùng mapRowToThuoc helper đã có
                 while (rs.next()) {
                     dsThuoc.add(mapRowToThuoc(rs));
                 }
@@ -314,35 +345,29 @@ public class thuoc_DAO {
     }
     
     /**
-     * HÀM NÀY DÙNG CHO TAB QUẢN LÝ THUỐC
-     * - Hiển thị tất cả thuốc (kể cả hết hạn, hết hàng)
-     * - Chỉ lọc theo mã, tên, kệ
-     * - (Dựa trên logic cũ tại)
+     * HÀM NÀY DÙNG CHO TAB QUẢN LÝ THUỐC (Sửa để chỉ tìm thuốc active)
      */
     public List<Thuoc> searchThuocForQuanLy(String maThuoc, String tenThuoc, String loaiKe) {
         List<Thuoc> dsThuoc = new ArrayList<>();
         
-        // Dùng SELECT và JOINs như cũ
         StringBuilder sqlBuilder = new StringBuilder(
-            "SELECT t.*, k.viTri, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
+            "SELECT t.*, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
             "LEFT JOIN KeThuoc k ON t.maKe = k.maKe " +
             "LEFT JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
             "WHERE t.maThuoc LIKE ? " +
-            "AND t.tenThuoc LIKE ? "
+            "AND t.tenThuoc LIKE ? " +
+            "AND t.trangThai = N'" + TRANG_THAI_KINH_DOANH + "'" // CHỈ TÌM THUỐC ĐANG KINH DOANH
         );
         
         List<Object> params = new ArrayList<>();
         params.add("%" + maThuoc + "%");
         params.add("%" + tenThuoc + "%");
 
-        // Lọc kệ (nếu có chọn "Tất cả" thì không lọc)
         if (loaiKe != null && !loaiKe.isEmpty() && !"Tất cả".equals(loaiKe)) {
             sqlBuilder.append(" AND k.loaiKe = ? ");
             params.add(loaiKe);
         }
         
-        // Không có lọc HSD, số lượng
-        // Sắp xếp theo tên cho dễ nhìn
         sqlBuilder.append(" ORDER BY t.tenThuoc ASC ");
 
         try (Connection con = ConnectDB.getConnection();
@@ -354,7 +379,6 @@ public class thuoc_DAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    // Dùng helper đã có
                     dsThuoc.add(mapRowToThuoc(rs));
                 }
             }
@@ -362,6 +386,47 @@ public class thuoc_DAO {
             e.printStackTrace();
         }
         return dsThuoc;
+    }
+    
+    /**
+     * BỔ SUNG: Lấy danh sách thuốc đang hoạt động (trangThai = 'Đang kinh doanh')
+     */
+    public List<Thuoc> getAllActiveThuoc() {
+        List<Thuoc> dsThuoc = new ArrayList<>();
+        // Lấy thuốc đang kinh doanh
+        String sql = "SELECT t.*, k.loaiKe, ncc.tenNhaCungCap FROM Thuoc t " +
+                     "JOIN KeThuoc k ON t.maKe = k.maKe " +
+                     "JOIN NhaCungCap ncc ON t.maNhaCungCap = ncc.maNhaCungCap " +
+                     "WHERE t.trangThai = N'" + TRANG_THAI_KINH_DOANH + "'";
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                dsThuoc.add(mapRowToThuoc(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dsThuoc;
+    }
+    
+    /**
+     * Cập nhật trạng thái của thuốc (thực hiện chức năng xóa mềm)
+     */
+    public boolean updateTrangThai(String maThuoc, String newTrangThai) {
+        String sql = "UPDATE Thuoc SET trangThai = ? WHERE maThuoc = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, newTrangThai);
+            ps.setString(2, maThuoc);
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }

@@ -6,15 +6,16 @@ import java.util.Objects;
 public class Thuoc {
     private String maThuoc;
     private String tenThuoc;
-    private double giaNhap; // Bổ sung
+    private double giaNhap; 
     private double giaBan;
-    private int soLuong; // Bổ sung
+    private int soLuong; 
     private LocalDate hanSuDung;
     private String thanhPhan;
     private String donViTinh;
-    private String anh; // Bổ sung
+    private String anh; 
     private KeThuoc keThuoc; 
-    private NhaCungCap nhaCungCap; // Bổ sung
+    private NhaCungCap nhaCungCap; 
+    private String trangThai; // THÊM TRƯỜNG TRẠNG THÁI
 
     public Thuoc() {
     }
@@ -23,8 +24,9 @@ public class Thuoc {
     	this.maThuoc = maThuoc;
     }
 
+    // Cập nhật Constructor full tham số (Thêm trangThai)
     public Thuoc(String maThuoc, String tenThuoc, double giaNhap, double giaBan, int soLuong, LocalDate hanSuDung,
-            String thanhPhan, String donViTinh, String anh, KeThuoc keThuoc, NhaCungCap nhaCungCap) {
+            String thanhPhan, String donViTinh, String anh, KeThuoc keThuoc, NhaCungCap nhaCungCap, String trangThai) {
         this.maThuoc = maThuoc;
         this.tenThuoc = tenThuoc;
         this.giaNhap = giaNhap;
@@ -36,9 +38,30 @@ public class Thuoc {
         this.anh = anh;
         this.keThuoc = keThuoc;
         this.nhaCungCap = nhaCungCap;
+        this.trangThai = trangThai; // Gán trạng thái
+    }
+    
+    // Constructor cũ (dùng khi thêm, mặc định trạng thái là "Đang kinh doanh")
+     public Thuoc(String maThuoc, String tenThuoc, double giaNhap, double giaBan, int soLuong, LocalDate hanSuDung,
+            String thanhPhan, String donViTinh, String anh, KeThuoc keThuoc, NhaCungCap nhaCungCap) {
+        this(maThuoc, tenThuoc, giaNhap, giaBan, soLuong, hanSuDung, thanhPhan, donViTinh, anh, keThuoc, nhaCungCap, "Đang kinh doanh");
     }
 
-    // Getters and Setters đầy đủ
+    /**
+	 * @return the trangThai
+	 */
+	public String getTrangThai() {
+		return trangThai;
+	}
+
+	/**
+	 * @param trangThai the trangThai to set
+	 */
+	public void setTrangThai(String trangThai) {
+		this.trangThai = trangThai;
+	}
+
+	// Getters and Setters đầy đủ
     public String getMaThuoc() {
         return maThuoc;
     }

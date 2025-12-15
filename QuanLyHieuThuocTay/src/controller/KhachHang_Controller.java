@@ -4,13 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import dao.khachHang_DAO;
 import entity.KhachHang;
@@ -36,7 +33,8 @@ public class KhachHang_Controller implements ActionListener {
         trangChuGUI.btnLammoi_CNKH.addActionListener(this);
         trangChuGUI.btn_kh_Lammoi.addActionListener(this);
         trangChuGUI.btn_cnkh_CapNhat.addActionListener(this);
-        trangChuGUI.btn_cnkh_Khoiphuc.addActionListener(this); // thêm nút khôi phục
+        trangChuGUI.btn_cnkh_Khoiphuc.addActionListener(this); 
+        trangChuGUI.btn_cnkh_xoa.addActionListener(this); // GÁN SỰ KIỆN CHO NÚT XÓA
 
         
         // gán sự kiện click cho bảng
@@ -49,46 +47,47 @@ public class KhachHang_Controller implements ActionListener {
         });
         
         
-        // sự kiện tìm kiếm theo mã hoặc tên khách hàng
+        // sự kiện tìm kiếm theo mã hoặc tên khách hàng (Tab Cập nhật)
         trangChuGUI.txtMKH_TK.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                timKiemKhachHang();
+                timKiemKhachHang(); // Đã sửa đổi để chỉ tìm KH Active
             }
         });
 
         trangChuGUI.txtTenKH_TK.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                timKiemKhachHang();
+                timKiemKhachHang(); // Đã sửa đổi để chỉ tìm KH Active
             }
         });
 
+        // sự kiện tìm kiếm (Tab Tìm kiếm)
         trangChuGUI.txt_kh_MaKH.addKeyListener(new KeyAdapter() {
         	@Override
             public void keyReleased(KeyEvent e) {
-                timKiemKhachHang_TK();
+                timKiemKhachHang_TK(); // Đã sửa đổi để chỉ tìm KH Active
             }
 		});
         
         trangChuGUI.txt_kh_TenKH.addKeyListener(new KeyAdapter() {
         	@Override
             public void keyReleased(KeyEvent e) {
-        		timKiemKhachHang_TK();
+        		timKiemKhachHang_TK(); // Đã sửa đổi để chỉ tìm KH Active
             }
 		});
         
         trangChuGUI.txt_kh_SDT.addKeyListener(new KeyAdapter() {
         	@Override
             public void keyReleased(KeyEvent e) {
-        		timKiemKhachHang_TK();
+        		timKiemKhachHang_TK(); // Đã sửa đổi để chỉ tìm KH Active
             }
 		});
         
         trangChuGUI.txt_kh_dc.addKeyListener(new KeyAdapter() {
         	@Override
             public void keyReleased(KeyEvent e) {
-        		timKiemKhachHang_TK();
+        		timKiemKhachHang_TK(); // Đã sửa đổi để chỉ tìm KH Active
             }
 		});
     }
@@ -96,9 +95,11 @@ public class KhachHang_Controller implements ActionListener {
 
     /**
      * hiển thị danh sách khách hàng lên JTable
+     * CHỈ HIỂN THỊ KHÁCH HÀNG CÓ TRẠNG THÁI TRUE (ACTIVE)
      */
     public void hienThiDanhSachKhachHang() {
-        List<KhachHang> dsKH = khDAO.getAllKhachHang();
+        // LẤY DANH SÁCH KHÁCH HÀNG ĐANG ACTIVE (trangThai = 1)
+        List<KhachHang> dsKH = khDAO.getAllActiveKhachHang(); 
         DefaultTableModel modelCN = (DefaultTableModel) trangChuGUI.table_CapNhatKH.getModel();
         DefaultTableModel modelTK = (DefaultTableModel) trangChuGUI.table_tkkh.getModel();
 
@@ -126,13 +127,11 @@ public class KhachHang_Controller implements ActionListener {
 
             trangChuGUI.txt_cnkh_MaKh.setText(maKH);
             trangChuGUI.txt_cnkh_tenkh.setText(tenKH);
-            trangChuGUI.txt_cnkh_dc.setText(diaChi); // Gán địa chỉ vào ô địa chỉ
-            trangChuGUI.txt_cnkh_SDt.setText(sdt);   // Gán SĐT vào ô SĐT
+            trangChuGUI.txt_cnkh_dc.setText(diaChi); 
+            trangChuGUI.txt_cnkh_SDt.setText(sdt);   
 
-            // Lưu thông tin gốc (sửa thứ tự cho đúng constructor hoặc setter)
-            khachHangGoc = new KhachHang(maKH, tenKH, sdt, diaChi); // Giả sử constructor là (ma, ten, sdt, diaChi)
-            // Hoặc nếu constructor là (ma, ten, diaChi, sdt):
-            // khachHangGoc = new KhachHang(maKH, tenKH, diaChi, sdt);
+            // Lấy KhachHang đầy đủ từ DAO để lấy đúng trạng thái (mặc định là true nếu chưa cập nhật)
+            khachHangGoc = khDAO.getKhachHangTheoMa(maKH); 
         }
     }
 
@@ -143,6 +142,12 @@ public class KhachHang_Controller implements ActionListener {
     	// xóa nội dung tìm kiếm
         trangChuGUI.txtMKH_TK.setText("");
         trangChuGUI.txtTenKH_TK.setText("");
+        // Xóa nội dung nhập/cập nhật
+        trangChuGUI.txt_cnkh_MaKh.setText("");
+        trangChuGUI.txt_cnkh_tenkh.setText("");
+        trangChuGUI.txt_cnkh_dc.setText("");
+        trangChuGUI.txt_cnkh_SDt.setText("");
+        
         hienThiDanhSachKhachHang();
     }
     
@@ -160,27 +165,26 @@ public class KhachHang_Controller implements ActionListener {
      */
     private void khoiPhucThongTin() {
         if (khachHangGoc == null) {
-            JOptionPane.showMessageDialog(null, "Không có thông tin để khôi phục!");
+            JOptionPane.showMessageDialog(null, "Không có thông tin để khôi phục! Vui lòng chọn khách hàng.");
             return;
         }
 
         trangChuGUI.txt_cnkh_MaKh.setText(khachHangGoc.getMaKH());
         trangChuGUI.txt_cnkh_tenkh.setText(khachHangGoc.getTenKH());
-        // *** SỬA Ở ĐÂY: Gán đúng giá trị vào đúng ô text field ***
         trangChuGUI.txt_cnkh_dc.setText(khachHangGoc.getDiaChi());
         trangChuGUI.txt_cnkh_SDt.setText(khachHangGoc.getSoDienThoai());
     }
 
     /**
-     * kiểm tra hợp lệ dữ liệu khách hàng
+     * kiểm tra hợp lệ dữ liệu khách hàng (Giữ nguyên)
      */
     private boolean validData(String tenKH, String sdt, String diaChi) {
+        // ... (Giữ nguyên các validation) ...
         if (tenKH.isEmpty() || sdt.isEmpty() || diaChi.isEmpty()) {
             JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin khách hàng!");
             return false;
         }
 
-        // họ tên tiếng Việt, có dấu cách, không ký tự số hoặc đặc biệt
         String regexTen = "^[A-ZÀ-ỴĐ][a-zà-ỹđ]+( [A-ZÀ-ỴĐ][a-zà-ỹđ]+)*$";
         if (!tenKH.matches(regexTen)) {
             JOptionPane.showMessageDialog(null,
@@ -188,13 +192,11 @@ public class KhachHang_Controller implements ActionListener {
             return false;
         }
 
-        // số điện thoại gồm 10 chữ số
         if (!sdt.matches("^\\d{10}$")) {
             JOptionPane.showMessageDialog(null, "Số điện thoại phải gồm đúng 10 chữ số!");
             return false;
         }
 
-        // địa chỉ không có ký tự đặc biệt
         String regexDiaChi = "^[a-zA-Z0-9À-Ỵà-ỹĐđ\\s,\\.]+$";
         if (!diaChi.matches(regexDiaChi)) {
             JOptionPane.showMessageDialog(null, "Địa chỉ không được chứa ký tự đặc biệt!");
@@ -205,57 +207,48 @@ public class KhachHang_Controller implements ActionListener {
     }
     
     /**
-     * Tìm kiếm khách hàng theo mã hoặc tên và chọn các dòng tương ứng
+     * Tìm kiếm khách hàng theo mã hoặc tên (Tab Cập nhật)
+     * SỬ DỤNG HÀM searchKhachHang CỦA DAO ĐỂ CHỈ LẤY KH ACTIVE
      */
     private void timKiemKhachHang() {
-        String maTK = trangChuGUI.txtMKH_TK.getText().trim().toLowerCase();
-        String tenTK = trangChuGUI.txtTenKH_TK.getText().trim().toLowerCase();
-
-        List<KhachHang> dsKH = khDAO.getAllKhachHang();
+        String maTK = trangChuGUI.txtMKH_TK.getText().trim();
+        String tenTK = trangChuGUI.txtTenKH_TK.getText().trim();
+        
+        // Sử dụng hàm search đã được lọc trangThai=1 trong DAO
+        List<KhachHang> dsKH = khDAO.searchKhachHang(maTK, tenTK, "", ""); 
+        
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_CapNhatKH.getModel();
-        model.setRowCount(0); // xóa toàn bộ bảng
+        model.setRowCount(0);
 
         for (KhachHang kh : dsKH) {
-            String ma = kh.getMaKH().toLowerCase();
-            String ten = kh.getTenKH().toLowerCase();
-
-            // nếu trùng khớp điều kiện
-            if ((maTK.isEmpty() || ma.contains(maTK)) &&
-                (tenTK.isEmpty() || ten.contains(tenTK))) {
-            	Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
-                model.addRow(row);
-            }
+            Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
+            model.addRow(row);
         }
 
-        // nếu cả hai ô trống, hiển thị lại toàn bộ danh sách
         if (maTK.isEmpty() && tenTK.isEmpty()) {
             hienThiDanhSachKhachHang();
         }
     }
     
+    /**
+     * Tìm kiếm khách hàng (Tab Tìm kiếm)
+     * SỬ DỤNG HÀM searchKhachHang CỦA DAO ĐỂ CHỈ LẤY KH ACTIVE
+     */
     private void timKiemKhachHang_TK() {
-        String maTK = trangChuGUI.txt_kh_MaKH.getText().trim().toLowerCase();
-        String tenTK = trangChuGUI.txt_kh_TenKH.getText().trim().toLowerCase();
-        String sdtTK = trangChuGUI.txt_kh_SDT.getText().trim().toLowerCase();
-        String dcTK = trangChuGUI.txt_kh_dc.getText().trim().toLowerCase();
-
-        List<KhachHang> dsKH = khDAO.getAllKhachHang();
+        String maTK = trangChuGUI.txt_kh_MaKH.getText().trim();
+        String tenTK = trangChuGUI.txt_kh_TenKH.getText().trim();
+        String sdtTK = trangChuGUI.txt_kh_SDT.getText().trim();
+        String dcTK = trangChuGUI.txt_kh_dc.getText().trim();
+        
+        // Sử dụng hàm search đã được lọc trangThai=1 trong DAO
+        List<KhachHang> dsKH = khDAO.searchKhachHang(maTK, tenTK, sdtTK, dcTK); 
+        
         DefaultTableModel model = (DefaultTableModel) trangChuGUI.table_tkkh.getModel();
-        model.setRowCount(0); // xóa toàn bộ bảng
+        model.setRowCount(0);
 
         for (KhachHang kh : dsKH) {
-            String ma = kh.getMaKH().toLowerCase();
-            String ten = kh.getTenKH().toLowerCase();
-            String sdt = kh.getSoDienThoai().toLowerCase();
-            String diachi = kh.getDiaChi().toLowerCase();
-
-            if ((maTK.isEmpty() || ma.contains(maTK)) &&
-                (tenTK.isEmpty() || ten.contains(tenTK)) &&
-                (sdtTK.isEmpty() || sdt.contains(sdtTK)) &&
-                (dcTK.isEmpty() || diachi.contains(dcTK))) {
-            	Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
-                model.addRow(row);
-            }
+            Object[] row = { kh.getMaKH(), kh.getTenKH(), kh.getDiaChi(), kh.getSoDienThoai() };
+            model.addRow(row);
         }
 
         if (maTK.isEmpty() && tenTK.isEmpty() && sdtTK.isEmpty() && dcTK.isEmpty()) {
@@ -266,17 +259,16 @@ public class KhachHang_Controller implements ActionListener {
 
 
     /**
-     * cập nhật thông tin khách hàng
+     * cập nhật thông tin khách hàng (Cần đảm bảo truyền trangThai)
      */
     private void capNhatKhachHang() {
         String maKH = trangChuGUI.txt_cnkh_MaKh.getText().trim();
         String tenKH = trangChuGUI.txt_cnkh_tenkh.getText().trim();
-        // *** SỬA Ở ĐÂY: Lấy đúng giá trị từ đúng ô text field ***
         String diaChi = trangChuGUI.txt_cnkh_dc.getText().trim();
         String sdt = trangChuGUI.txt_cnkh_SDt.getText().trim();
 
 
-        if (!validData(tenKH, sdt, diaChi)) { // Đảm bảo validData kiểm tra đúng thứ tự
+        if (!validData(tenKH, sdt, diaChi)) {
             return;
         }
 
@@ -286,8 +278,8 @@ public class KhachHang_Controller implements ActionListener {
             return;
         }
 
+        // Lấy thông tin gốc từ bảng (Nếu cần so sánh thì phải lấy từ bảng)
         String oldTen = trangChuGUI.table_CapNhatKH.getValueAt(row, 1).toString();
-        // *** SỬA Ở ĐÂY: Lấy đúng giá trị cũ từ đúng cột ***
         String oldDiaChi = trangChuGUI.table_CapNhatKH.getValueAt(row, 2).toString();
         String oldSDT = trangChuGUI.table_CapNhatKH.getValueAt(row, 3).toString();
 
@@ -302,20 +294,55 @@ public class KhachHang_Controller implements ActionListener {
                 "Xác nhận cập nhật", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // *** SỬA Ở ĐÂY: Đảm bảo thứ tự đúng với constructor hoặc dùng setter ***
-            KhachHang kh = new KhachHang(maKH, tenKH, sdt, diaChi); // Giả sử constructor (ma, ten, sdt, diaChi)
-            // Hoặc nếu constructor là (ma, ten, diaChi, sdt):
-            // KhachHang kh = new KhachHang(maKH, tenKH, diaChi, sdt);
+            // Lấy trạng thái hiện tại từ khachHangGoc (đã được gán khi click chuột)
+            boolean currentTrangThai = true; 
+            if (khachHangGoc != null && khachHangGoc.getMaKH().equals(maKH)) {
+                 currentTrangThai = khachHangGoc.isTrangThai();
+            }
+            
+            // SỬ DỤNG CONSTRUCTOR ĐẦY ĐỦ THAM SỐ (ma, ten, sdt, diaChi, trangThai)
+            KhachHang kh = new KhachHang(maKH, tenKH, sdt, diaChi, currentTrangThai); 
             boolean result = khDAO.updateKhachHang(kh);
 
             if (result) {
                 JOptionPane.showMessageDialog(null, "Cập nhật thành công!");
                 hienThiDanhSachKhachHang();
+                lamMoiForm();
             } else {
                 JOptionPane.showMessageDialog(null, "Cập nhật thất bại! Vui lòng thử lại.");
             }
         }
     }
+    
+    /**
+     * Xóa khách hàng (Set trangThai = 0)
+     */
+    private void xoaKhachHang() {
+        int row = trangChuGUI.table_CapNhatKH.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn khách hàng cần xóa trong bảng!");
+            return;
+        }
+
+        String maKH = trangChuGUI.txt_cnkh_MaKh.getText().trim();
+
+        int confirm = JOptionPane.showConfirmDialog(null,
+                "Bạn có chắc chắn muốn XÓA (Ngừng giao dịch) khách hàng có mã " + maKH + " này không?",
+                "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean result = khDAO.deleteKhachHang(maKH); // Gọi hàm delete mới
+
+            if (result) {
+                JOptionPane.showMessageDialog(null, "Xóa thành công!");
+                hienThiDanhSachKhachHang(); // Cập nhật lại bảng (Khách hàng vừa xóa sẽ biến mất)
+                lamMoiForm(); // Xóa nội dung trên form
+            } else {
+                JOptionPane.showMessageDialog(null, "Xóa thất bại! Vui lòng thử lại.");
+            }
+        }
+    }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -327,6 +354,8 @@ public class KhachHang_Controller implements ActionListener {
                 capNhatKhachHang();
         } else if (o.equals(trangChuGUI.btn_cnkh_Khoiphuc)) {
                 khoiPhucThongTin();
+        } else if (o.equals(trangChuGUI.btn_cnkh_xoa)) { // XỬ LÝ SỰ KIỆN NÚT XÓA
+        	    xoaKhachHang();
         } else if(o.equals(trangChuGUI.btn_kh_Lammoi)) {
         	lammoitimkiemkhachhang();
         }

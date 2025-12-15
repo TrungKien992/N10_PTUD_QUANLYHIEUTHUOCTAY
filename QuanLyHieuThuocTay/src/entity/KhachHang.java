@@ -7,6 +7,7 @@ public class KhachHang {
     private String tenKH;
     private String diaChi;
     private String soDienThoai;
+    private boolean trangThai; // THÊM TRƯỜNG TRẠNG THÁI (true=1, false=0)
 
     public KhachHang() {
     }
@@ -15,12 +16,18 @@ public class KhachHang {
         this.maKH = maKH;
     }
 
-    public KhachHang(String maKH, String tenKH, String soDienThoai,String diaChi) {
+    // Cập nhật Constructor full tham số
+    public KhachHang(String maKH, String tenKH, String soDienThoai, String diaChi, boolean trangThai) {
         this.maKH = maKH;
         this.tenKH = tenKH;
         this.soDienThoai = soDienThoai;
         this.diaChi = diaChi;
-        
+        this.trangThai = trangThai; // THÊM TRẠNG THÁI
+    }
+    
+    // Constructor cũ (giữ lại và set mặc định trạng thái là true)
+    public KhachHang(String maKH, String tenKH, String soDienThoai,String diaChi) {
+        this(maKH, tenKH, soDienThoai, diaChi, true); 
     }
 
     // Getters and Setters
@@ -55,6 +62,15 @@ public class KhachHang {
     public void setSoDienThoai(String soDienThoai) {
         this.soDienThoai = soDienThoai;
     }
+    
+    // THÊM GETTER VÀ SETTER CHO TRẠNG THÁI
+    public boolean isTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(boolean trangThai) {
+        this.trangThai = trangThai;
+    }
 
     @Override
     public int hashCode() {
@@ -71,6 +87,7 @@ public class KhachHang {
 
     @Override
     public String toString() {
+        // Có thể thêm trạng thái vào toString nếu cần
         return tenKH;
     }
 }
