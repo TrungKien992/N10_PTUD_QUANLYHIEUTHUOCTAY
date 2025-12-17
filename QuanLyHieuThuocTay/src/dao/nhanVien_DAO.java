@@ -99,6 +99,8 @@ public class nhanVien_DAO {
         return false;
     }
 
+ // Hàm hỗ trợ lấy ChucVu bằng tên (Dùng riêng cho việc đọc dữ liệu từ JTable)
+
     // === Xóa nhân viên ===
  // === XÓA MỀM NHÂN VIÊN (CHỈ CHUYỂN TRẠNG THÁI) ===
     public boolean deleteNhanVien(String maNV) {

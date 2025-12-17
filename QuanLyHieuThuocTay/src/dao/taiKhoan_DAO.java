@@ -52,7 +52,7 @@ public class taiKhoan_DAO {
                 if (maxMaTK != null && maxMaTK.matches("^TK\\d+$")) { // Kiểm tra định dạng TK...
                     try {
                         int num = Integer.parseInt(maxMaTK.substring(2)) + 1;
-                        newMaTK = String.format("TK%03d", num); // Format thành TKxxx (hỗ trợ đến 999)
+                        newMaTK = String.format("TK%02d", num); // Format thành TKxx
                     } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
                         System.err.println("Lỗi khi parse mã TK lớn nhất: " + maxMaTK + ". Sử dụng mã mặc định: " + newMaTK);
                         // Có thể log lỗi chi tiết hơn nếu cần
@@ -65,6 +65,25 @@ public class taiKhoan_DAO {
         return newMaTK;
     }
 
+ // Hàm sinh mã tài khoản mới nhất để tránh trùng khi lưu
+    public String generateNewMaTK_ForAutoCreate() {
+        String newMaTK = "TK001";
+        String sql = "SELECT MAX(maTK) FROM TaiKhoan";
+        try (Connection con = ConnectDB.getConnection();
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String maxMaTK = rs.getString(1);
+                if (maxMaTK != null && maxMaTK.startsWith("TK")) {
+                    int num = Integer.parseInt(maxMaTK.substring(2)) + 1;
+                    newMaTK = String.format("TK%03d", num);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return newMaTK;
+    }
     // Hàm THÊM tài khoản mới (dùng cho Admin, có thể set quyền)
     public boolean insertTaiKhoan(TaiKhoan tk) {
         // Kiểm tra tên TK đã tồn tại chưa
