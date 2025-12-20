@@ -585,15 +585,25 @@ public class HoaDon_Controller {
         hd.setTienThua(tienThua);
 
         ArrayList<ChiTietHoaDon> dsCTHD = new ArrayList<>(); 
+
         for (int i = 0; i < model.getRowCount(); i++) {
+            // 1. Lấy thông tin từ bảng
             String maThuoc = model.getValueAt(i, 0).toString();
             int soLuong = (int) model.getValueAt(i, 2);
+            
+            // 2. Lấy đơn giá (Cột 3). Chuyển đổi an toàn sang double
+            double donGia = Double.parseDouble(model.getValueAt(i, 3).toString());
+
+            // 3. Tìm đối tượng thuốc
             Thuoc thuoc = thuocDAO.getThuocTheoMa(maThuoc);
             if (thuoc == null) {
-                 JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Lỗi: Không tìm thấy thông tin thuốc " + maThuoc, "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                 JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Lỗi: Không tìm thấy thuốc " + maThuoc, "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
                  return; 
             }
-            ChiTietHoaDon ct = new ChiTietHoaDon(hd, thuoc, soLuong);
+            
+            // 4. Tạo chi tiết hóa đơn với ĐẦY ĐỦ 4 THAM SỐ (đã bao gồm đơn giá)
+            ChiTietHoaDon ct = new ChiTietHoaDon(hd, thuoc, soLuong, donGia);
+            
             dsCTHD.add(ct);
         }
 

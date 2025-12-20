@@ -53,6 +53,7 @@ import controller.KhachHang_Controller;
 import controller.KhuyenMai_Controller;
 import controller.NhaCungCap_Controller;
 import controller.PhieuDatHang_Controller;
+import controller.QuanLyTaiKhoanController;
 import controller.ThemKH_Controller;
 import controller.ThuocSapHetHan_Controller;
 import controller.ThuocSapHetHang_Controller;
@@ -140,7 +141,7 @@ public class TrangChu_GUI extends JFrame{
     public JTextField txtTenNV_TNV;
     public JTextField txtSDT_TNV;
     public JTable table_TNV;
-    private List<NhanVien> tempListNV = new ArrayList<>();
+    public List<NhanVien> tempListNV = new ArrayList<>();
     public JTextField txt_TenNV_TKNV;
     public JTextField txtSDT_TKNV;
     public JTable table_TKNV;
@@ -229,8 +230,8 @@ public class TrangChu_GUI extends JFrame{
 	public JCheckBox chk_XuatHoaDon;
 	public JPanel pn_bieudo_thang; 
 	public JPanel pn_bieudo_nam;  
-	private HoaDon_Controller hoaDonController;
-    private DoiTra_Controller doiTra_Controller;
+	public HoaDon_Controller hoaDonController;
+	public DoiTra_Controller doiTra_Controller;
     public ThuocBanChay_Controller thuocBanChayController;
 	
     
@@ -349,8 +350,8 @@ public class TrangChu_GUI extends JFrame{
 	public JButton btn_xemphieudatthuoc;
 	public JButton btn_Xemchitiet;
 	public JComboBox<String> cb_Nhapsosdtkh;
-	private JLabel lbl_Ngayreal;
-	private JLabel lbl_Gioreal;
+	public JLabel lbl_Ngayreal;
+	public JLabel lbl_Gioreal;
 	public JLabel lbl_tktn_hientshd;
 	public JLabel lbl_tktnam_hientongsotien;
 	public JLabel lbl_tktn_hiennam;
@@ -394,7 +395,7 @@ public class TrangChu_GUI extends JFrame{
 	public JTextField txt_doithuoc_tkhd_mahd;
 	public JTextField txt_doithuoc_tkhd_tenKh;
 	public JTextField txt_doithuoc_lydo;
-	private DoiTra_Controller doiTraController;
+	public DoiTra_Controller doiTraController;
 	public JTable table_doithuoc_hd;
 	public JTable table_doithuoc_thuoc;
 	public JDateChooser dateNgayLapHD_TKHD_doithuoc;
@@ -478,7 +479,8 @@ public class TrangChu_GUI extends JFrame{
         ImageIcon icon = new ImageIcon("image/z7068801445103_7be0ebb233e8a4eceb10c3aceb500455.jpg");
         QuanLyHieuThuocTay.setIconImage(Toolkit.getDefaultToolkit().getImage("img/icon_tieude.png"));
 //        QuanLyHieuThuocTay.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        QuanLyHieuThuocTay.setSize(1500, 2600);
+//        QuanLyHieuThuocTay.setResizable(false);
+        QuanLyHieuThuocTay.setSize(1958, 1100);
         QuanLyHieuThuocTay.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         QuanLyHieuThuocTay.setLocationRelativeTo(null);
 
@@ -3446,15 +3448,16 @@ public class TrangChu_GUI extends JFrame{
                 styleButton(btnThem_TNV, COLOR_SUCCESS_GREEN);
                 btnThem_TNV.setBounds(1556, 650, 133, 40);
         		// --- Code ActionListener và Icon của Đại Ca ---
+             // --- Code ActionListener nút THÊM ---
                 btnThem_TNV.addActionListener(e -> {
                     try {
-                        // 1. Lấy thông tin cơ bản từ các trường nhập liệu
+                        // 1. Lấy thông tin cơ bản
                         String ten = txtTenNV_TNV.getText().trim();
                         String sdt = txtSDT_TNV.getText().trim();
                         String gioiTinh = cboGIoiTinh_TNV.getSelectedItem().toString();
                         java.util.Date ngaySinh = dateNgaySinh_TNV.getDate();
 
-                        // 2. Lấy chức vụ (Vẫn cần chọn chức vụ thủ công)
+                        // 2. Lấy chức vụ
                         ChucVu selectedCV = (ChucVu) cboChucVu_TNV.getSelectedItem();
                         String maChucVu = selectedCV != null ? selectedCV.getMaChucVu() : "";
                         String tenChucVu = selectedCV != null ? selectedCV.getTenChucVu() : "";
@@ -3464,7 +3467,7 @@ public class TrangChu_GUI extends JFrame{
                         String huyen = txtHuyen_TNV.getText().trim();
                         String anh = duongDanAnh_TNV;
 
-                        // 4. KIỂM TRA VALIDATION (Bỏ kiểm tra tài khoản)
+                        // 4. KIỂM TRA VALIDATION
                         if (ten.isEmpty() || sdt.isEmpty() || ngaySinh == null ||
                             maChucVu.isEmpty() || anh == null) {
                             JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin và chọn ảnh!");
@@ -3475,9 +3478,9 @@ public class TrangChu_GUI extends JFrame{
                         nhanVien_DAO nvDAO = new nhanVien_DAO();
                         String maNhanVienMoi = nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV);
 
-                        // 6. QUY ĐỊNH TÊN TÀI KHOẢN TỰ ĐỘNG (Trùng với mã NV)
-                        String tenTaiKhoanTuDong = maNhanVienMoi; 
-
+                        // 6. QUY ĐỊNH TÊN TÀI KHOẢN TỰ ĐỘNG
+                        String tenTaiKhoanTuDong = maNhanVienMoi;
+                        
                         // 7. CHUẨN BỊ DỮ LIỆU HIỂN THỊ
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                         String ngaySinhStr = sdf.format(ngaySinh);
@@ -3487,12 +3490,12 @@ public class TrangChu_GUI extends JFrame{
                             return;
                         }
 
-                        // 8. TẠO ĐỐI TƯỢNG NHÂN VIÊN (Tạm thời để TaiKhoan là null hoặc tạo rỗng)
+                        // 8. TẠO ĐỐI TƯỢNG NHÂN VIÊN
                         java.time.LocalDate ngaySinhLocal = ngaySinh.toInstant()
                                 .atZone(java.time.ZoneId.systemDefault())
                                 .toLocalDate();
-
-                        // Chúng ta tạo NV với TaiKhoan rỗng, thông tin TK sẽ được xử lý khi bấm nút "Lưu"
+                        
+                        // --- SỬA LỖI TẠI ĐÂY: Thêm tham số "Còn làm việc" vào Constructor ---
                         NhanVien nv = new NhanVien(
                             maNhanVienMoi,
                             ten,
@@ -3502,7 +3505,8 @@ public class TrangChu_GUI extends JFrame{
                             sdt,
                             tinh + ", " + huyen,
                             anh,
-                            null // Chưa có đối tượng TaiKhoan chính thức trong DB
+                            "Còn làm việc", // <--- Đã thêm trạng thái
+                            null // Tài khoản tạm thời null
                         );
 
                         if (tempListNV == null) {
@@ -3521,23 +3525,21 @@ public class TrangChu_GUI extends JFrame{
                             sdt, 
                             tinh + ", " + huyen, 
                             anh, 
-                            tenTaiKhoanTuDong // Cột tài khoản bây giờ hiển thị mã NV
+                            tenTaiKhoanTuDong,
+                            "Còn làm việc" // Thêm hiển thị trạng thái lên bảng
                         });
-                        
-                        // 10. RESET FORM VÀ CHUẨN BỊ CHO NGƯỜI TIẾP THEO
+
+                        // 10. RESET FORM
                         btnLamMoi_TNV.doClick();
-                        
                         String nextMa = nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV);
                         txtMaNV_TNV.setText(nextMa);
                         
-                        JOptionPane.showMessageDialog(null, "Đã thêm nhân viên " + ten + " vào danh sách chờ với tài khoản mặc định: " + tenTaiKhoanTuDong);
-
+                        JOptionPane.showMessageDialog(null, "Đã thêm nhân viên " + ten + " vào danh sách chờ.");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         JOptionPane.showMessageDialog(null, "Lỗi: " + ex.getMessage());
                     }
                 });
-
 
 
                 java.net.URL imgThem_TNV = getClass().getResource("/icon-add.png");
@@ -3577,10 +3579,10 @@ public class TrangChu_GUI extends JFrame{
                 applyCommonTableStyling(table_TNV); // Áp dụng style chung
                 table_TNV.setModel(new DefaultTableModel(
                 	new Object[][] {
-                		{null, null, null, null, null, null, null, null, null},
+                		{null, null, null, null, null, null, null, null, null, null},
                 	},
                 	new String[] {
-                		"M\u00E3 nh\u00E2n vi\u00EAn", "T\u00EAn nh\u00E2n vi\u00EAn", "Ng\u00E0y sinh", "Gi\u1EDBi t\u00EDnh", "Ch\u1EE9c v\u1EE5", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9", "\u1EA2nh nh\u00E2n vi\u00EAn", "T\u00E0i kho\u1EA3n"
+                		"M\u00E3 nh\u00E2n vi\u00EAn", "T\u00EAn nh\u00E2n vi\u00EAn", "Ng\u00E0y sinh", "Gi\u1EDBi t\u00EDnh", "Ch\u1EE9c v\u1EE5", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9", "\u1EA2nh nh\u00E2n vi\u00EAn", "T\u00E0i kho\u1EA3n", "Tr\u1EA1ng Th\u00E1i"
                 	}
                 ));
                 scrollPane_TNV.setViewportView(table_TNV);
@@ -3601,6 +3603,7 @@ public class TrangChu_GUI extends JFrame{
                 } else {
                     System.err.println("Lỗi: Không tìm thấy ảnh tại /icon-add.png");
                 }
+             // --- Code ActionListener nút LƯU ---
                 btnLuu_TNV.addActionListener(e -> {
                     try {
                         DefaultTableModel model = (DefaultTableModel) table_TNV.getModel();
@@ -3609,7 +3612,6 @@ public class TrangChu_GUI extends JFrame{
                         taiKhoan_DAO tkDAO = new taiKhoan_DAO();
 
                         int rowCount = model.getRowCount();
-
                         if (rowCount == 0) {
                             JOptionPane.showMessageDialog(null, "Không có nhân viên nào để lưu!", "Thông báo", JOptionPane.WARNING_MESSAGE);
                             return;
@@ -3622,8 +3624,6 @@ public class TrangChu_GUI extends JFrame{
                             if (maNVObj == null) continue;
 
                             String maNV = maNVObj.toString().trim();
-
-                            // Nếu nhân viên đã tồn tại trong DB => bỏ qua để tránh trùng khóa chính
                             NhanVien nvTonTai = nvDAO.getNhanVienTheoMa(maNV);
                             if (nvTonTai != null) continue;
 
@@ -3635,9 +3635,9 @@ public class TrangChu_GUI extends JFrame{
                                 String sdt = model.getValueAt(i, 5).toString().trim();
                                 String diaChi = model.getValueAt(i, 6).toString().trim();
                                 String anh = model.getValueAt(i, 7).toString().trim();
-                                String tenTKHienThi = model.getValueAt(i, 8).toString().trim(); // Đây là mã NV từ bảng tạm
+                                String tenTKHienThi = model.getValueAt(i, 8).toString().trim();
 
-                                // Kiểm tra dữ liệu bắt buộc (Trừ tài khoản vì sẽ tự tạo)
+                                // Validation sơ bộ
                                 if (tenNV.isEmpty() || ngaySinhStr.isEmpty() || gioiTinh.isEmpty() ||
                                     tenChucVu.isEmpty() || sdt.isEmpty() || diaChi.isEmpty() || anh.isEmpty()) {
                                     continue;
@@ -3651,50 +3651,42 @@ public class TrangChu_GUI extends JFrame{
                                     ngaySinh = LocalDate.parse(ngaySinhStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                                 }
 
-                                // 2. Lấy chức vụ từ DB (Dùng hàm mới bạn chuẩn bị viết hoặc hàm cũ)
-                                ChucVu cv = cvDAO.getChucVuByTen(tenChucVu); 
-                                if (cv == null) {
-                                    System.err.println("Lỗi: Chức vụ " + tenChucVu + " không tồn tại.");
-                                    continue;
-                                }
+                                // 2. Lấy chức vụ từ DB
+                                ChucVu cv = cvDAO.getChucVuByTen(tenChucVu);
+                                if (cv == null) continue;
 
-                                // 3. TỰ ĐỘNG TẠO TÀI KHOẢN MỚI TRONG DB
-                                // Sinh mã TK mới nhất từ Database (TK001, TK002...)
-                                String maTKMoi = tkDAO.generateNewMaTK(); 
-                                // Tạo đối tượng TaiKhoan (Mật khẩu mặc định 123, Quyền mặc định dựa trên Chức vụ hoặc 'Nhân viên')
-                                TaiKhoan tkMoi = new TaiKhoan(maTKMoi, tenTKHienThi, "123", "Nhân viên");
+                                // 3. TỰ ĐỘNG TẠO TÀI KHOẢN
+                                String maTKMoi = tkDAO.generateNewMaTK();
+                                TaiKhoan tkMoi = new TaiKhoan(maTKMoi, tenTKHienThi, "123", "Nhân viên Bán Hàng", true);
 
-                                // 4. LƯU THEO THỨ TỰ: TÀI KHOẢN TRƯỚC -> NHÂN VIÊN SAU
-                                if (tkDAO.addTaiKhoan(tkMoi)) { // Hàm addTaiKhoan thực hiện INSERT INTO TaiKhoan
+                                // 4. LƯU TÀI KHOẢN -> LƯU NHÂN VIÊN
+                                if (tkDAO.addTaiKhoan(tkMoi)) {
+                                    // --- SỬA LỖI TẠI ĐÂY: Thêm "Còn làm việc" vào Constructor ---
+                                    NhanVien nv = new NhanVien(
+                                        maNV, tenNV, ngaySinh, gioiTinh, cv, sdt, diaChi, anh, 
+                                        "Còn làm việc", // Trạng thái
+                                        tkMoi           // Tài khoản
+                                    );
                                     
-                                    NhanVien nv = new NhanVien(maNV, tenNV, ngaySinh, gioiTinh, cv, sdt, diaChi, anh, tkMoi);
-                                    nv.setTrangThai("Còn làm việc");
-
                                     if (nvDAO.insertNhanVien(nv)) {
                                         soLuongLuuThanhCong++;
                                     } else {
-                                        // Nếu lưu NV lỗi thì nên cân nhắc xóa TK vừa tạo hoặc báo lỗi
-                                        System.err.println("Lưu nhân viên " + maNV + " thất bại.");
-                                        tkDAO.deleteTaiKhoan(maTKMoi); 
-                                        System.err.println("Đã hủy tài khoản " + maTKMoi + " do lỗi lưu nhân viên.");
+                                        tkDAO.deleteTaiKhoan(maTKMoi); // Rollback nếu lỗi
+                                        System.err.println("Lỗi lưu NV: " + maNV);
                                     }
                                 }
-
                             } catch (Exception ex1) {
                                 ex1.printStackTrace();
                             }
                         }
 
-                        // Sau khi lưu xong tất cả
                         if (tempListNV != null) tempListNV.clear();
-                        loadDataToTableNV(table_TNV); // Load lại dữ liệu sạch từ Database
+                        loadDataToTableNV(table_TNV);
 
                         JOptionPane.showMessageDialog(null,
-                            "Đã lưu thành công " + soLuongLuuThanhCong + " nhân viên mới.\n" +
-                            "Hệ thống đã tự động cấp tài khoản đăng nhập (mật khẩu mặc định: 123).",
+                            "Đã lưu thành công " + soLuongLuuThanhCong + " nhân viên mới.\nMật khẩu mặc định: 123",
                             "Thành công", JOptionPane.INFORMATION_MESSAGE);
-
-                        // Cập nhật lại mã NV mới nhất lên ô nhập liệu
+                            
                         txtMaNV_TNV.setText(nvDAO.generateNewMaNV_FromTable(table_TNV, tempListNV));
 
                     } catch (Exception ex) {
@@ -3959,15 +3951,28 @@ public class TrangChu_GUI extends JFrame{
                 applyCommonTableStyling(table_TKNV); // Áp dụng style chung
                 table_TKNV.setModel(new DefaultTableModel(
                 	new Object[][] {
-                		{null, null, null, null, null, null, null, null, null},
+                		{null, null, null, null, null, null, null, null, null, null},
                 	},
                 	new String[] {
-                		"M\u00E3 nh\u00E2n vi\u00EAn", "T\u00EAn nh\u00E2n vi\u00EAn", "Ng\u00E0y sinh", "Gi\u1EDBi t\u00EDnh", "Ch\u1EE9c v\u1EE5", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9", "\u1EA2nh nh\u00E2n vi\u00EAn", "T\u00E0i kho\u1EA3n"
+                		"M\u00E3 nh\u00E2n vi\u00EAn", "T\u00EAn nh\u00E2n vi\u00EAn", "Ng\u00E0y sinh", "Gi\u1EDBi t\u00EDnh", "Ch\u1EE9c v\u1EE5", "S\u1ED1 \u0111i\u1EC7n tho\u1EA1i", "\u0110\u1ECBa ch\u1EC9", "\u1EA2nh nh\u00E2n vi\u00EAn", "T\u00E0i kho\u1EA3n", "Tr\u1EA1ng Th\u00E1i"
                 	}
                 ));
                 scrollPane_TKNV.setViewportView(table_TKNV);
                 loadDataToTableNV(table_TKNV); // load toàn bộ ban đầu
-                addLocSuKien(txt_TenNV_TKNV, txtSDT_TKNV, txtTinh_TKNV, txtHuyen_TKNV, cboGioiTinh_TKNV, cboVaiTro_TKNV, table_TKNV);
+
+                JLabel lblTrangthai_TK = new JLabel("Trạng Thái :");
+                lblTrangthai_TK.setForeground(new Color(33, 37, 41));
+                lblTrangthai_TK.setFont(new Font("Segoe UI", Font.BOLD, 15));
+                lblTrangthai_TK.setBounds(559, 90, 107, 30);
+                pnlFilters_TKNV.add(lblTrangthai_TK);
+                
+                JComboBox<String> cboTrangthai_TKNV = new JComboBox<String>();
+                cboTrangthai_TKNV.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+                cboTrangthai_TKNV.setBounds(676, 90, 216, 33);
+                cboTrangthai_TKNV.addItem("Tất cả");
+                cboTrangthai_TKNV.addItem("Còn làm việc");
+                cboTrangthai_TKNV.addItem("Nghỉ việc");
+                pnlFilters_TKNV.add(cboTrangthai_TKNV);
                 panel_TimKiemNV.addComponentListener(new ComponentAdapter() {
     	            @Override
     	            public void componentShown(ComponentEvent e) {
@@ -3975,6 +3980,11 @@ public class TrangChu_GUI extends JFrame{
 
     	            }
     	        });
+                
+             // --- SỬA DÒNG NÀY --- 
+                // Thêm tham số cboTrangthai_TKNV vào vị trí gần cuối
+                addLocSuKien(txt_TenNV_TKNV, txtSDT_TKNV, txtTinh_TKNV, txtHuyen_TKNV, 
+                             cboGioiTinh_TKNV, cboVaiTro_TKNV, cboTrangthai_TKNV, table_TKNV);
 
         // ===== KẾT THÚC KHỐI CODE TÌM KIẾM NHÂN VIÊN =====
         
@@ -4248,50 +4258,25 @@ public class TrangChu_GUI extends JFrame{
 	        }
 	        panelTK_CNNV.add(cboChucVu_TK_CNNV);
 
-	        // --- BỐC DỮ LIỆU VÀ LỌC: đặt AFTER khi cả txt và cbo đã được tạo ---
-	        // Lưu ý: đảm bảo table_CNNV đã được khởi tạo ở trên. Nếu table_CNNV được khai báo cục bộ phía dưới,
-	        // bạn phải di chuyển đoạn này xuống sau khi table_CNNV được tạo.
+	     // --- SỬA LẠI ĐOẠN DOCUMENT LISTENER & ACTION LISTENER ---
 
-	        // DocumentListener cho ô nhập tên (lọc realtime)
-	        txtTenNV_TK_CNNV.getDocument().addDocumentListener(new DocumentListener() {
-	            private void locDuLieu() {
-	                String keyword = txtTenNV_TK_CNNV.getText().trim().toLowerCase();
+	     // 1. Sự kiện khi gõ phím vào ô Tên (lọc realtime)
+	     txtTenNV_TK_CNNV.getDocument().addDocumentListener(new DocumentListener() {
+	         @Override public void insertUpdate(DocumentEvent e) { 
+	             locNhanVienCapNhat(txtTenNV_TK_CNNV, cboChucVu_TK_CNNV, table_CNNV); 
+	         }
+	         @Override public void removeUpdate(DocumentEvent e) { 
+	             locNhanVienCapNhat(txtTenNV_TK_CNNV, cboChucVu_TK_CNNV, table_CNNV); 
+	         }
+	         @Override public void changedUpdate(DocumentEvent e) { 
+	             locNhanVienCapNhat(txtTenNV_TK_CNNV, cboChucVu_TK_CNNV, table_CNNV); 
+	         }
+	     });
 
-	                // Lấy giá trị chức vụ hiện tại (ChucVu hoặc null)
-	                ChucVu selectedCV = (ChucVu) cboChucVu_TK_CNNV.getSelectedItem();
-	                String tenChucVu = (selectedCV != null) ? selectedCV.getTenChucVu().toLowerCase() : "";
-
-	                nhanVien_DAO dao = new nhanVien_DAO();
-	                List<NhanVien> dsNV = dao.getAllNhanVien();
-
-	                DefaultTableModel model = (DefaultTableModel) table_CNNV.getModel();
-	                model.setRowCount(0);
-
-	                for (NhanVien nv : dsNV) {
-	                    boolean matchTen = keyword.isEmpty() || (nv.getTenNV() != null && nv.getTenNV().toLowerCase().contains(keyword));
-	                    boolean matchCV = tenChucVu.isEmpty() || (nv.getChucVu() != null && nv.getChucVu().getTenChucVu() != null
-	                            && nv.getChucVu().getTenChucVu().toLowerCase().equalsIgnoreCase(tenChucVu));
-
-	                    if (matchTen && matchCV) {
-	                        model.addRow(new Object[]{
-	                            nv.getMaNV(),
-	                            nv.getTenNV(),
-	                            nv.getNgaySinh(),
-	                            nv.getGioiTinh(),
-	                            nv.getChucVu() != null ? nv.getChucVu().getTenChucVu() : "",
-	                            nv.getSoDienThoai(),
-	                            nv.getDiaChi(),
-	                            nv.getAnh(),
-	                            nv.getTaiKhoan() != null ? nv.getTaiKhoan().getTenTK() : ""
-	                        });
-	                    }
-	                }
-	            }
-
-	            @Override public void insertUpdate(DocumentEvent e) { locDuLieu(); }
-	            @Override public void removeUpdate(DocumentEvent e) { locDuLieu(); }
-	            @Override public void changedUpdate(DocumentEvent e) { locDuLieu(); }
-	        });
+	     // 2. Sự kiện khi chọn Chức vụ
+	     cboChucVu_TK_CNNV.addActionListener(e -> {
+	         locNhanVienCapNhat(txtTenNV_TK_CNNV, cboChucVu_TK_CNNV, table_CNNV);
+	     });
 
 	        // ActionListener cho combobox chức vụ (khi chọn sẽ lọc)
 	        cboChucVu_TK_CNNV.addActionListener(e -> {
@@ -4672,9 +4657,10 @@ public class TrangChu_GUI extends JFrame{
 	        };
 	        applyCommonTableStyling(table_CNNV);
 	        table_CNNV.setModel(new DefaultTableModel(
-	        	new Object[][] {},
+	        	new Object[][] {
+	        	},
 	        	new String[] {
-	        		"Mã NV", "Tên NV", "Ngày sinh", "Giới tính", "Chức vụ", "SĐT", "Địa chỉ", "Ảnh", "Tài khoản"
+	        		"M\u00E3 NV", "T\u00EAn NV", "Ng\u00E0y sinh", "Gi\u1EDBi t\u00EDnh", "Ch\u1EE9c v\u1EE5", "S\u0110T", "\u0110\u1ECBa ch\u1EC9", "\u1EA2nh", "T\u00E0i kho\u1EA3n", "Tr\u1EA1ng Th\u00E1i"
 	        	}
 	        ));
 	        // Code MouseListener giữ nguyên
@@ -4701,7 +4687,7 @@ public class TrangChu_GUI extends JFrame{
 	                    if (ngaySinhObj != null) {
 	                         try {
 	                            if (ngaySinhObj instanceof String) {
-	                                 java.util.Date ngaySinh = new java.text.SimpleDateFormat("yyyy-MM-dd").parse((String)ngaySinhObj);
+	                                 java.util.Date ngaySinh = new java.text.SimpleDateFormat("dd/MM/yyyy").parse((String)ngaySinhObj);
 	                                dateNgaySinh_CNNV.setDate(ngaySinh);
 	                            } else if (ngaySinhObj instanceof LocalDate) {
 	                                java.util.Date ngaySinh = java.util.Date.from(((LocalDate)ngaySinhObj).atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -5725,228 +5711,70 @@ public class TrangChu_GUI extends JFrame{
 
         // === HẾT KHỐI CODE panel_QLPhieuDatHangNCC ===
         
-        
-        
-        
-        
-     // ===== PANEL QUẢN LÝ TÀI KHOẢN (ADMIN) =====
+     // ===== PANEL QUẢN LÝ TÀI KHOẢN (ADMIN) - REFACTORED =====
         JPanel pn_QuanLyTaiKhoan = new JPanel();
-        maincontent.add(pn_QuanLyTaiKhoan, "quanLyTaiKhoan"); // Add panel vào CardLayout
-        pn_QuanLyTaiKhoan.setLayout(new BorderLayout(10, 10)); // Dùng BorderLayout
-        pn_QuanLyTaiKhoan.setBackground(COLOR_BACKGROUND_PRIMARY); // Nền chính
-        pn_QuanLyTaiKhoan.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding
+        maincontent.add(pn_QuanLyTaiKhoan, "quanLyTaiKhoan"); 
+        pn_QuanLyTaiKhoan.setLayout(new BorderLayout(10, 10)); 
+        pn_QuanLyTaiKhoan.setBackground(COLOR_BACKGROUND_PRIMARY); 
+        pn_QuanLyTaiKhoan.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); 
 
+        // 1. Tiêu đề
         JLabel lblTitleQLTK = new JLabel("QUẢN LÝ TÀI KHOẢN HỆ THỐNG");
-        lblTitleQLTK.setFont(FONT_TITLE_MAIN); // Font tiêu đề
-        lblTitleQLTK.setForeground(COLOR_PRIMARY_BLUE); // Màu tiêu đề
-        lblTitleQLTK.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa
-        pn_QuanLyTaiKhoan.add(lblTitleQLTK, BorderLayout.NORTH); // Thêm tiêu đề vào vị trí NORTH
+        lblTitleQLTK.setFont(FONT_TITLE_MAIN); 
+        lblTitleQLTK.setForeground(COLOR_PRIMARY_BLUE); 
+        lblTitleQLTK.setHorizontalAlignment(SwingConstants.CENTER); 
+        pn_QuanLyTaiKhoan.add(lblTitleQLTK, BorderLayout.NORTH); 
 
+        // 2. Bảng dữ liệu
         JScrollPane scrollPaneQLTK = new JScrollPane();
-        scrollPaneQLTK.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); // Viền
-        pn_QuanLyTaiKhoan.add(scrollPaneQLTK, BorderLayout.CENTER); // Thêm bảng vào vị trí CENTER
+        scrollPaneQLTK.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_LIGHT)); 
+        pn_QuanLyTaiKhoan.add(scrollPaneQLTK, BorderLayout.CENTER); 
 
-        // Khởi tạo và style bảng tableQLTK (gán vào biến toàn cục)
         tableQLTK = new JTable() {
              @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
                 if (!isRowSelected(row)) {
                     c.setBackground(row % 2 == 0 ? COLOR_CARD_BACKGROUND : COLOR_BACKGROUND_PRIMARY);
-                    c.setForeground(this.getForeground()); // Dùng this
+                    c.setForeground(this.getForeground()); 
                 } else {
                     c.setBackground(COLOR_PRIMARY_BLUE);
-                    // Không set foreground trắng
                 }
                 return c;
             }
         };
-        applyCommonTableStyling(tableQLTK); // Áp dụng style chung
+        applyCommonTableStyling(tableQLTK); 
+        // Cập nhật model có thêm cột Trạng thái
         tableQLTK.setModel(new DefaultTableModel(
-            new Object[][] {}, // Dữ liệu trống ban đầu
-            new String[] {"Mã TK", "Tên Tài Khoản", "Quyền Hạn"} // Các cột hiển thị
+            new Object[][] {}, 
+            new String[] {"Mã TK", "Tên Tài Khoản", "Quyền Hạn", "Trạng Thái"}
         ));
-        scrollPaneQLTK.setViewportView(tableQLTK); // Đặt bảng vào ScrollPane
+        scrollPaneQLTK.setViewportView(tableQLTK); 
 
-        // Panel chức năng (Thêm, Xóa trắng form) đặt ở SOUTH
-        JPanel pnlChucNangQLTK = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5)); // FlowLayout căn trái
-        pnlChucNangQLTK.setOpaque(false); // Trong suốt để lấy nền của pn_QuanLyTaiKhoan
-        pn_QuanLyTaiKhoan.add(pnlChucNangQLTK, BorderLayout.SOUTH); // Thêm panel chức năng vào SOUTH
-
-        JLabel lblMaTK_QL = new JLabel("Mã TK:");
-        lblMaTK_QL.setFont(FONT_LABEL_BOLD);
-        lblMaTK_QL.setForeground(COLOR_TEXT_DARK);
-        pnlChucNangQLTK.add(lblMaTK_QL);
-
-        JTextField txtMaTK_QL = new JTextField(10);
-        txtMaTK_QL.setFont(FONT_TEXT_FIELD);
-        pnlChucNangQLTK.add(txtMaTK_QL);
-
-        JLabel lblTenTK_QL = new JLabel("Tên TK:");
-        lblTenTK_QL.setFont(FONT_LABEL_BOLD);
-        lblTenTK_QL.setForeground(COLOR_TEXT_DARK);
-        pnlChucNangQLTK.add(lblTenTK_QL);
-
-        JTextField txtTenTK_QL = new JTextField(15);
-        txtTenTK_QL.setFont(FONT_TEXT_FIELD);
-        pnlChucNangQLTK.add(txtTenTK_QL);
-
-        JLabel lblMatKhau_QL = new JLabel("Mật Khẩu:");
-        lblMatKhau_QL.setFont(FONT_LABEL_BOLD);
-        lblMatKhau_QL.setForeground(COLOR_TEXT_DARK);
-        pnlChucNangQLTK.add(lblMatKhau_QL);
-
-        JPasswordField txtMatKhau_QL = new JPasswordField(15);
-        txtMatKhau_QL.setFont(FONT_TEXT_FIELD);
-        pnlChucNangQLTK.add(txtMatKhau_QL);
-
-        JLabel lblQuyenHan_QL = new JLabel("Quyền Hạn:");
-        lblQuyenHan_QL.setFont(FONT_LABEL_BOLD);
-        lblQuyenHan_QL.setForeground(COLOR_TEXT_DARK);
-        pnlChucNangQLTK.add(lblQuyenHan_QL);
-
-        JComboBox<String> cboQuyenHan_QL = new JComboBox<>(new String[]{
-            "Quản lý",
-            "Nhân viên bán hàng",
-        });
-        cboQuyenHan_QL.setFont(FONT_TEXT_FIELD);
-        pnlChucNangQLTK.add(cboQuyenHan_QL);
+        // 3. Panel Chức năng (Nút bấm) - Đã bỏ hết TextFields
+        JPanel pnlChucNangQLTK = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); 
+        pnlChucNangQLTK.setOpaque(false); 
+        pn_QuanLyTaiKhoan.add(pnlChucNangQLTK, BorderLayout.SOUTH); 
 
         JButton btnThemTK = new JButton("Thêm Tài Khoản");
         btnThemTK.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btnThemTK, COLOR_SUCCESS_GREEN); // Style nút thêm
+        btnThemTK.setPreferredSize(new Dimension(150, 40));
+        styleButton(btnThemTK, COLOR_SUCCESS_GREEN);
+        
+        JButton btnCapNhatTK = new JButton("Cập Nhật");
+        btnCapNhatTK.setFont(FONT_BUTTON_STANDARD);
+        btnCapNhatTK.setPreferredSize(new Dimension(150, 40));
+        styleButton(btnCapNhatTK, COLOR_PRIMARY_BLUE); // Màu xanh dương cho nút sửa
+ 
         pnlChucNangQLTK.add(btnThemTK);
-        
-        JButton btnXoaTK = new JButton("Xóa Tài Khoản");
-        btnXoaTK.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btnXoaTK, COLOR_DANGER_RED); // Màu đỏ cho nút xóa
-        pnlChucNangQLTK.add(btnXoaTK);
+        pnlChucNangQLTK.add(btnCapNhatTK);
 
-        JButton btnXoaTrangQLTK = new JButton("Xóa Trắng Form");
-        btnXoaTrangQLTK.setFont(FONT_BUTTON_STANDARD);
-        styleButton(btnXoaTrangQLTK, COLOR_TEXT_MUTED); // Style nút xóa trắng
-        pnlChucNangQLTK.add(btnXoaTrangQLTK);
+        QuanLyTaiKhoanController qltkController = new QuanLyTaiKhoanController(pn_QuanLyTaiKhoan, tableQLTK);
 
-        // --- Xử lý sự kiện cho panel QLTK ---
-        taiKhoan_DAO tkDAO_QL = new taiKhoan_DAO(); // Khởi tạo DAO
+        btnThemTK.addActionListener(e -> qltkController.themTaiKhoan(QuanLyHieuThuocTay)); 
+        btnCapNhatTK.addActionListener(e -> qltkController.capNhatTaiKhoan(QuanLyHieuThuocTay));
 
-        // Click vào bảng QLTK -> hiện thông tin lên form
-        tableQLTK.addMouseListener(new MouseAdapter() {
-             @Override
-            public void mouseClicked(MouseEvent e) {
-                int row = tableQLTK.getSelectedRow();
-                if (row != -1) {
-                     txtMaTK_QL.setText(tableQLTK.getValueAt(row, 0).toString());
-                     txtTenTK_QL.setText(tableQLTK.getValueAt(row, 1).toString());
-                     txtMatKhau_QL.setText(""); // Luôn xóa field mật khẩu khi chọn
-                     Object quyenObj = tableQLTK.getValueAt(row, 2);
-                     // Hiển thị quyền hiện tại
-                     cboQuyenHan_QL.setSelectedItem(quyenObj != null && !quyenObj.toString().equals("(Chưa cấp)") ? quyenObj.toString() : "(Chưa cấp)");
-                     txtMaTK_QL.setEditable(false); // Không cho sửa mã khi đã chọn từ bảng
-                     txtTenTK_QL.requestFocus(); // Focus vào Tên TK để dễ sửa
-                }
-            }
-        });
-
-        // Nút Xóa trắng form QLTK
-        btnXoaTrangQLTK.addActionListener(e -> {
-             txtMaTK_QL.setText("");
-             txtTenTK_QL.setText("");
-             txtMatKhau_QL.setText("");
-             cboQuyenHan_QL.setSelectedIndex(cboQuyenHan_QL.getItemCount() - 1); // Chọn "(Chưa cấp)"
-             tableQLTK.clearSelection(); // Bỏ chọn dòng trên bảng
-             txtMaTK_QL.setEditable(true); // Cho phép nhập lại mã khi xóa trắng
-             txtMaTK_QL.requestFocus(); // Focus vào ô mã TK
-        });
-
-     // Nút Thêm Tài Khoản (Admin)
-        btnThemTK.addActionListener(e -> {
-            String maTK = txtMaTK_QL.getText().trim();
-            String tenTK = txtTenTK_QL.getText().trim();
-            String matKhau = new String(txtMatKhau_QL.getPassword());
-            String quyen = cboQuyenHan_QL.getSelectedItem().toString();
-
-            // Kiểm tra nhập liệu cơ bản (giữ nguyên)
-            if (maTK.isEmpty() || tenTK.isEmpty() || matKhau.isEmpty()) {
-                JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Vui lòng nhập đầy đủ Mã TK, Tên TK và Mật khẩu!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
-                txtMaTK_QL.requestFocus();
-                return;
-            }
-            TaiKhoan tkChuaLuu = new TaiKhoan(); // Tạo đối tượng TK nhưng chưa lưu DB
-            tkChuaLuu.setMaTK(maTK);
-            tkChuaLuu.setTenTK(tenTK);
-            tkChuaLuu.setMatKhau(matKhau); // !!! Nhớ mã hóa mật khẩu ở DAO !!!
-            tkChuaLuu.setQuyenHan(quyen.equals("(Chưa cấp)") ? null : quyen);
-
-            // Tạo mã NV mới (có thể giữ nguyên cách tạo cũ hoặc dùng hàm generate từ DAO)
-            nhanVien_DAO nvDAO_moi = new nhanVien_DAO();
-            String maNV_moi = nvDAO_moi.generateNewMaNV_FromTable(tableQLTK, null); // Hoặc dùng generateNewMaNV() đơn giản hơn nếu không cần check table QLTK
-
-            // Mở dialog và truyền thông tin TK chưa lưu + mã NV mới sang
-            ThemNhanVienSauKhiTaoTK_GUI themNVDialog = new ThemNhanVienSauKhiTaoTK_GUI(
-                QuanLyHieuThuocTay, // Frame cha
-                tkChuaLuu,         // Tài khoản CHƯA LƯU
-                maNV_moi           // Mã NV mới
-            );
-            themNVDialog.setVisible(true); // Hiển thị dialog
-
-            // Sau khi dialog đóng, load lại bảng tài khoản để cập nhật (nếu dialog đã thêm thành công)
-            try {
-                DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
-                model.setRowCount(0);
-                List<TaiKhoan> list = tkDAO_QL.getAllTaiKhoan(); // tkDAO_QL đã khởi tạo ở trên
-                for (TaiKhoan tk : list) {
-                    model.addRow(new Object[]{tk.getMaTK(), tk.getTenTK(), tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()});
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace(); // In lỗi nếu load lại bảng thất bại
-            }
-             btnXoaTrangQLTK.doClick(); // Xóa trắng form QLTK sau khi mở dialog
-        });
-        
-     // <<< THÊM ActionListener CHO NÚT XÓA >>>
-        btnXoaTK.addActionListener(e -> {
-            String maTKCanXoa = txtMaTK_QL.getText().trim(); // Lấy mã TK từ ô input
-
-            if (maTKCanXoa.isEmpty()) {
-                JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Vui lòng nhập hoặc chọn Mã Tài Khoản cần xóa.", "Chưa chọn tài khoản", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            // Hỏi xác nhận
-            int confirm = JOptionPane.showConfirmDialog(pn_QuanLyTaiKhoan,
-                "Bạn có chắc muốn xóa tài khoản '" + maTKCanXoa + "'?\nLưu ý: Không thể xóa nếu tài khoản đang được nhân viên sử dụng.",
-                "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-
-            if (confirm == JOptionPane.YES_OPTION) {
-                boolean xoaThanhCong = tkDAO_QL.deleteTaiKhoan(maTKCanXoa); // Gọi hàm delete từ DAO
-
-                if (xoaThanhCong) {
-                    JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Đã xóa tài khoản '" + maTKCanXoa + "'.", "Xóa thành công", JOptionPane.INFORMATION_MESSAGE);
-
-                    // Load lại bảng và xóa trắng form
-                    try {
-                        DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
-                        model.setRowCount(0);
-                        List<TaiKhoan> list = tkDAO_QL.getAllTaiKhoan();
-                        for (TaiKhoan tk : list) {
-                             model.addRow(new Object[]{tk.getMaTK(), tk.getTenTK(), tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()});
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                    btnXoaTrangQLTK.doClick(); // Gọi sự kiện xóa trắng form
-
-                } else {
-                    // DAO đã xử lý việc hiển thị lỗi khóa ngoại rồi,
-                    // nhưng có thể thêm thông báo chung nếu muốn.
-                    JOptionPane.showMessageDialog(pn_QuanLyTaiKhoan, "Xóa tài khoản thất bại.\nCó thể do tài khoản đang được sử dụng hoặc lỗi khác.", "Lỗi Xóa", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-        // <<< KẾT THÚC ActionListener CHO NÚT XÓA >>>
-
-        // ===== KẾT THÚC PANEL QUẢN LÝ TÀI KHOẢN =====
+// ===== KẾT THÚC PANEL QUẢN LÝ TÀI KHOẢN =====
         
      // ===== BẮT ĐẦU KHỐI CODE THÊM KHUYẾN MÃI =====
         JPanel pn_ThemKhuyenMai = new JPanel();
@@ -6067,7 +5895,7 @@ public class TrangChu_GUI extends JFrame{
         btnLamMoi_ThemKM = new JButton("Làm Mới");
         btnLamMoi_ThemKM.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnLamMoi_ThemKM, COLOR_TEXT_MUTED);
-        btnLamMoi_ThemKM.setBounds(1276, 238, 150, 40);
+        btnLamMoi_ThemKM.setBounds(1213, 238, 150, 40);
         java.net.URL imgLamMoi_ThemKM = getClass().getResource("/icon-refresh.png");
         if (imgLamMoi_ThemKM != null) {
             ImageIcon originalIcon = new ImageIcon(imgLamMoi_ThemKM);
@@ -6084,7 +5912,7 @@ public class TrangChu_GUI extends JFrame{
         btnThem_ThemKM = new JButton("Thêm Khuyến Mãi");
         btnThem_ThemKM.setFont(FONT_BUTTON_STANDARD);
         styleButton(btnThem_ThemKM, COLOR_SUCCESS_GREEN);
-        btnThem_ThemKM.setBounds(1446, 238, 170, 40);
+        btnThem_ThemKM.setBounds(1419, 238, 197, 40);
         java.net.URL imgThem_ThemKM = getClass().getResource("/icon-add.png");
         if (imgThem_ThemKM != null) {
             ImageIcon originalIcon = new ImageIcon(imgThem_ThemKM);
@@ -7247,32 +7075,38 @@ public class TrangChu_GUI extends JFrame{
             btnTaikhoan = new JButton("Tài Khoản (Design)");
         } else {
             btnTaikhoan = createSubmenuButton("Tài Khoản");
+         // --- SỬA LẠI SỰ KIỆN NÚT TÀI KHOẢN (FIX LỖI NULL POINTER) ---
             btnTaikhoan.addActionListener(e -> {
                 if (currentUser != null && "Quản lý".equalsIgnoreCase(currentUser.getQuyenHan())) {
                     try {
+                        // 1. Lấy model của bảng
                         DefaultTableModel model = (DefaultTableModel) tableQLTK.getModel();
-                        model.setRowCount(0);
+                        model.setRowCount(0); // Xóa dữ liệu cũ
+
+                        // 2. Gọi DAO để lấy danh sách mới nhất
                         taiKhoan_DAO dao = new taiKhoan_DAO();
-                        List<TaiKhoan> list = dao.getAllTaiKhoan();
-                        if (list.isEmpty()) {
-                             System.out.println("DAO: Không có tài khoản nào.");
-                        }
-                        for (TaiKhoan tk : list) {
+                        java.util.List<entity.TaiKhoan> list = dao.getAllTaiKhoan();
+
+                        // 3. Đổ dữ liệu vào bảng (Đảm bảo đủ 4 cột)
+                        for (entity.TaiKhoan tk : list) {
+                             String trangThaiText = tk.isTrangThai() ? "Hoạt động" : "Ngừng hoạt động";
+                             
                              model.addRow(new Object[]{
                                 tk.getMaTK(),
                                 tk.getTenTK(),
-                                tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan()
+                                tk.getQuyenHan() == null ? "(Chưa cấp)" : tk.getQuyenHan(),
+                                trangThaiText // <--- Cột thứ 4 quan trọng
                             });
                         }
-                         System.out.println("Đã load " + model.getRowCount() + " tài khoản vào bảng.");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         JOptionPane.showMessageDialog(TrangChu_GUI.this.QuanLyHieuThuocTay,
-                         "Lỗi khi tải dữ liệu tài khoản:\n" + ex.getMessage(), "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
+                         "Lỗi khi tải dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
-                    // SỬA LỖI: Dùng TrangChu_GUI.this.maincontent
-                   CardLayout cl = (CardLayout) TrangChu_GUI.this.maincontent.getLayout();
-                   cl.show(TrangChu_GUI.this.maincontent, "quanLyTaiKhoan");
+
+                    // 4. Chuyển màn hình sang tab Tài khoản
+                    CardLayout cl = (CardLayout) TrangChu_GUI.this.maincontent.getLayout();
+                    cl.show(TrangChu_GUI.this.maincontent, "quanLyTaiKhoan");
 
                 } else {
                     JOptionPane.showMessageDialog(TrangChu_GUI.this.QuanLyHieuThuocTay,
@@ -7752,17 +7586,17 @@ public class TrangChu_GUI extends JFrame{
     }
     
     private void loadDataToTableNV(JTable table) {
-        // Lấy model của bảng được truyền vào
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setRowCount(0); // Xóa sạch dữ liệu cũ
+        model.setRowCount(0); 
 
-        // Lấy danh sách nhân viên từ DAO
         nhanVien_DAO dao = new nhanVien_DAO();
         List<NhanVien> dsNV = dao.getAllNhanVien();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        // Chỉ load những nhân viên còn làm việc
         for (NhanVien nv : dsNV) {
+            // Kiểm tra null cho trạng thái để tránh lỗi
+            String trangThai = nv.getTrangThai() != null ? nv.getTrangThai() : "Còn làm việc";
+            
             model.addRow(new Object[]{
                 nv.getMaNV(),
                 nv.getTenNV(),
@@ -7772,13 +7606,15 @@ public class TrangChu_GUI extends JFrame{
                 nv.getSoDienThoai(),
                 nv.getDiaChi(),
                 nv.getAnh(),
-                nv.getTaiKhoan().getTenTK()
+                nv.getTaiKhoan().getTenTK(),
+                trangThai // <--- Đã thêm cột trạng thái vào đây
             });
         }
         
-        // Tương tự, sửa cho tempListNV
+        // Load danh sách tạm (khi vừa bấm Thêm nhưng chưa Lưu)
         if (tempListNV != null && !tempListNV.isEmpty()) {
             for (NhanVien nv : tempListNV) {
+                String trangThai = nv.getTrangThai() != null ? nv.getTrangThai() : "Còn làm việc";
                 model.addRow(new Object[]{
                     nv.getMaNV(),
                     nv.getTenNV(),
@@ -7788,7 +7624,8 @@ public class TrangChu_GUI extends JFrame{
                     nv.getSoDienThoai(),
                     nv.getDiaChi(),
                     nv.getAnh(),
-                    nv.getTaiKhoan().getTenTK()
+                    nv.getTaiKhoan() != null ? nv.getTaiKhoan().getTenTK() : "",
+                    trangThai
                 });
             }
         }
@@ -7797,71 +7634,87 @@ public class TrangChu_GUI extends JFrame{
     
     private void locNhanVien(JTextField txtTen, JTextField txtSDT, JTextField txtTinh,
             JTextField txtHuyen, JComboBox<String> cboGioiTinh,
-            JComboBox<ChucVu> cboChucVu, JTable table) {
+            JComboBox<ChucVu> cboChucVu, JComboBox<String> cboTrangThai, JTable table) { // <--- Thêm tham số
 
-    		String tenNV = txtTen.getText().trim().toLowerCase();
-    		String sdt = txtSDT.getText().trim().toLowerCase();
-    		String tinh = txtTinh.getText().trim().toLowerCase();
-    		String huyen = txtHuyen.getText().trim().toLowerCase();
+        String tenNV = txtTen.getText().trim().toLowerCase();
+        String sdt = txtSDT.getText().trim().toLowerCase();
+        String tinh = txtTinh.getText().trim().toLowerCase();
+        String huyen = txtHuyen.getText().trim().toLowerCase();
 
-    		String gioiTinh = (String) cboGioiTinh.getSelectedItem();
-    		ChucVu chucVu = (ChucVu) cboChucVu.getSelectedItem();
+        String gioiTinh = (String) cboGioiTinh.getSelectedItem();
+        String trangThaiSel = (String) cboTrangThai.getSelectedItem(); // Lấy trạng thái đang chọn
+        ChucVu chucVuSelected = (ChucVu) cboChucVu.getSelectedItem();
 
-    		nhanVien_DAO dao = new nhanVien_DAO();
-    		List<NhanVien> dsNV = dao.getAllNhanVien();
+        nhanVien_DAO dao = new nhanVien_DAO();
+        List<NhanVien> dsNV = dao.getAllNhanVien(); 
 
-    		DefaultTableModel model = (DefaultTableModel) table.getModel();
-    		model.setRowCount(0);
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+        for (NhanVien nv : dsNV) {
+            boolean match = true;
 
-    		for (NhanVien nv : dsNV) {
-    			boolean match = true;
+            if (!tenNV.isEmpty() && (nv.getTenNV() == null || !nv.getTenNV().toLowerCase().contains(tenNV))) match = false;
+            if (!sdt.isEmpty() && (nv.getSoDienThoai() == null || !nv.getSoDienThoai().toLowerCase().contains(sdt))) match = false;
+            if (!"Tất cả".equals(gioiTinh) && !nv.getGioiTinh().equalsIgnoreCase(gioiTinh)) match = false;
+            
+            // --- Lọc theo Chức Vụ ---
+            if (chucVuSelected != null && nv.getChucVu() != null) {
+                if (!nv.getChucVu().getMaChucVu().equals(chucVuSelected.getMaChucVu())) {
+                    match = false;
+                }
+            }
+            
+            // --- Lọc theo Trạng Thái (Mới thêm) ---
+            // Nếu không chọn "Tất cả" VÀ trạng thái của NV khác với lựa chọn thì loại
+            if (trangThaiSel != null && !"Tất cả".equals(trangThaiSel)) {
+                 String ttNV = nv.getTrangThai() != null ? nv.getTrangThai() : "";
+                 if (!ttNV.equalsIgnoreCase(trangThaiSel)) match = false;
+            }
+            
+            if (!tinh.isEmpty() && (nv.getDiaChi() == null || !nv.getDiaChi().toLowerCase().contains(tinh))) match = false;
+            if (!huyen.isEmpty() && (nv.getDiaChi() == null || !nv.getDiaChi().toLowerCase().contains(huyen))) match = false;
 
-    			if (!tenNV.isEmpty() && !nv.getTenNV().toLowerCase().contains(tenNV)) match = false;
-    			if (!sdt.isEmpty() && !nv.getSoDienThoai().toLowerCase().contains(sdt)) match = false;
-    			if (!"Tất cả".equals(gioiTinh) && !nv.getGioiTinh().equalsIgnoreCase(gioiTinh)) match = false;
-    			if (chucVu != null && nv.getChucVu() != null && !nv.getChucVu().equals(chucVu)) match = false;
-    			if (!tinh.isEmpty() && (nv.getDiaChi() == null || !nv.getDiaChi().toLowerCase().contains(tinh))) match = false;
-    			if (!huyen.isEmpty() && (nv.getDiaChi() == null || !nv.getDiaChi().toLowerCase().contains(huyen))) match = false;
-
-    			if (match) {
-    				model.addRow(new Object[]{
-    						nv.getMaNV(),
-    						nv.getTenNV(),
-    						nv.getNgaySinh(),
-    						nv.getGioiTinh(),
-    						nv.getChucVu() != null ? nv.getChucVu().getTenChucVu() : "",
-    								nv.getSoDienThoai(),
-    								nv.getDiaChi(),
-    								nv.getAnh(),
-    								nv.getTaiKhoan() != null ? nv.getTaiKhoan().getTenTK() : ""
-    				});
-    			}
-    		}
+            if (match) {
+                model.addRow(new Object[]{
+                    nv.getMaNV(),
+                    nv.getTenNV(),
+                    nv.getNgaySinh().format(dtf),
+                    nv.getGioiTinh(),
+                    nv.getChucVu() != null ? nv.getChucVu().getTenChucVu() : "",
+                    nv.getSoDienThoai(),
+                    nv.getDiaChi(),
+                    nv.getAnh(),
+                    nv.getTaiKhoan() != null ? nv.getTaiKhoan().getTenTK() : "",
+                    nv.getTrangThai()
+                });
+            }
+        }
     }
 
+ // Chú ý: Thêm tham số cboTrangThai vào hàm này
     private void addLocSuKien(JTextField txtTen, JTextField txtSDT, JTextField txtTinh,
             JTextField txtHuyen, JComboBox<String> cboGioiTinh,
-            JComboBox<ChucVu> cboChucVu, JTable table) {
+            JComboBox<ChucVu> cboChucVu, JComboBox<String> cboTrangThai, JTable table) { // <--- Thêm cboTrangThai
 
-    	// --- Sự kiện cho text field ---
-    	DocumentListener docListener = new DocumentListener() {
-    		@Override public void insertUpdate(DocumentEvent e) { locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, table); }
-    		@Override public void removeUpdate(DocumentEvent e) { locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, table); }
-    		@Override public void changedUpdate(DocumentEvent e) { locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, table); }
-    	};
+        // --- Sự kiện cho text field ---
+        DocumentListener docListener = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, cboTrangThai, table); }
+            @Override public void removeUpdate(DocumentEvent e) { locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, cboTrangThai, table); }
+            @Override public void changedUpdate(DocumentEvent e) { locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, cboTrangThai, table); }
+        };
 
-    	txtTen.getDocument().addDocumentListener(docListener);
-    	txtSDT.getDocument().addDocumentListener(docListener);
-    	txtTinh.getDocument().addDocumentListener(docListener);
-    	txtHuyen.getDocument().addDocumentListener(docListener);
+        txtTen.getDocument().addDocumentListener(docListener);
+        txtSDT.getDocument().addDocumentListener(docListener);
+        txtTinh.getDocument().addDocumentListener(docListener);
+        txtHuyen.getDocument().addDocumentListener(docListener);
 
-    	// --- Sự kiện cho combo box ---
-    	cboGioiTinh.addActionListener(e ->
-    	locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, table)
-    	);
-    	cboChucVu.addActionListener(e ->
-    	locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, table)
-    	);
+        // --- Sự kiện cho combo box ---
+        cboGioiTinh.addActionListener(e -> locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, cboTrangThai, table));
+        cboChucVu.addActionListener(e -> locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, cboTrangThai, table));
+        // Thêm sự kiện cho trạng thái
+        cboTrangThai.addActionListener(e -> locNhanVien(txtTen, txtSDT, txtTinh, txtHuyen, cboGioiTinh, cboChucVu, cboTrangThai, table));
     }
     private void loadImageToLabel(String path, JLabel lblAnh) {
         if (path != null && !path.trim().isEmpty()) {
@@ -8058,6 +7911,45 @@ public class TrangChu_GUI extends JFrame{
         } catch (Exception e) {
             System.err.println("Lỗi khi load icon: " + path + " - " + e.getMessage());
             return null;
+        }
+    }
+ // Hàm lọc dữ liệu cho Tab Cập Nhật
+    private void locNhanVienCapNhat(JTextField txtTen, JComboBox<ChucVu> cboChucVu, JTable table) {
+        String keyword = txtTen.getText().trim().toLowerCase();
+        ChucVu selectedCV = (ChucVu) cboChucVu.getSelectedItem();
+        String maChucVu = (selectedCV != null) ? selectedCV.getMaChucVu() : "";
+
+        nhanVien_DAO dao = new nhanVien_DAO();
+        List<NhanVien> dsNV = dao.getAllNhanVien(); // Lấy tất cả nhân viên
+
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
+        
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy"); // Định dạng ngày chuẩn
+
+        for (NhanVien nv : dsNV) {
+            // 1. Kiểm tra Tên
+            boolean matchTen = keyword.isEmpty() || (nv.getTenNV() != null && nv.getTenNV().toLowerCase().contains(keyword));
+            
+            // 2. Kiểm tra Chức vụ (so sánh theo Mã)
+            boolean matchCV = maChucVu.isEmpty() || (nv.getChucVu() != null && nv.getChucVu().getMaChucVu().equals(maChucVu));
+
+            if (matchTen && matchCV) {
+                String trangThai = nv.getTrangThai() != null ? nv.getTrangThai() : "Còn làm việc";
+                
+                model.addRow(new Object[]{
+                    nv.getMaNV(),
+                    nv.getTenNV(),
+                    nv.getNgaySinh().format(dtf), // <--- Format ngày sinh cho đúng chuẩn hiển thị
+                    nv.getGioiTinh(),
+                    nv.getChucVu() != null ? nv.getChucVu().getTenChucVu() : "",
+                    nv.getSoDienThoai(),
+                    nv.getDiaChi(),
+                    nv.getAnh(),
+                    nv.getTaiKhoan() != null ? nv.getTaiKhoan().getTenTK() : "",
+                    trangThai // <--- QUAN TRỌNG: Đã thêm cột trạng thái
+                });
+            }
         }
     }
 }

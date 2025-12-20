@@ -296,9 +296,9 @@ GO
 
 -- TAI KHOAN
 INSERT INTO TaiKhoan (maTK, tenTK, matKhau, quyenHan) VALUES
-('TK01', 'admin', '123', N'Quản lý'),
-('TK02', 'nvbh01', '123', N'Nhân viên bán hàng'),
-('TK03', 'nvbh02', '123', N'Nhân viên bán hàng');
+('TK001', 'admin', '123', N'Quản lý'),
+('TK002', 'nvbh01', '123', N'Nhân viên bán hàng'),
+('TK003', 'nvbh02', '123', N'Nhân viên bán hàng');
 GO
 -- Vô hiệu hóa 1 tài khoản
 UPDATE TaiKhoan SET trangThai = 0 WHERE maTK = 'TK03';
@@ -312,9 +312,9 @@ GO
 
 -- NHAN VIÊN
 INSERT INTO NhanVien (maNV, tenNV, ngaySinh, gioiTinh, chucVu, sdt, diaChi, anh, maTK, trangThai) VALUES
-('NV001', N'Nguyễn Văn An', '1990-05-15', N'Nam', 'CV01', '0912345678', N'Quận 1, TP.HCM', NULL, 'TK01', N'Còn làm việc'),
-('NV002', N'Trần Thị Bích', '1995-08-10', N'Nữ', 'CV02', '0987654321', N'Quận 5, TP.HCM', NULL, 'TK02', N'Còn làm việc'),
-('NV003', N'Lê Văn Cường', '1993-03-20', N'Nam', 'CV02', '0901234567', N'Gò Vấp, TP.HCM', NULL, 'TK03', N'Nghỉ việc');
+('NV001', N'Nguyễn Văn An', '1990-05-15', N'Nam', 'CV01', '0912345678', N'Quận 1, TP.HCM', NULL, 'TK001', N'Còn làm việc'),
+('NV002', N'Trần Thị Bích', '1995-08-10', N'Nữ', 'CV02', '0987654321', N'Quận 5, TP.HCM', NULL, 'TK002', N'Còn làm việc'),
+('NV003', N'Lê Văn Cường', '1993-03-20', N'Nam', 'CV02', '0901234567', N'Gò Vấp, TP.HCM', NULL, 'TK003', N'Nghỉ việc');
 GO
 
 

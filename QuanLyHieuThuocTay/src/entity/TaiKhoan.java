@@ -5,6 +5,7 @@ public class TaiKhoan {
 	private String tenTK;
 	private String matKhau;
 	private String quyenHan;
+	private boolean trangThai; 
 	
 	public String getMaTK() {
 		return maTK;
@@ -31,12 +32,16 @@ public class TaiKhoan {
 		this.quyenHan = quyenHan;
 	}
 	
-	public TaiKhoan(String maTK, String tenTK, String matKhau, String quyenHan) {
+	public boolean isTrangThai() { return trangThai; }
+    public void setTrangThai(boolean trangThai) { this.trangThai = trangThai; }
+	
+	public TaiKhoan(String maTK, String tenTK, String matKhau, String quyenHan,boolean trangThai) {
 		super();
 		this.maTK = maTK;
 		this.tenTK = tenTK;
 		this.matKhau = matKhau;
 		this.quyenHan = quyenHan;
+		this.trangThai = trangThai;
 	}
 	
 	public TaiKhoan() {

@@ -6,14 +6,26 @@ public class ChiTietHoaDon {
     private HoaDon hoaDon;
     private Thuoc thuoc;
     private int soLuong;
+    
+    // --- THÊM MỚI: Biến đơn giá để lưu vào CSDL ---
+    private double donGia; 
 
     public ChiTietHoaDon() {
     }
 
+    // --- GIỮ NGUYÊN: Constructor cũ của Đại Ca ---
     public ChiTietHoaDon(HoaDon hoaDon, Thuoc thuoc, int soLuong) {
         this.hoaDon = hoaDon;
         this.thuoc = thuoc;
         this.soLuong = soLuong;
+    }
+
+    // --- THÊM MỚI: Constructor đầy đủ 4 tham số (Dùng để sửa lỗi DB) ---
+    public ChiTietHoaDon(HoaDon hoaDon, Thuoc thuoc, int soLuong, double donGia) {
+        this.hoaDon = hoaDon;
+        this.thuoc = thuoc;
+        this.soLuong = soLuong;
+        this.donGia = donGia;
     }
 
     // Getters and Setters
@@ -40,8 +52,17 @@ public class ChiTietHoaDon {
     public void setSoLuong(int soLuong) {
         this.soLuong = soLuong;
     }
+
+    // --- THÊM MỚI: Getter và Setter cho đơn giá ---
+    public double getDonGia() {
+        return donGia;
+    }
+
+    public void setDonGia(double donGia) {
+        this.donGia = donGia;
+    }
     
-    // Phương thức tính thành tiền cho chi tiết này
+    // --- GIỮ NGUYÊN: Phương thức tính thành tiền cũ của Đại Ca ---
     public double tinhThanhTien() {
         if(thuoc != null) {
             return thuoc.getGiaBan() * soLuong;

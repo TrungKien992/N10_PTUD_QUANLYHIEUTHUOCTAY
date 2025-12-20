@@ -39,7 +39,6 @@ public class nhanVien_DAO {
         return null;
     }
 
-    // === Thêm nhân viên (mặc định trạng thái là "Còn làm việc") ===
     public boolean insertNhanVien(NhanVien nv) {
         if (nv.getMaNV() == null || nv.getMaNV().isEmpty()) {
             nv.setMaNV(generateNewMaNV()); // tự động sinh mã nếu chưa có
@@ -101,38 +100,61 @@ public class nhanVien_DAO {
 
  // Hàm hỗ trợ lấy ChucVu bằng tên (Dùng riêng cho việc đọc dữ liệu từ JTable)
 
-    // === Xóa nhân viên ===
- // === XÓA MỀM NHÂN VIÊN (CHỈ CHUYỂN TRẠNG THÁI) ===
+ // === XÓA MỀM NHÂN VIÊN VÀ KHÓA TÀI KHOẢN ĐỒNG THỜI ===
     public boolean deleteNhanVien(String maNV) {
-        String sql = "UPDATE NhanVien SET trangThai = N'Nghỉ việc' WHERE maNV = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, maNV);
-            int rowsAffected = ps.executeUpdate();
-
-            if (rowsAffected > 0) {
-                System.out.println(">> Nhân viên " + maNV + " đã chuyển sang trạng thái 'Nghỉ việc'.");
-                return true;
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement stmt = null;
+        int n = 0;
+        try {
+            // 1. Lấy mã tài khoản của nhân viên này trước
+            String maTK = null;
+            String sqlGetTK = "SELECT maTK FROM NhanVien WHERE maNV = ?";
+            PreparedStatement psGet = con.prepareStatement(sqlGetTK);
+            psGet.setString(1, maNV);
+            ResultSet rs = psGet.executeQuery();
+            if(rs.next()) {
+                maTK = rs.getString("maTK");
             }
+
+            // 2. Cập nhật trạng thái nhân viên thành "Nghỉ việc"
+            String sql = "UPDATE NhanVien SET trangThai = ? WHERE maNV = ?";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, "Nghỉ việc");
+            stmt.setString(2, maNV);
+            n = stmt.executeUpdate();
+
+            // 3. ĐỒNG BỘ: Nếu xóa NV thành công và có tài khoản -> Khóa luôn tài khoản
+            if (n > 0 && maTK != null) {
+                taiKhoan_DAO tkDAO = new taiKhoan_DAO();
+                // Gọi hàm khóa tài khoản (set trangThai = 0) bên DAO tài khoản
+                if (tkDAO.khoaTaiKhoan(maTK)) {
+                    System.out.println(">> Đã khóa tài khoản " + maTK + " theo nhân viên " + maNV);
+                }
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            // Đóng resource nếu cần thiết
+            try { if(stmt != null) stmt.close(); } catch (SQLException e) {}
         }
-        return false;
+        return n > 0;
     }
 
 
     // === Lấy danh sách tất cả nhân viên đang còn làm việc ===
+ // Trong file nhanVien_DAO.java
     public List<NhanVien> getAllNhanVien() {
         List<NhanVien> list = new ArrayList<>();
+        // Sửa câu SQL: Bỏ đoạn "WHERE nv.trangThai = N'Còn làm việc'"
         String sql = "SELECT nv.*, cv.tenChucVu, tk.tenTK " +
                      "FROM NhanVien nv " +
                      "JOIN ChucVu cv ON nv.chucVu = cv.maChucVu " +
-                     "JOIN TaiKhoan tk ON nv.maTK = tk.maTK " +
-                     "WHERE nv.trangThai = N'Còn làm việc'";
+                     "JOIN TaiKhoan tk ON nv.maTK = tk.maTK"; 
+                     
         try (Connection con = ConnectDB.getConnection();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-
             while (rs.next()) {
                 list.add(mapNhanVien(rs));
             }
@@ -214,6 +236,9 @@ public class nhanVien_DAO {
         return prefix + "001";
     }
     
+ // File: dao/nhanVien_DAO.java
+
+ // Thay thế toàn bộ hàm cũ bằng hàm này
     public String generateNewMaNV_FromTable(JTable table, List<NhanVien> tempListNV) {
         int maxNum = 0;
         Set<String> existingMaNV = new HashSet<>();
@@ -227,8 +252,17 @@ public class nhanVien_DAO {
                 String ma = rs.getString("maNV");
                 if (ma != null && ma.startsWith("NV")) {
                     existingMaNV.add(ma);
-                    int num = Integer.parseInt(ma.substring(2));
-                    if (num > maxNum) maxNum = num;
+                    
+                    // --- QUAN TRỌNG: Lọc bỏ mã rác (mã dài quá 7 ký tự) ---
+                    if (ma.length() > 7) continue; 
+                    // -----------------------------------------------------
+
+                    try {
+                        int num = Integer.parseInt(ma.substring(2));
+                        if (num > maxNum) maxNum = num;
+                    } catch (NumberFormatException e) {
+                        // Bỏ qua nếu không parse được
+                    }
                 }
             }
 
@@ -236,7 +270,7 @@ public class nhanVien_DAO {
             e.printStackTrace();
         }
 
-        // ✅ 2. Lấy mã NV trong JTable (nếu có)
+        // ✅ 2. Lấy mã NV trong JTable (để tránh trùng với dòng đang hiển thị chưa lưu)
         if (table != null && table.getRowCount() > 0) {
             var model = table.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
@@ -245,6 +279,10 @@ public class nhanVien_DAO {
                     String ma = value.toString().trim();
                     if (ma.startsWith("NV")) {
                         existingMaNV.add(ma);
+                        
+                        // --- QUAN TRỌNG: Lọc bỏ mã rác trên bảng ---
+                        if (ma.length() > 7) continue; 
+                        
                         try {
                             int num = Integer.parseInt(ma.substring(2));
                             if (num > maxNum) maxNum = num;
@@ -254,11 +292,15 @@ public class nhanVien_DAO {
             }
         }
 
-        // ✅ 3. Lấy mã NV trong danh sách tạm tempListNV (nếu có)
+        // ✅ 3. Lấy mã NV trong danh sách tạm tempListNV
         if (tempListNV != null && !tempListNV.isEmpty()) {
             for (NhanVien nv : tempListNV) {
                 if (nv.getMaNV() != null && nv.getMaNV().startsWith("NV")) {
                     existingMaNV.add(nv.getMaNV());
+                    
+                    // --- QUAN TRỌNG: Lọc bỏ mã rác trong list tạm ---
+                    if (nv.getMaNV().length() > 7) continue;
+
                     try {
                         int num = Integer.parseInt(nv.getMaNV().substring(2));
                         if (num > maxNum) maxNum = num;
@@ -267,7 +309,7 @@ public class nhanVien_DAO {
             }
         }
 
-        // ✅ 4. Sinh mã mới cho đến khi chắc chắn không trùng
+        // ✅ 4. Sinh mã mới chuẩn (NV001, NV002...)
         String newMa;
         do {
             maxNum++;
@@ -276,11 +318,6 @@ public class nhanVien_DAO {
 
         return newMa;
     }
-
-
-
-
-
 
     // === Lấy đường dẫn ảnh theo mã NV ===
     public String layDuongDanAnhTheoMa(String maNV) {
@@ -333,4 +370,9 @@ public class nhanVien_DAO {
         }
         return null;
     }
+
+	public boolean create(NhanVien nv) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

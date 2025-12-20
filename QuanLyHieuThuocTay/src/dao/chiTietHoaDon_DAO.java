@@ -50,7 +50,7 @@ public class chiTietHoaDon_DAO {
      * Thêm một chi tiết hóa đơn vào CSDL.
      */
     public boolean themChiTietHoaDon(ChiTietHoaDon cthd) {
-        String sql = "INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong) VALUES (?, ?, ?)";
+    	String sql = "INSERT INTO ChiTietHoaDon (maHD, maThuoc, soLuong, donGia) VALUES (?, ?, ?, ?)";
         
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -58,6 +58,7 @@ public class chiTietHoaDon_DAO {
             stmt.setString(1, cthd.getHoaDon().getMaHD());
             stmt.setString(2, cthd.getThuoc().getMaThuoc());
             stmt.setInt(3, cthd.getSoLuong());
+            stmt.setDouble(4, cthd.getDonGia());
             
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {

@@ -16,11 +16,12 @@ import entity.TaiKhoan;
 public class taiKhoan_DAO {
 
     // Lấy tất cả tài khoản
-    public List<TaiKhoan> getAllTaiKhoan() {
+	public List<TaiKhoan> getAllTaiKhoan() {
         List<TaiKhoan> dsTaiKhoan = new ArrayList<>();
-        String sql = "SELECT maTK, tenTK, matKhau, quyenHan FROM TaiKhoan";
-        // Dùng try-with-resources cho cả Connection, PreparedStatement, ResultSet
-        try (Connection con = ConnectDB.getConnection(); // Lấy connection mới
+        // Query phải lấy đủ cột, đặc biệt là trangThai
+        String sql = "SELECT maTK, tenTK, matKhau, quyenHan, trangThai FROM TaiKhoan";
+        
+        try (Connection con = ConnectDB.getConnection(); 
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -28,14 +29,13 @@ public class taiKhoan_DAO {
                 TaiKhoan tk = new TaiKhoan(
                     rs.getString("maTK"),
                     rs.getString("tenTK"),
-                    "********", // Không lấy mật khẩu thật
-                    rs.getString("quyenHan")
+                    "********", // Ở bảng danh sách vẫn nên ẩn password
+                    rs.getString("quyenHan"),
+                    rs.getBoolean("trangThai")
                 );
                 dsTaiKhoan.add(tk);
             }
-        } catch (SQLException e) {
-            e.printStackTrace(); // In lỗi ra console
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
         return dsTaiKhoan;
     }
 
@@ -55,7 +55,6 @@ public class taiKhoan_DAO {
                         newMaTK = String.format("TK%02d", num); // Format thành TKxx
                     } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
                         System.err.println("Lỗi khi parse mã TK lớn nhất: " + maxMaTK + ". Sử dụng mã mặc định: " + newMaTK);
-                        // Có thể log lỗi chi tiết hơn nếu cần
                     }
                 }
             }
@@ -133,21 +132,27 @@ public class taiKhoan_DAO {
     // Hàm kiểm tra đăng nhập
     public TaiKhoan checkLogin(String tenTK, String matKhau) {
         TaiKhoan tk = null;
-        String sql = "SELECT maTK, tenTK, matKhau, quyenHan FROM TaiKhoan WHERE tenTK = ? AND matKhau = ?";
-        // !!! QUAN TRỌNG: Query này chỉ đúng nếu mật khẩu KHÔNG được mã hóa.
-        // Nếu đã mã hóa, cần lấy mật khẩu hash từ DB rồi so sánh bằng thư viện mã hóa.
+        // 1. Cập nhật SQL: Thêm cột trangThai
+        String sql = "SELECT maTK, tenTK, matKhau, quyenHan, trangThai FROM TaiKhoan WHERE tenTK = ? AND matKhau = ?";
+        
+        // !!! QUAN TRỌNG: Logic so sánh mật khẩu rõ (plain text) không an toàn, nên dùng hash (BCrypt/MD5) trong thực tế.
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, tenTK);
-            ps.setString(2, matKhau); // So sánh mật khẩu rõ -> KHÔNG AN TOÀN
+            ps.setString(2, matKhau); 
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    // 2. Lấy trạng thái từ DB
+                    boolean trangThai = rs.getBoolean("trangThai");
+
+                    // 3. Khởi tạo với Constructor 5 tham số (Bổ sung tham số cuối)
                     tk = new TaiKhoan(
                         rs.getString("maTK"),
                         rs.getString("tenTK"),
                         "********", // Không trả về mật khẩu thật
-                        rs.getString("quyenHan")
+                        rs.getString("quyenHan"),
+                        trangThai   // Thêm tham số này để hết lỗi
                     );
                 }
             }
@@ -155,27 +160,6 @@ public class taiKhoan_DAO {
             e.printStackTrace();
         }
         return tk;
-    }
-
-    // Hàm lấy tài khoản theo tên TK (kiểm tra tồn tại)
-    public TaiKhoan getTaiKhoanByTenTK(String tenTK) {
-        TaiKhoan tk = null;
-        String sql = "SELECT maTK, tenTK, quyenHan FROM TaiKhoan WHERE tenTK = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, tenTK);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    tk = new TaiKhoan(); // Chỉ cần tạo đối tượng để biết là tồn tại
-                    tk.setMaTK(rs.getString("maTK"));
-                    tk.setTenTK(rs.getString("tenTK"));
-                    tk.setQuyenHan(rs.getString("quyenHan"));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return tk; // Trả về null nếu không tìm thấy
     }
 
     // Hàm cập nhật quyền hạn cho tài khoản
@@ -199,44 +183,28 @@ public class taiKhoan_DAO {
 
     // (Optional: Hàm xóa tài khoản)
     public boolean deleteTaiKhoan(String maTK) {
-        String sql = "DELETE FROM TaiKhoan WHERE maTK = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, maTK);
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0; // Trả về true nếu có dòng bị xóa
-        } catch (SQLException e) {
-            // Bắt lỗi khóa ngoại nếu tài khoản đang được sử dụng bởi nhân viên
-            if (e.getMessage().contains("The DELETE statement conflicted with the REFERENCE constraint")) {
-                 // <<< THAY ĐỔI: HIỂN THỊ JOPTIONPANE >>>
-                 JOptionPane.showMessageDialog(null, // null để dialog hiện giữa màn hình
-                    "Không thể xóa tài khoản '" + maTK + "' vì đang được sử dụng bởi một nhân viên.",
-                    "Lỗi Ràng Buộc", JOptionPane.ERROR_MESSAGE);
-                 System.err.println("Lỗi khóa ngoại khi xóa TK: " + maTK); // Vẫn in ra console để debug
-            } else {
-                 JOptionPane.showMessageDialog(null, "Lỗi SQL khi xóa tài khoản:\n" + e.getMessage(), "Lỗi SQL", JOptionPane.ERROR_MESSAGE);
-                 e.printStackTrace(); // In lỗi khác ra console
-            }
-        }
-        return false; // Trả về false nếu có lỗi xảy ra
-    }
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement stmt = null;
+        int n = 0;
+        try {
+            // Sử dụng Soft Delete (Cập nhật trạng thái = 0) thay vì xóa vĩnh viễn
+            String sql = "UPDATE TaiKhoan SET trangThai = 0 WHERE maTK = ?";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, maTK);
 
-    // (Optional: Hàm đổi mật khẩu)
-    public boolean changePassword(String maTK, String newPassword) {
-         String sql = "UPDATE TaiKhoan SET matKhau = ? WHERE maTK = ?";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-             // !!! QUAN TRỌNG: Nên mã hóa newPassword trước khi lưu !!!
-             ps.setString(1, newPassword);
-             ps.setString(2, maTK);
-             return ps.executeUpdate() > 0;
+            n = stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        return false;
+        return n > 0;
     }
 
- // Trong class taiKhoan_DAO
 
     // Hàm THÊM tài khoản mới (dùng cho Admin, có thể set quyền) - ĐÃ SỬA
     public boolean addTaiKhoan(TaiKhoan tk) {
@@ -275,10 +243,10 @@ public class taiKhoan_DAO {
         return false;
     }
 
-    // Hàm lấy tài khoản theo Mã TK (Bổ sung để kiểm tra trùng mã)
     public TaiKhoan getTaiKhoanByMaTK(String maTK) {
         TaiKhoan tk = null;
-        String sql = "SELECT maTK, tenTK, quyenHan FROM TaiKhoan WHERE maTK = ?";
+        // SỬA 1: Thêm cột trangThai vào câu SQL
+        String sql = "SELECT maTK, tenTK, quyenHan, trangThai FROM TaiKhoan WHERE maTK = ?";
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, maTK);
@@ -288,13 +256,139 @@ public class taiKhoan_DAO {
                     tk.setMaTK(rs.getString("maTK"));
                     tk.setTenTK(rs.getString("tenTK"));
                     tk.setQuyenHan(rs.getString("quyenHan"));
+                    // SỬA 2: Lấy dữ liệu trạng thái gán vào object
+                    tk.setTrangThai(rs.getBoolean("trangThai"));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return tk; // Trả về null nếu không tìm thấy
+        return tk; 
     }
+    public boolean create(TaiKhoan tk) {
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement stmt = null;
+        int n = 0;
+        try {
+            String sql = "INSERT INTO TaiKhoan(maTK, tenTK, matKhau, quyenHan, trangThai) VALUES(?, ?, ?, ?, ?)";
+            stmt = con.prepareStatement(sql);
+            
+            stmt.setString(1, tk.getMaTK());
+            stmt.setString(2, tk.getTenTK());
+            stmt.setString(3, tk.getMatKhau());
+            stmt.setString(4, tk.getQuyenHan());
+            stmt.setBoolean(5, tk.isTrangThai()); 
 
+            n = stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return n > 0;
+    }
+ // File: taiKhoan_DAO.java
 
+    public boolean update(TaiKhoan tk) {
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement stmt = null;
+        int n = 0;
+        try {
+            String sql = "UPDATE TaiKhoan SET tenTK = ?, matKhau = ?, quyenHan = ?, trangThai = ? WHERE maTK = ?";
+            stmt = con.prepareStatement(sql);
+            
+            stmt.setString(1, tk.getTenTK());
+            stmt.setString(2, tk.getMatKhau());
+            stmt.setString(3, tk.getQuyenHan());
+            stmt.setBoolean(4, tk.isTrangThai());
+            stmt.setString(5, tk.getMaTK());
+
+            n = stmt.executeUpdate();
+            
+            if (n > 0) {
+                syncTrangThaiNhanVien(tk.getMaTK(), tk.isTrangThai());
+            }
+            // -------------------------------------
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Đóng resource để tránh leak
+            try { if(stmt != null) stmt.close(); } catch (SQLException e) {}
+        }
+        return n > 0;
+    }
+    
+    public boolean deleteTaiKhoanPermanently(String maTK) {
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement stmt = null;
+        int n = 0;
+        try {
+            String sql = "DELETE FROM TaiKhoan WHERE maTK = ?";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, maTK);
+            n = stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } 
+        return n > 0;
+    }
+    public void syncTrangThaiNhanVien(String maTK, boolean trangThaiTK) {
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement stmt = null;
+        try {
+            String trangThaiNV = trangThaiTK ? "Còn làm việc" : "Nghỉ việc";
+            String sql = "UPDATE NhanVien SET trangThai = ? WHERE maTK = ?";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, trangThaiNV); // Hoặc setBoolean nếu DB để bit
+            stmt.setString(2, maTK);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } 
+    }
+    public TaiKhoan getTaiKhoanByTenTK(String tenTK) {
+        TaiKhoan tk = null;
+        String sql = "SELECT * FROM TaiKhoan WHERE tenTK = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, tenTK);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    tk = new TaiKhoan(rs.getString("maTK"), rs.getString("tenTK"), "", "", true);
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return tk;
+    }
+    public TaiKhoan getTaiKhoanCanSua(String maTK) {
+        TaiKhoan tk = null;
+        String sql = "SELECT * FROM TaiKhoan WHERE maTK = ?";
+        try (Connection con = ConnectDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, maTK);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    tk = new TaiKhoan(
+                        rs.getString("maTK"),
+                        rs.getString("tenTK"),
+                        rs.getString("matKhau"), // Lấy mật khẩu thật (plaintext)
+                        rs.getString("quyenHan"),
+                        rs.getBoolean("trangThai")
+                    );
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return tk; 
+    }
+    public boolean khoaTaiKhoan(String maTK) {
+        Connection con = ConnectDB.getConnection();
+        PreparedStatement stmt = null;
+        int n = 0;
+        try {
+            String sql = "UPDATE TaiKhoan SET trangThai = 0 WHERE maTK = ?";
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, maTK);
+            n = stmt.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+        return n > 0;
+    }
 }
