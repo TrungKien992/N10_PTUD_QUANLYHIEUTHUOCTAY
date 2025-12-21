@@ -94,7 +94,8 @@ public class khuyenMai_DAO {
     }
 
     public boolean deleteKhuyenMai(String maKM) {
-        String sql = "DELETE FROM KhuyenMai WHERE maKM = ?";
+        String sql = "UPDATE KhuyenMai SET trangThai = 0 WHERE maKM = ?";
+        
         try (Connection con = ConnectDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, maKM);

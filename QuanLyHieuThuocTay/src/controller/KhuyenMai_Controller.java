@@ -27,7 +27,7 @@ public class KhuyenMai_Controller {
 
     private TrangChu_GUI view;
     private khuyenMai_DAO kmDAO;
-    private DecimalFormat df = new DecimalFormat("#,##0.##"); // Format %
+    private DecimalFormat df = new DecimalFormat("#,##0.##"); 
 
     public KhuyenMai_Controller(TrangChu_GUI view) {
         this.view = view;
@@ -220,20 +220,38 @@ public class KhuyenMai_Controller {
     private void xoaKhuyenMai() {
         String maKM = view.txtMaKM_CapNhat.getText();
         if (maKM.isEmpty()) {
-            JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng chọn khuyến mãi từ bảng để xóa!");
+            JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Vui lòng chọn khuyến mãi từ bảng để ngưng hoạt động!");
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(view.QuanLyHieuThuocTay, "Xác nhận xóa khuyến mãi " + maKM + "?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        
+        // Sửa câu hỏi xác nhận cho phù hợp hành động
+        int confirm = JOptionPane.showConfirmDialog(view.QuanLyHieuThuocTay, 
+                "Xác nhận ngưng hoạt động chương trình khuyến mãi " + maKM + "?", 
+                "Xác nhận", 
+                JOptionPane.YES_NO_OPTION);
+                
         if (confirm == JOptionPane.YES_OPTION) {
             if (kmDAO.deleteKhuyenMai(maKM)) {
-                JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Xóa thành công!");
+                // Thông báo thành công
+                JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Đã ngưng chương trình khuyến mãi thành công!");
+                
+                // Cập nhật lại các bảng dữ liệu
                 loadDataToTable(view.table_ThemKM);
                 loadDataToTable(view.table_CapNhatKM);
                 loadDataToTable(view.table_TimKiemKM);
-                updateKhuyenMaiComboBox(); // (REQ 7)
-                // (Thêm code xóa trắng form)
+                updateKhuyenMaiComboBox(); 
+                
+                // Xóa trắng form sau khi xử lý (Optional)
+                view.txtMaKM_CapNhat.setText("");
+                view.txtTenKM_CapNhat.setText("");
+                view.txtGiaTri_CapNhat.setText("");
+                view.txtSoLuong_CapNhat.setText("");
+                view.dateNgayBD_CapNhat.setDate(null);
+                view.dateNgayKT_CapNhat.setDate(null);
+                view.cboTrangThai_CapNhat.setSelectedIndex(0);
+                
             } else {
-                 JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Xóa thất bại! (Lỗi ràng buộc khóa ngoại?)");
+                 JOptionPane.showMessageDialog(view.QuanLyHieuThuocTay, "Thao tác thất bại!");
             }
         }
     }

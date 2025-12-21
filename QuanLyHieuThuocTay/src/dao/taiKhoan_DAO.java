@@ -52,7 +52,7 @@ public class taiKhoan_DAO {
                 if (maxMaTK != null && maxMaTK.matches("^TK\\d+$")) { // Kiểm tra định dạng TK...
                     try {
                         int num = Integer.parseInt(maxMaTK.substring(2)) + 1;
-                        newMaTK = String.format("TK%02d", num); // Format thành TKxx
+                        newMaTK = String.format("TK%03d", num); // Format thành TKxx
                     } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
                         System.err.println("Lỗi khi parse mã TK lớn nhất: " + maxMaTK + ". Sử dụng mã mặc định: " + newMaTK);
                     }
@@ -82,51 +82,6 @@ public class taiKhoan_DAO {
             e.printStackTrace();
         }
         return newMaTK;
-    }
-    // Hàm THÊM tài khoản mới (dùng cho Admin, có thể set quyền)
-    public boolean insertTaiKhoan(TaiKhoan tk) {
-        // Kiểm tra tên TK đã tồn tại chưa
-        if (getTaiKhoanByTenTK(tk.getTenTK()) != null) {
-            System.err.println("Lỗi: Tên tài khoản '" + tk.getTenTK() + "' đã tồn tại!");
-            return false;
-        }
-
-        String sql = "INSERT INTO TaiKhoan(maTK, tenTK, matKhau, quyenHan) VALUES (?, ?, ?, ?)";
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, tk.getMaTK());
-            ps.setString(2, tk.getTenTK());
-            // !!! QUAN TRỌNG: Nên mã hóa mật khẩu trước khi lưu vào DB !!!
-            // Ví dụ: ps.setString(3, maHoaMatKhau(tk.getMatKhau()));
-            ps.setString(3, tk.getMatKhau());
-            ps.setString(4, tk.getQuyenHan()); // Cho phép null hoặc giá trị quyền
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // Hàm ĐĂNG KÝ tài khoản mới (quyền hạn mặc định là NULL)
-    public boolean registerTaiKhoan(TaiKhoan tk) {
-         // Kiểm tra tên TK đã tồn tại chưa
-        if (getTaiKhoanByTenTK(tk.getTenTK()) != null) {
-            System.err.println("Lỗi: Tên tài khoản '" + tk.getTenTK() + "' đã tồn tại!");
-            return false;
-        }
-
-        String sql = "INSERT INTO TaiKhoan(maTK, tenTK, matKhau, quyenHan) VALUES (?, ?, ?, NULL)"; // Quyền hạn là NULL
-        try (Connection con = ConnectDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, tk.getMaTK()); // Mã TK nên được tạo bằng generateNewMaTK() trước khi gọi hàm này
-            ps.setString(2, tk.getTenTK());
-            // !!! QUAN TRỌNG: Nên mã hóa mật khẩu trước khi lưu vào DB !!!
-            ps.setString(3, tk.getMatKhau());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     // Hàm kiểm tra đăng nhập

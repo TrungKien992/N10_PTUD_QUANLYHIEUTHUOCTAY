@@ -370,9 +370,28 @@ public class nhanVien_DAO {
         }
         return null;
     }
-
+    public boolean checkSdtTonTai(String sdt) {
+        boolean exist = false;
+        String sql = "SELECT COUNT(*) FROM NhanVien WHERE sdt = ?";
+        try (java.sql.Connection con = connectDB.ConnectDB.getConnection();
+             java.sql.PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, sdt);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Nếu đếm được > 0 tức là đã có người dùng số này
+                    exist = rs.getInt(1) > 0;
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+        return exist;
+    }
+    
 	public boolean create(NhanVien nv) {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
 }

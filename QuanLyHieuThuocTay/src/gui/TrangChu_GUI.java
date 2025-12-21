@@ -2413,6 +2413,48 @@ public class TrangChu_GUI extends JFrame{
         scP_tbc_table.setViewportView(table_5);
 
         JButton btn_tbc_xuatfile = new JButton("Xuất File");
+        btn_tbc_xuatfile.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // 1. Gọi Controller
+                ThuocBanChay_Controller controller = new ThuocBanChay_Controller();
+                
+                // 2. Lấy danh sách (Lưu ý: List<Object[]>)
+                List<Object[]> dsBanChay = controller.getDanhSachThuocBanChay();
+
+                // 3. Kiểm tra rỗng (Giống file mẫu)
+                if (dsBanChay.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Không có dữ liệu thuốc bán chạy để xuất!");
+                    return;
+                }
+
+                // 4. Mở hộp thoại chọn file (Giống file mẫu)
+                JFileChooser chooser = new JFileChooser();
+                chooser.setDialogTitle("Chọn nơi lưu file Excel");
+                chooser.setSelectedFile(new java.io.File("DanhSachThuocBanChay.xlsx")); // Đặt tên mặc định
+
+                int option = chooser.showSaveDialog(null);
+
+                if (option == JFileChooser.APPROVE_OPTION) {
+                    String filePath = chooser.getSelectedFile().getAbsolutePath();
+                    
+                    // Fix lỗi quên đuôi file .xlsx nếu người dùng không gõ
+                    if (!filePath.toLowerCase().endsWith(".xlsx")) {
+                        filePath += ".xlsx";
+                    }
+
+                    // 5. Xuất file
+                    controller.exportToExcel(dsBanChay, filePath);
+                    JOptionPane.showMessageDialog(null, "Xuất file thành công!");
+                    
+                     // Mở file lên luôn cho tiện (Optional)
+                    try {
+                        java.awt.Desktop.getDesktop().open(new java.io.File(filePath));
+                    } catch (Exception ex) {
+                        // Kệ nó nếu không mở được
+                    }
+                }
+            }
+        });
         btn_tbc_xuatfile.setFont(FONT_BUTTON_STANDARD);
         styleButton(btn_tbc_xuatfile, COLOR_SUCCESS_GREEN);
         btn_tbc_xuatfile.setBounds(1537, 950, 152, 40); // Điều chỉnh
@@ -3473,6 +3515,31 @@ public class TrangChu_GUI extends JFrame{
                             JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin và chọn ảnh!");
                             return;
                         }
+                        
+                        nhanVien_DAO checkDao = new nhanVien_DAO();
+                        if (checkDao.checkSdtTonTai(sdt)) {
+                            JOptionPane.showMessageDialog(null, "Lỗi: Số điện thoại " + sdt + " đã tồn tại trong hệ thống!", "Trùng dữ liệu", JOptionPane.ERROR_MESSAGE);
+                            txtSDT_TNV.requestFocus(); // Focus lại ô SĐT để sửa
+                            return; // Dừng lại, không thêm nữa
+                        }
+
+                        if (tempListNV != null) {
+                            for (NhanVien nvCho : tempListNV) {
+                                if (nvCho.getSoDienThoai().equals(sdt)) {
+                                    JOptionPane.showMessageDialog(null, "Lỗi: Số điện thoại này vừa được thêm vào danh sách chờ lưu!", "Trùng dữ liệu", JOptionPane.ERROR_MESSAGE);
+                                    return;
+                                }
+                            }
+                        }
+
+                        DefaultTableModel modelCheck = (DefaultTableModel) table_TNV.getModel();
+                        for (int i = 0; i < modelCheck.getRowCount(); i++) {
+                            String sdtTrenBang = modelCheck.getValueAt(i, 5).toString(); // Cột 5 là SĐT
+                            if (sdtTrenBang.equals(sdt)) {
+                                 JOptionPane.showMessageDialog(null, "Lỗi: Số điện thoại này đã có trên bảng hiển thị!", "Trùng dữ liệu", JOptionPane.ERROR_MESSAGE);
+                                 return;
+                            }
+                        }
 
                         // 5. TẠO MÃ NHÂN VIÊN MỚI
                         nhanVien_DAO nvDAO = new nhanVien_DAO();
@@ -3700,9 +3767,6 @@ public class TrangChu_GUI extends JFrame{
                     @Override
                     public void componentShown(java.awt.event.ComponentEvent e) {
                         loadDataToTableNV(table_TNV);
-
-
-
                         try {
                             nhanVien_DAO nvDAO = new nhanVien_DAO();
                             if (tempListNV == null) { 
@@ -4587,10 +4651,28 @@ public class TrangChu_GUI extends JFrame{
 	                    String huyen = txtHuyen_CNNV.getText().trim();
 	                    String anh = duongDanAnh_CNNV;
 
+	                    // 1. Kiểm tra rỗng
 	                    if (tenNV.isEmpty() || sdt.isEmpty() || ngaySinh == null || maChucVu.isEmpty() || maTK.isEmpty()) {
 	                        JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin!");
 	                        return;
 	                    }
+
+	                    // 2. KHỞI TẠO DAO (Đưa lên đây để dùng kiểm tra)
+	                    nhanVien_DAO nvDAO = new nhanVien_DAO();
+
+	                    // 3. === CHÈN ĐOẠN KIỂM TRA TRÙNG SĐT TẠI ĐÂY ===
+	                    // Lấy thông tin cũ của nhân viên đang sửa
+	                    NhanVien nvCu = nvDAO.getNhanVienTheoMa(maNV);
+
+	                    // Logic: Nếu SĐT mới khác SĐT cũ (có thay đổi) VÀ SĐT mới đã tồn tại trong DB -> Báo lỗi
+	                    if (nvCu != null && !nvCu.getSoDienThoai().equals(sdt)) {
+	                         if (nvDAO.checkSdtTonTai(sdt)) {
+	                              JOptionPane.showMessageDialog(null, "Lỗi: Số điện thoại " + sdt + " đã thuộc về nhân viên khác!", "Trùng dữ liệu", JOptionPane.ERROR_MESSAGE);
+	                              txtSDT_CNNV.requestFocus();
+	                              return; // Dừng lại ngay
+	                         }
+	                    }
+	                    // ===================================================
 
 	                    // ===== CHUYỂN NGÀY =====
 	                    LocalDate ngaySinhLocal = ngaySinh.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -4615,7 +4697,7 @@ public class TrangChu_GUI extends JFrame{
 	                    nv.setAnh(anh);
 
 	                    // ===== CẬP NHẬT DATABASE =====
-	                    nhanVien_DAO nvDAO = new nhanVien_DAO();
+	                    // nvDAO đã khởi tạo ở trên rồi, dùng luôn
 	                    boolean result = nvDAO.updateNhanVien(nv);
 
 	                    if (result) {
